@@ -38,8 +38,18 @@ AUI.add(
 						instance._eventHandlers.push(
 							instance.after('render', instance._afterSettingsFormRender),
 							labelField.on('keyChange', A.bind('_onLabelFieldKeyChange', instance)),
-							labelField.on(A.bind('_onLabelFieldNormalizeKey', instance), labelField, 'normalizeKey')
+							labelField.on(A.bind('_onLabelFieldNormalizeKey', instance), labelField, 'normalizeKey'),
+							instance.on('*:addField', instance.alignModal),
+							instance.on('*:removeField', instance.alignModal)
 						);
+					},
+
+					alignModal: function() {
+						var instance = this;
+
+						var modalSettings = instance.get('field').getSettingsModal();
+
+						modalSettings._modal.align();
 					},
 
 					getSubmitButton: function() {
@@ -48,18 +58,6 @@ AUI.add(
 						var footerNode = instance._getModalStdModeNode(A.WidgetStdMod.FOOTER);
 
 						return footerNode.one('.' + CSS_FIELD_SETTINGS_SAVE);
-					},
-
-					render: function() {
-						var instance = this;
-
-						var bodyNode = instance._getModalStdModeNode(A.WidgetStdMod.BODY);
-
-						var container = instance.get('container');
-
-						container.appendTo(bodyNode);
-
-						return FormBuilderSettingsForm.superclass.render.apply(instance, arguments);
 					},
 
 					submit: function(callback) {
@@ -288,11 +286,7 @@ AUI.add(
 
 						advancedSettingsNode.toggleClass('active');
 
-						var field = instance.get('field');
-
-						var settingsModal = field.getSettingsModal();
-
-						settingsModal._modal.align();
+						instance.alignModal();
 
 						instance._syncModeToggler();
 					},

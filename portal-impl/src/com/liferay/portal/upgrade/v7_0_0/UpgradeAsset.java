@@ -72,32 +72,6 @@ public class UpgradeAsset extends UpgradeProcess {
 			long classNameId = PortalUtil.getClassNameId(
 				"com.liferay.journal.model.JournalArticle");
 
-			try (PreparedStatement ps1 = connection.prepareStatement(
-					"select resourcePrimKey, structureId from JournalArticle " +
-						"where structureId != ''");
-				ResultSet rs = ps1.executeQuery();
-				PreparedStatement ps2 =
-					AutoBatchPreparedStatementUtil.autoBatch(
-						connection.prepareStatement(
-							"update AssetEntry set classTypeId = ? where " +
-								"classNameId = ? and classPK = ?"))) {
-
-				while (rs.next()) {
-					long resourcePrimKey = rs.getLong("resourcePrimKey");
-					String structureId = rs.getString("structureId");
-
-					long ddmStructureId = getDDMStructureId(structureId);
-
-					ps2.setLong(1, ddmStructureId);
-					ps2.setLong(2, classNameId);
-					ps2.setLong(3, resourcePrimKey);
-
-					ps2.addBatch();
-				}
-
-				ps2.executeBatch();
-			}
-
 			StringBundler sb = new StringBundler(9);
 
 			sb.append("select JournalArticle.resourcePrimKey from (select ");
@@ -105,8 +79,8 @@ public class UpgradeAsset extends UpgradeProcess {
 			sb.append("max(JournalArticle.version) as maxVersion from ");
 			sb.append("JournalArticle group by ");
 			sb.append("JournalArticle.resourcePrimkey) temp_table inner join ");
-			sb.append("JournalArticle on (JournalArticle.indexable = ");
-			sb.append("?) and (JournalArticle.status = 0) and ");
+			sb.append("JournalArticle on (JournalArticle.indexable = ?) and ");
+			sb.append("(JournalArticle.status = 0) and ");
 			sb.append("(JournalArticle.resourcePrimkey = temp_table.primKey) ");
 			sb.append("and (JournalArticle.version = temp_table.maxVersion)");
 

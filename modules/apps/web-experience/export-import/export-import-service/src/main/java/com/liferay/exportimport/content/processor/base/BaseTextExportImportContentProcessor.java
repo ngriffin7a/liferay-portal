@@ -39,6 +39,9 @@ import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -358,7 +361,7 @@ public class BaseTextExportImportContentProcessor
 
 					exceptionSB.append("Unable to process file entry ");
 					exceptionSB.append(fileEntry.getFileEntryId());
-					exceptionSB.append(" for ");
+					exceptionSB.append(" for staged model ");
 					exceptionSB.append(stagedModel.getModelClassName());
 					exceptionSB.append(" with primary key ");
 					exceptionSB.append(stagedModel.getPrimaryKeyObj());
@@ -668,6 +671,23 @@ public class BaseTextExportImportContentProcessor
 				portletDataContext.addReferenceElement(
 					stagedModel, entityElement, layout,
 					PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
+			}
+			catch (Exception e) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(e, e);
+				}
+				else if (_log.isWarnEnabled()) {
+					StringBundler exceptionSB = new StringBundler(6);
+
+					exceptionSB.append("Unable to process layout URL ");
+					exceptionSB.append(url);
+					exceptionSB.append(" for staged model ");
+					exceptionSB.append(stagedModel.getModelClassName());
+					exceptionSB.append(" with primary key ");
+					exceptionSB.append(stagedModel.getPrimaryKeyObj());
+
+					_log.warn(exceptionSB.toString());
+				}
 			}
 			finally {
 				if (urlSB.length() > 0) {
@@ -1018,12 +1038,25 @@ public class BaseTextExportImportContentProcessor
 	protected void validateDLReferences(long groupId, String content)
 		throws PortalException {
 
-		String contextPath = PortalUtil.getPathContext();
+		String portalURL = PortalUtil.getPathContext();
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if ((serviceContext != null) &&
+			(serviceContext.getThemeDisplay() != null)) {
+
+			ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
+
+			portalURL =
+				PortalUtil.getPortalURL(themeDisplay) +
+					PortalUtil.getPathContext();
+		}
 
 		String[] patterns = {
-			contextPath.concat("/c/document_library/get_file?"),
-			contextPath.concat("/documents/"),
-			contextPath.concat("/image/image_gallery?")
+			portalURL.concat("/c/document_library/get_file?"),
+			portalURL.concat("/documents/"),
+			portalURL.concat("/image/image_gallery?")
 		};
 
 		int beginPos = -1;
@@ -1038,7 +1071,7 @@ public class BaseTextExportImportContentProcessor
 
 			Map<String, String[]> dlReferenceParameters =
 				getDLReferenceParameters(
-					groupId, content, beginPos + contextPath.length(), endPos);
+					groupId, content, beginPos + portalURL.length(), endPos);
 
 			FileEntry fileEntry = getFileEntry(dlReferenceParameters);
 

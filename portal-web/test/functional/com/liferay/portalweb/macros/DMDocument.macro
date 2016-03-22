@@ -730,7 +730,7 @@
 		<if>
 			<isset var="recycleBinDisabled" />
 			<then>
-				<execute function="AssertClick" locator1="MenuItem#DELETE" value1="Delete" />
+				<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
 				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 				<execute macro="Alert#viewSuccessMessage" />
 			</then>
@@ -1729,7 +1729,7 @@
 
 		<execute function="AssertClick" locator1="AP#ASSET_ABSTRACT_TITLE" value1="${assetTitle}" />
 
-		<execute function="Click" locator1="DocumentsAndMediaDocument#DOCUMENT_DETAILS_DROPDOWN" />
+		<execute macro="DMNavigator#gotoDocumentDetails" />
 
 		<execute function="AssertClick" locator1="MenuItem#DM_DOCUMENT_TYPE" value1="Document Type" />
 

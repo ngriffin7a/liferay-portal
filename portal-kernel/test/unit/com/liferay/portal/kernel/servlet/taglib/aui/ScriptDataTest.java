@@ -30,7 +30,7 @@ import org.junit.Test;
 public class ScriptDataTest {
 
 	@Test
-	public void testGenerateVariableStripsReplacesFirstCharacter()
+	public void testGenerateVariableReplacesInvalidFirstCharacter()
 		throws Exception {
 
 		ScriptData scriptData = new ScriptData();
@@ -43,22 +43,38 @@ public class ScriptDataTest {
 
 		scriptData.writeTo(unsyncStringWriter);
 
-		assertVariables(unsyncStringWriter, "_VAR", "_VAR1", "_VAR2", "_VAR3");
+		assertVariables(unsyncStringWriter, "_Var", "_Var1", "_Var2", "_Var3");
 	}
 
 	@Test
-	public void testGenerateVariableStripsSpecialCharacters() throws Exception {
+	public void testGenerateVariableStripsInvalidCharacters() throws Exception {
 		ScriptData scriptData = new ScriptData();
 
 		scriptData.append(
-			"portletId", "content", "Var,V ar,Va*r,Var/",
+			"portletId", "content", "var,V ar,va*r,var/",
 			ScriptData.ModulesType.ES6);
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		scriptData.writeTo(unsyncStringWriter);
 
-		assertVariables(unsyncStringWriter, "VAR", "VAR1", "VAR2", "VAR3");
+		assertVariables(unsyncStringWriter, "var", "vAr", "vaR", "var1");
+	}
+
+	@Test
+	public void testGenerateVariableStripsLastInvalidCharacter()
+		throws Exception {
+
+		ScriptData scriptData = new ScriptData();
+
+		scriptData.append(
+			"portletId", "content", "var!", ScriptData.ModulesType.ES6);
+
+		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
+
+		scriptData.writeTo(unsyncStringWriter);
+
+		assertVariables(unsyncStringWriter, "var");
 	}
 
 	protected void assertVariables(

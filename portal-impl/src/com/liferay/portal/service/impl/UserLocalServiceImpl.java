@@ -3608,8 +3608,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 					if (_log.isWarnEnabled()) {
 						StringBundler sb = new StringBundler(5);
 
-						sb.append("When LDAP password policy is enabled, ");
-						sb.append("it is possible that portal generated ");
+						sb.append("When LDAP password policy is enabled, it ");
+						sb.append("is possible that portal generated ");
 						sb.append("passwords will not match the LDAP policy.");
 						sb.append("Using RegExpToolkit to generate new ");
 						sb.append("password.");
@@ -5720,8 +5720,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		else {
 			resetFailedLoginAttempts(user);
 		}
-
-		// PLACEHOLDER 02
 
 		return authResult;
 	}

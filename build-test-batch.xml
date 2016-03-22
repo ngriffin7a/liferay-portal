@@ -512,8 +512,8 @@ app.server.type=@{app.server.type}]]></echo>
 		<attribute default="${app.server.@{app.server.type}.version}" name="app.server.version" />
 		<attribute name="database.type" />
 		<attribute default="${database.@{database.type}.version}" name="database.version" />
+		<attribute default="" name="test.build.fix.pack.zip.url" />
 		<attribute default="" name="test.fix.pack.base.url" />
-		<attribute default="" name="test.fix.pack.zip.name" />
 		<attribute default="" name="test.license.xml.url" />
 		<attribute default="" name="test.plugin.zip.url" />
 		<attribute default="" name="test.portal.bundle.zip.url" />
@@ -541,6 +541,7 @@ app.server.type=@{app.server.type}]]></echo>
 						<test-action>
 							<ant antfile="build-test-${app.server.type}.xml" inheritAll="false" target="run-selenium-${app.server.type}">
 								<property name="database.type" value="@{database.type}" />
+								<property name="liferay.portal.bundle" value="${test.portal.bundle.version}" />
 								<property name="print.java.process.on.fail" value="Bootstrap" />
 								<property name="test.class" value="${test.class}" />
 							</ant>
@@ -562,8 +563,8 @@ app.server.type=@{app.server.type}]]></echo>
 								<param name="app.server.type" value="${app.server.type}" />
 								<param name="test.app.server.bin.dir" value="${test.app.server.bin.dir}" />
 								<param name="test.build.bundle.zip.url" value="@{test.portal.bundle.zip.url}" />
+								<param name="test.build.fix.pack.zip.url" value="@{test.build.fix.pack.zip.url}" />
 								<param name="test.fix.pack.base.url" value="@{test.fix.pack.base.url}" />
-								<param name="test.fix.pack.zip.name" value="@{test.fix.pack.zip.name}" />
 							</antcall>
 
 							<antcall target="deploy-license-xml">
@@ -761,8 +762,8 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="mysql"
+			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
-			test.fix.pack.zip.name="${test.fix.pack.zip.name}"
 			test.license.xml.url="${test.license.xml.url}"
 			test.plugin.zip.url="${test.plugin.zip.url}"
 			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
@@ -780,6 +781,10 @@ app.server.type=@{app.server.type}]]></echo>
 
 	<target name="functional-tomcat8-mysql56-jdk7">
 		<run-functional-test app.server.type="tomcat" database.type="mysql" />
+	</target>
+
+	<target name="functional-tomcat8-mysql56-jdk7-quarantine">
+		<antcall target="functional-tomcat8-mysql56-jdk7" />
 	</target>
 
 	<target name="functional-wildfly10-mariadb100-jdk8">
@@ -943,9 +948,9 @@ ${output.content}</echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="mysql"
-			test.license.xml.url="${test.license.xml.url}"
+			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
-			test.fix.pack.zip.name="${test.fix.pack.zip.name}"
+			test.license.xml.url="${test.license.xml.url}"
 			test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
 			test.sql.zip.url="${test.sql.zip.url}"
 		/>
@@ -991,6 +996,16 @@ ${output.content}</echo>
 	<target name="ruby-sass-compiler-jdk7">
 		<antcall if:set="env.JENKINS_HOME" inheritAll="false" target="clean-up-java-processes" />
 
+		<if>
+			<isset property="env.DIST_PATH" />
+			<then>
+				<prepare-test-environment />
+			</then>
+			<else>
+				<prepare-test-build />
+			</else>
+		</if>
+
 		<echo file="build.${user.name}.properties">sass.compiler.class.name=ruby</echo>
 
 		<antcall target="setup-sdk" inheritAll="false" />
@@ -1014,6 +1029,60 @@ ${output.content}</echo>
 				</and>
 			</condition>
 		</fail>
+	</target>
+
+	<target name="semantic-versioning-jdk7">
+		<run-batch-test>
+			<test-action>
+				<fileset dir="${project.dir}" id="log.files">
+					<include name="baseline-reports/*.log" />
+					<include name="modules/**/baseline.log" />
+				</fileset>
+
+				<pathconvert pathsep="," property="log.files" refid="log.files" />
+
+				<for list="${log.files}" param="log.file">
+					<sequential>
+						<print-file file.name="@{log.file}" />
+					</sequential>
+				</for>
+
+				<if>
+					<not>
+						<equals arg1="${log.files}" arg2="" />
+					</not>
+					<then>
+						<fail message="Semantic versioning is incorrect." />
+					</then>
+				</if>
+			</test-action>
+
+			<test-set-up>
+				<echo file="build.${user.name}.properties">baseline.jar.report.level=persist</echo>
+
+				<prepare-test-build />
+
+				<if>
+					<available file="${env.TOP_LEVEL_SHARED_DIR}/modules.base.dir.names.properties" />
+					<then>
+						<property file="${env.TOP_LEVEL_SHARED_DIR}/modules.base.dir.names.properties" />
+
+						<if>
+							<isset property="modules.base.dir.names.with.changes" />
+							<then>
+								<for list="${modules.base.dir.names.with.changes}" param="modules.base.dir.name">
+									<sequential>
+										<echo>Executing baseline on @{modules.base.dir.name}.</echo>
+
+										<gradle-execute dir="@{modules.base.dir.name}" task="baseline" />
+									</sequential>
+								</for>
+							</then>
+						</if>
+					</then>
+				</if>
+			</test-set-up>
+		</run-batch-test>
 	</target>
 
 	<target name="service-builder-jdk7">

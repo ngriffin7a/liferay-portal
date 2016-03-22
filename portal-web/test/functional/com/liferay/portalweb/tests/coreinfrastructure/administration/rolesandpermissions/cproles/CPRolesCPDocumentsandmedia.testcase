@@ -33,7 +33,9 @@
 		</if>
 	</tear-down>
 
-	<command name="ViewDocumentsAndMediaPortletRegRole" priority="4">
+	<command name="ViewDocumentsAndMediaPortletRegRole" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<execute macro="Permissions#setUpRegRoleLoginUserCP">
 			<var name="portletName" value="Documents and Media" />
 			<var name="roleName" value="Regrole Name" />
@@ -102,10 +104,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Documents and Media Page" />
 			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
 		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="ControlMenu#ADMIN" />
@@ -143,10 +144,9 @@
 			<var name="userLoginFullName" value="userfn userln" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Documents and Media Page" />
 			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
 		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="ControlMenu#ADMIN" />

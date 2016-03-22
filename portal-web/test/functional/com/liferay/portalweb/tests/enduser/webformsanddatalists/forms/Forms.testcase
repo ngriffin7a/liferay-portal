@@ -29,7 +29,9 @@
 		</if>
 	</tear-down>
 
-	<command name="ConfigureDataProviderWithSelectField" priority="4">
+	<command name="ConfigureDataProviderWithSelectField" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
 
 		<execute macro="Navigator#openURL" />
@@ -976,8 +978,7 @@
 			<var name="fieldValue" value="Paragraph Field" />
 		</execute>
 
-		<execute macro="FormFields#editTextMultiline">
-			<var name="fieldName" value="text" />
+		<execute macro="FormFields#editParagraphBody">
 			<var name="fieldValue" value="Paragraph field body text." />
 		</execute>
 
@@ -1004,8 +1005,8 @@
 			<var name="pageName" value="Form Page" />
 		</execute>
 
-		<execute macro="FormFields#viewParagraphBody">
-			<var name="fieldName" value="ParagraphField" />
+		<execute macro="FormFields#viewParagraphField">
+			<var name="fieldTitle" value="Paragraph Field" />
 			<var name="fieldValue" value="Paragraph field body text." />
 		</execute>
 
@@ -1027,7 +1028,7 @@
 		<execute macro="FormsAdminNavigator#gotoView" />
 
 		<execute macro="FormsAdmin#viewParagraphEntry">
-			<var name="fieldName" value="ParagraphField" />
+			<var name="fieldTitle" value="Paragraph Field" />
 			<var name="fieldValue" value="Paragraph field body text." />
 		</execute>
 	</command>

@@ -76,21 +76,22 @@
 	</command>
 
 	<command name="CannotDeleteLastPrivatePage" priority="3">
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Private Pages" />
+		<execute macro="ProductMenu#gotoControlPanelSites">
+			<var name="portlet" value="Sites" />
 		</execute>
 
 		<execute macro="Page#add">
 			<var name="pageName" value="Site Page Name" />
-			<var name="sitePagePrivacy" value="Private Pages" />
+			<var name="sitePagePrivacy" value="Private" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Private Pages" />
+		<execute macro="ProductMenu#gotoControlPanelSites">
+			<var name="portlet" value="Sites" />
 		</execute>
 
 		<execute macro="Page#assertCannotDeleteOnlyPage">
 			<var name="pageName" value="Site Page Name" />
+			<var name="sitePagePrivacy" value="Private Pages" />
 		</execute>
 	</command>
 
@@ -168,10 +169,9 @@
 			<var name="pageType" value="Link to a Page of This Site" />
 		</execute>
 
-		<execute macro="Page#gotoPG">
+		<execute macro="Navigator#gotoSitePage">
 			<var name="pageName" value="Site Page1 Name" />
 			<var name="siteName" value="Site Name" />
-			<var name="siteURL" value="true" />
 		</execute>
 
 		<execute macro="SitePageNavigator#gotoPages">
@@ -305,8 +305,6 @@
 	</command>
 
 	<command name="SitesPrivatePagesPermissions" priority="4">
-		<var name="pageName" value="Site Page" />
-
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
 		</execute>
@@ -377,12 +375,11 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Private Pages" />
-		</execute>
+		<execute macro="ProductMenu#gotoPrivatePages" />
 
 		<execute macro="PermissionsInline#gotoSitepageCP">
 			<var name="pageName" value="Site Page" />
+			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Role#removePermissionPG">
@@ -417,13 +414,12 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="SitePageNavigator#gotoPages">
-			<var name="page" value="Private Pages" />
-		</execute>
+		<execute macro="ProductMenu#gotoPrivatePages" />
 
 		<execute macro="PermissionsInline#gotoSitepageCP">
 			<var name="page" value="Private" />
 			<var name="pageName" value="Site Page" />
+			<var name="siteName" value="Site Name" />
 		</execute>
 
 		<execute macro="Role#removePermissionPG">

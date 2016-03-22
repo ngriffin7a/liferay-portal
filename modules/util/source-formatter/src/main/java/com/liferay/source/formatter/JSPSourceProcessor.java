@@ -186,10 +186,12 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 	protected void checkDefineObjectsVariables(
 		String line, String fileName, int lineCount) {
 
-		for (String[] defineObject : _LIFERAY_FRONTEND_DEFINE_OBJECTS) {
-			checkDefineObjectsVariable(
-				line, fileName, lineCount, defineObject[0], defineObject[1],
-				defineObject[2], "liferay-frontend");
+		if (portalSource) {
+			for (String[] defineObject : _LIFERAY_FRONTEND_DEFINE_OBJECTS) {
+				checkDefineObjectsVariable(
+					line, fileName, lineCount, defineObject[0], defineObject[1],
+					defineObject[2], "liferay-frontend");
+			}
 		}
 
 		for (String[] defineObject : _LIFERAY_THEME_DEFINE_OBJECTS) {
@@ -410,6 +412,10 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			fileName, absolutePath, newContent, _taglibLanguageKeyPattern2);
 		checkLanguageKeys(
 			fileName, absolutePath, newContent, _taglibLanguageKeyPattern3);
+
+		newContent = formatJSONObject(newContent);
+
+		newContent = formatStringBundler(fileName, newContent, -1);
 
 		checkXSS(fileName, newContent);
 
@@ -704,8 +710,6 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 						fileName, "chaining: " + fileName + " " + lineCount);
 				}
 
-				checkStringBundler(trimmedLine, fileName, lineCount);
-
 				checkEmptyCollection(trimmedLine, fileName, lineCount);
 
 				line = formatEmptyArray(line);
@@ -923,7 +927,7 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 							else if (trimmedLine.endsWith(StringPool.QUOTE) &&
 									 tag.contains(StringPool.COLON) &&
 									 (StringUtil.count(
-										 trimmedLine, StringPool.QUOTE) > 2)) {
+										 trimmedLine, CharPool.QUOTE) > 2)) {
 
 								processErrorMessage(
 									fileName,
@@ -1338,6 +1342,14 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			if (!matcher.find()) {
 				throw new RuntimeException(
 					"Invalid include " + includeFileName);
+			}
+
+			String extension = matcher.group(1);
+
+			if (extension.equals("svg")) {
+				x = y;
+
+				continue;
 			}
 
 			includeFileName = buildFullPathIncludeFileName(
@@ -1976,7 +1988,7 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			"([\\s\\S]*?)\n\\}\n");
 	private final Map<String, String> _jspContents = new HashMap<>();
 	private final Pattern _jspIncludeFilePattern = Pattern.compile(
-		"/.*[.]jsp[f]?");
+		"/.*\\.(jsp[f]?|svg)");
 	private final Pattern _jspTagAttributes = Pattern.compile(
 		"<[-\\w]+:[-\\w]+ (.*?[^%])>");
 	private final Pattern _jspTagAttributeValue = Pattern.compile(

@@ -620,6 +620,7 @@
 						path: 'search_container_select.js',
 						requires: [
 							'aui-component',
+							'aui-url',
 							'plugin'
 						]
 					},
@@ -798,6 +799,7 @@
 				root: PATH_JAVASCRIPT + '/liferay/'
 			}
 		},
+		insertBefore: 'liferayPortalCSS',
 		lang: themeDisplay.getBCP47LanguageId(),
 		root: PATH_JAVASCRIPT + '/aui/',
 		useBrowserConsole: false

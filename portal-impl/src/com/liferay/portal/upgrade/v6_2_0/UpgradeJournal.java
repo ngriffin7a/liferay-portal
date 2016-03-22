@@ -140,8 +140,8 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 		sb.append("companyId, userId, userName, createDate, modifiedDate,");
 		sb.append("classNameId, classPK , templateKey, name, description,");
 		sb.append("type_, mode_, language, script, cacheable, smallImage,");
-		sb.append("smallImageId, smallImageURL) values (?, ?, ?, ?, ?, ?,");
-		sb.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		sb.append("smallImageId, smallImageURL) values (?, ?, ?, ?, ?, ?,?, ");
+		sb.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 		String sql = sb.toString();
 
@@ -301,11 +301,14 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 					"from JournalArticle where structureId != ''");
 			ResultSet rs = ps1.executeQuery()) {
 
+			long classNameId = PortalUtil.getClassNameId(
+				"com.liferay.portlet.journal.model.JournalArticle");
+
 			try (PreparedStatement ps2 =
 					AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 						connection,
-						"update AssetEntry set classTypeId = ? where classPK " +
-							"= ?")) {
+						"update AssetEntry set classTypeId = ? where " +
+							"classNameId = ? AND classPK = ?")) {
 
 				while (rs.next()) {
 					long groupId = rs.getLong("groupId");
@@ -317,7 +320,8 @@ public class UpgradeJournal extends BaseUpgradePortletPreferences {
 						groupId, getCompanyGroupId(companyId), structureId);
 
 					ps2.setLong(1, ddmStructureId);
-					ps2.setLong(2, resourcePrimKey);
+					ps2.setLong(2, classNameId);
+					ps2.setLong(3, resourcePrimKey);
 
 					ps2.addBatch();
 				}
