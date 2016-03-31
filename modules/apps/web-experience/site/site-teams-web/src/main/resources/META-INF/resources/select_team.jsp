@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String displayStyle = portalPreferences.getValue(SiteTeamsPortletKeys.SITE_TEAMS, "display-style", "list");
+String displayStyle = portalPreferences.getValue(SiteTeamsPortletKeys.SITE_TEAMS, "display-style", "icon");
 String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectTeam");
 
 PortletURL portletURL = renderResponse.createRenderURL();
@@ -136,7 +136,7 @@ teamSearch.setTotal(teamsCount);
 						</h5>
 
 						<h6 class="text-default">
-							<span><%= curTeam.getDescription() %></span>
+							<span><%= HtmlUtil.escape(curTeam.getDescription()) %></span>
 						</h6>
 					</liferay-ui:search-container-column-text>
 				</c:when>

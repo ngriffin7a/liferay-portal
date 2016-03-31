@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String displayStyle = ParamUtil.getString(request, "displayStyle", "icon");
+String displayStyle = portalPreferences.getValue(SiteMembershipsPortletKeys.SITE_MEMBERSHIPS_ADMIN, "display-style", "icon");
 String orderByCol = ParamUtil.getString(request, "orderByCol", "name");
 String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
@@ -35,6 +35,12 @@ organizationSearch.setEmptyResultsMessage("no-organization-was-found-that-is-a-m
 RowChecker rowChecker = new EmptyOnClickRowChecker(renderResponse);
 
 OrganizationSearchTerms searchTerms = (OrganizationSearchTerms)organizationSearch.getSearchTerms();
+
+boolean hasAssignMembersPermission = GroupPermissionUtil.contains(permissionChecker, siteMembershipsDisplayContext.getGroupId(), ActionKeys.ASSIGN_MEMBERS);
+
+if (!searchTerms.isSearch() && hasAssignMembersPermission) {
+	organizationSearch.setEmptyResultsMessageCssClass("taglib-empty-result-message-header-has-plus-btn");
+}
 
 long parentOrganizationId = OrganizationConstants.ANY_PARENT_ORGANIZATION_ID;
 
@@ -62,9 +68,13 @@ organizationSearch.setResults(organizations);
 	searchContainerId="organizations"
 >
 	<liferay-frontend:management-bar-buttons>
+		<liferay-portlet:actionURL name="changeDisplayStyle" varImpl="changeDisplayStyleURL">
+			<portlet:param name="redirect" value="<%= currentURL %>" />
+		</liferay-portlet:actionURL>
+
 		<liferay-frontend:management-bar-display-buttons
 			displayViews='<%= new String[] {"icon", "descriptive", "list"} %>'
-			portletURL="<%= PortletURLUtil.clone(viewOrganizationsURL, renderResponse) %>"
+			portletURL="<%= changeDisplayStyleURL %>"
 			selectedDisplayStyle="<%= displayStyle %>"
 		/>
 	</liferay-frontend:management-bar-buttons>
@@ -126,7 +136,7 @@ organizationSearch.setResults(organizations);
 	<aui:input name="tabs1" type="hidden" value="organizations" />
 </aui:form>
 
-<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, siteMembershipsDisplayContext.getGroupId(), ActionKeys.ASSIGN_MEMBERS) %>">
+<c:if test="<%= hasAssignMembersPermission %>">
 	<liferay-frontend:add-menu>
 		<liferay-frontend:add-menu-item id="selectOrganizations" title='<%= LanguageUtil.get(request, "assign-organizations") %>' url="javascript:;" />
 	</liferay-frontend:add-menu>

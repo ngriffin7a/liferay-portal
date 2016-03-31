@@ -43,7 +43,7 @@
 	</tear-down>
 
 	<command name="ActivateDeactivateRemoteStaging" priority="4">
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 
 		<execute macro="Staging#remoteStagingSetUp">
 			<var name="siteName" value="Site Name" />
@@ -79,6 +79,8 @@
 			<var name="pageName" value="Staging Test Page" />
 			<var name="siteName" value="Remote Site" />
 		</execute>
+
+		<execute macro="DMPortlet#setDescriptiveView" />
 
 		<execute macro="DMDocument#viewPG">
 			<var name="dmDocumentDescription" value="DM Document Description" />
@@ -183,7 +185,7 @@
 	</command>
 
 	<command name="ActivateRemoteStaging" priority="5">
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 		<property name="portal.acceptance" value="true" />
 
 		<var name="siteID" value="${siteID}" />
@@ -337,6 +339,8 @@
 	</command>
 
 	<command name="AddPageVariation" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -370,6 +374,8 @@
 	</command>
 
 	<command name="AddPageWithPageVersioningEnabled" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -428,6 +434,8 @@
 	</command>
 
 	<command name="AddSitePagesVariation" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<execute macro="Navigator#openSiteURL">
 			<var name="siteName" value="Site Name" />
 		</execute>
@@ -1292,7 +1300,7 @@
 	</command>
 
 	<command name="PublishWCViaRemoteStaging" priority="3">
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 
 		<execute macro="Staging#remoteStagingSetUp">
 			<var name="pageVersioningEnabled" value="true" />
@@ -1328,7 +1336,7 @@
 	</command>
 
 	<command name="PublishWCWithPagesVariationViaRemoteStaging" priority="3">
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 
 		<execute macro="Staging#remoteStagingSetUp">
 			<var name="pageVersioningEnabled" value="true" />

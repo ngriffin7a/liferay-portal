@@ -17,7 +17,11 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String cmd = ParamUtil.getString(request, Constants.CMD, Constants.ADD);
+String cmd = ParamUtil.getString(request, Constants.CMD);
+
+if (Validator.isNull(cmd)) {
+	cmd = Constants.ADD;
+}
 
 long exportImportConfigurationId = 0;
 
@@ -122,6 +126,12 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 			<aui:input name="<%= PortletDataHandlerKeys.PORTLET_SETUP_ALL %>" type="hidden" value="<%= true %>" />
 			<aui:input name="<%= PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL %>" type="hidden" value="<%= true %>" />
 
+			<%@ include file="/error/error_auth_exception.jspf" %>
+
+			<%@ include file="/error/error_remote_export_exception.jspf" %>
+
+			<%@ include file="/error/error_remote_options_exception.jspf" %>
+
 			<div id="<portlet:namespace />publishOptions">
 				<div class="export-dialog-tree">
 					<aui:fieldset-group markupView="lexicon">
@@ -205,7 +215,7 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 			namespace: '<portlet:namespace />',
 			pageTreeId: '<%= treeId %>',
 			processesNode: '#publishProcesses',
-			processesResourceURL: '<%= publishProcessesURL.toString() %>',
+			processesResourceURL: '<%= HtmlUtil.escapeJS(publishProcessesURL.toString()) %>',
 			rangeAllNode: '#rangeAll',
 			rangeDateRangeNode: '#rangeDateRange',
 			rangeLastNode: '#rangeLast',

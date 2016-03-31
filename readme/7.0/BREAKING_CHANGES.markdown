@@ -20,7 +20,7 @@ feature or API will be dropped in an upcoming version.
 replaces an old API, in spite of the old API being kept in Liferay Portal for
 backwards compatibility.
 
-*This document has been reviewed through commit `9dc624a`.*
+*This document has been reviewed through commit `3a116f1`.*
 
 ## Breaking Changes Contribution Guidelines
 
@@ -72,37 +72,6 @@ The remaining content of this document consists of the breaking changes listed
 in ascending chronological order.
 
 ## Breaking Changes List
-
-### Removed Liferay Frontend Editor BBCode Web, previously Liferay BBCode Editor
-- **Date:** 2016-Mar-16
-- **JIRA Ticket:** LPS-48334
-
-#### What changed?
-
-- Removed the com.liferay.frontend.editor.bbcode.web OSGi bundle.
-- Removed all hardcoded references/logic for the editor.
-- Added Log Warning and logic to upgrade the editor property to `ckeditor_bbcode`
-if the old `bbcode` is being used. This Log Warning and logic will be remove in
-the future along with LPS-64099.
-
-#### Who is affected?
-
-Any one who has
-`editor.wysiwyg.portal-web.docroot.html.portlet.message_boards.edit_message.bb_code.jsp`
-set to `bbcode` in portal properties (e.g., `portal-ext.properties`).
-
-#### How should I update my code?
-
-You should modify your `portal-ext.properties` file to remove the property
-`editor.wysiwyg.portal-web.docroot.html.portlet.message_boards.edit_message.bb_code.jsp`
-
-#### Why was this change made?
-
-Since Liferay Frontend Editor BBCode Web has been deprecated since 6.1, it was
-time to remove it completely. This frees up development and support resources to
-focus on supported features.
-
----------------------------------------
 
 ### The liferay-ui:logo-selector Tag Requires Parameter Changes
 - **Date:** 2013-Dec-05
@@ -4008,6 +3977,46 @@ Product Menu.
 
 ---------------------------------------
 
+### Removed the com.liferay.dynamic.data.mapping.util.DDMXMLUtil Class
+- **Date:** 2016-Mar-03
+- **JIRA Ticket:** LPS-63928
+
+#### What changed?
+
+The class `com.liferay.dynamic.data.mapping.util.DDMXMLUtil` has been removed
+with no replacement.
+
+#### Who is affected?
+
+All code that uses `com.liferay.dynamic.data.mapping.util.DDMXMLUtil` is
+affected.
+
+#### How should I update my code?
+
+In an OSGi module, simply inject the DDMXML reference:
+
+    @Reference
+    private DDMXML _ddmXML;
+
+In a legacy WAR or WAB, you need to get a DDMXML service reference from the
+bundle context:
+
+    Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+    BundleContext bundleContext = bundle.getBundleContext();
+
+    ServiceReference<UserImporter> serviceReference =
+        bundleContext.getServiceReference(DDMXML.class);
+
+    DDMXML ddmXML = bundleContext.getService(serviceReference);
+
+#### Why was this change made?
+
+This change was made to improve modularity of the dynamic data mapping
+subsystem.
+
+---------------------------------------
+
 ### FlagsEntryService.addEntry Method Throws PortalException
 - **Date:** 2016-Mar-04
 - **JIRA Ticket:** LPS-63109
@@ -4054,3 +4063,67 @@ You should port your PHP portlet to a different technology.
 
 This change simplifies future maintenance of the portal. This support could be
 added back in the future as an independent module.
+
+---------------------------------------
+
+### Removed Liferay Frontend Editor BBCode Web, Previously Known as Liferay BBCode Editor
+- **Date:** 2016-Mar-16
+- **JIRA Ticket:** LPS-48334
+
+#### What changed?
+
+The following things have been changed:
+
+- Removed the `com.liferay.frontend.editor.bbcode.web` OSGi bundle
+- Removed all hardcoded references/logic for the editor
+- Added a log warning and logic to upgrade the editor property to
+`ckeditor_bbcode` if the old `bbcode` is being used. This log warning and logic
+will be removed in the future, along with
+[LPS-64099](https://issues.liferay.com/browse/LPS-64099).
+
+#### Who is affected?
+
+This affects anyone who has the property
+`editor.wysiwyg.portal-web.docroot.html.portlet.message_boards.edit_message.bb_code.jsp`
+set to `bbcode` in portal properties (e.g., `portal-ext.properties`).
+
+#### How should I update my code?
+
+You should modify your `portal-ext.properties` file to remove the property
+`editor.wysiwyg.portal-web.docroot.html.portlet.message_boards.edit_message.bb_code.jsp`.
+
+#### Why was this change made?
+
+Since Liferay Frontend Editor BBCode Web has been deprecated since 6.1, it was
+time to remove it completely. This frees up development and support resources to
+focus on supported features.
+
+---------------------------------------
+
+### Removed the asset.entry.validator Property
+- **Date:** 2016-Mar-17
+- **JIRA Ticket:** LPS-64370
+
+#### What changed?
+
+The property `asset.entry.validator` has been removed from `portal.properties`.
+
+#### Who is affected?
+
+This affects any installation with a customized asset validator.
+
+#### How should I update my code?
+
+You should create a new OSGi component that implements `AssetEntryValidator` and
+define for which models it will be applicable by using the `model.class.name`
+OSGi property, or an asterisk if it applies to any model.
+
+If you were using the `MinimalAssetEntryValidator`, this functionality can still
+be added by deploying the module `asset-tags-validator`.
+
+#### Why was this change made?
+
+This change has been made as part of the modularization efforts to decouple
+different parts of the portal.
+
+---------------------------------------

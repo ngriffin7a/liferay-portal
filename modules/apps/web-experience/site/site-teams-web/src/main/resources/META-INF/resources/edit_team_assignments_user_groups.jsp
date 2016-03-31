@@ -21,7 +21,7 @@ String tabs1 = (String)request.getAttribute("edit_team_assignments.jsp-tabs1");
 
 Team team = (Team)request.getAttribute("edit_team_assignments.jsp-team");
 
-String displayStyle = portalPreferences.getValue(SiteTeamsPortletKeys.SITE_TEAMS, "display-style", "list");
+String displayStyle = portalPreferences.getValue(SiteTeamsPortletKeys.SITE_TEAMS, "display-style", "icon");
 String orderByCol = ParamUtil.getString(request, "orderByCol", "name");
 String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
@@ -30,6 +30,8 @@ PortletURL portletURL = (PortletURL)request.getAttribute("edit_team_assignments.
 SearchContainer userGroupSearchContainer = new UserGroupSearch(renderRequest, portletURL);
 
 UserGroupDisplayTerms searchTerms = (UserGroupDisplayTerms)userGroupSearchContainer.getSearchTerms();
+
+userGroupSearchContainer.setEmptyResultsMessageCssClass(searchTerms.isSearch() ? StringPool.BLANK : "taglib-empty-result-message-header-has-plus-btn");
 
 LinkedHashMap<String, Object> userGroupParams = new LinkedHashMap<String, Object>();
 

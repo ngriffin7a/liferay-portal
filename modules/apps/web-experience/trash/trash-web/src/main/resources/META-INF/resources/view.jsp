@@ -49,7 +49,12 @@ else {
 }
 
 entrySearch.setResults(trashEntries);
-entrySearch.setRowChecker(new EmptyOnClickRowChecker(renderResponse));
+
+EmptyOnClickRowChecker emptyOnClickRowChecker = new EmptyOnClickRowChecker(renderResponse);
+
+emptyOnClickRowChecker.setRememberCheckBoxStateURLRegex("^(?!.*" + liferayPortletResponse.getNamespace() + "redirect).*(/entry/)");
+
+entrySearch.setRowChecker(emptyOnClickRowChecker);
 
 if ((entrySearch.getTotal() == 0) && Validator.isNotNull(searchTerms.getKeywords())) {
 	entrySearch.setEmptyResultsMessage(LanguageUtil.format(request, "no-entries-were-found-that-matched-the-keywords-x", "<strong>" + HtmlUtil.escape(searchTerms.getKeywords()) + "</strong>", false));
@@ -83,7 +88,13 @@ request.setAttribute("view.jsp-recycleBinEntrySearch", entrySearch);
 	<c:if test="<%= ree.getType() == RestoreEntryException.INVALID_CONTAINER %>">
 		<liferay-ui:message key="the-destination-you-selected-is-an-invalid-container.-please-select-a-different-destination" />
 	</c:if>
+
+	<c:if test="<%= ree.getType() == RestoreEntryException.INVALID_STATUS %>">
+		<liferay-ui:message key="unable-to-restore-this-item" />
+	</c:if>
 </liferay-ui:error>
+
+<liferay-ui:error exception="<%= TrashEntryException.class %>" message="unable-to-move-this-item-to-the-recycle-bin" />
 
 <liferay-ui:error exception="<%= TrashPermissionException.class %>">
 
@@ -141,7 +152,6 @@ request.setAttribute("view.jsp-recycleBinEntrySearch", entrySearch);
 		<aui:form action="<%= deleteEntriesURL %>" name="fm">
 			<liferay-ui:search-container
 				id="trash"
-				rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
 				searchContainer="<%= entrySearch %>"
 			>
 				<liferay-ui:search-container-row

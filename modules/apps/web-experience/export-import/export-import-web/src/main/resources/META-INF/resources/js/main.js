@@ -1,6 +1,8 @@
 AUI.add(
 	'liferay-export-import',
 	function(A) {
+		var $ = AUI.$;
+
 		var Lang = A.Lang;
 
 		var ADate = A.Date;
@@ -147,7 +149,7 @@ AUI.add(
 								checkBox.on(
 									STR_CLICK,
 									function() {
-										if (checkBox.is(":checked")) {
+										if (checkBox.is(':checked')) {
 											var id = checkBox.prop('id');
 
 											var controlCheckboxes = $('[data-root-control-id=' + id + ']');
@@ -180,7 +182,7 @@ AUI.add(
 								checkBox.on(
 									STR_CLICK,
 									function() {
-										if (checkBox.is(":checked")) {
+										if (checkBox.is(':checked')) {
 											var id = checkBox.prop('id');
 
 											var controlCheckboxes = $('[data-root-control-id=' + id + ']');
@@ -744,10 +746,9 @@ AUI.add(
 						var instance = this;
 
 						var cmdNode = instance.byId('cmd');
+						var redirectNode = instance.byId('redirect');
 
 						if ((cmdNode.val() === 'add') || (cmdNode.val() === 'update')) {
-							var redirectNode = instance.byId('redirect');
-
 							var portletURL = Liferay.PortletURL.createURL(redirectNode.val());
 
 							portletURL.setParameter('cmd', cmdNode.val());
@@ -790,6 +791,10 @@ AUI.add(
 						}
 
 						if (cmdNode) {
+							var currentURL = instance.byId('currentURL');
+
+							redirectNode.val(currentURL);
+
 							cmdNode.val(STR_EMPTY);
 
 							submitForm(instance.get('form'));
@@ -813,6 +818,7 @@ AUI.add(
 							A.io.request(
 								instance._processesResourceURL,
 								{
+									method: 'GET',
 									on: {
 										failure: function() {
 											new Liferay.Notice(

@@ -70,7 +70,7 @@ public class SiteTeamsDisplayContext {
 			PortletPreferencesFactoryUtil.getPortalPreferences(_request);
 
 		_displayStyle = portalPreferences.getValue(
-			SiteTeamsPortletKeys.SITE_TEAMS, "display-style", "list");
+			SiteTeamsPortletKeys.SITE_TEAMS, "display-style", "icon");
 
 		return _displayStyle;
 	}
@@ -103,16 +103,28 @@ public class SiteTeamsDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getSearchContainer() {
+	public SearchContainer getSearchContainer() throws PortalException {
 		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		SearchContainer searchContainer = new TeamSearch(
 			_renderRequest, getPortletURL());
 
-		searchContainer.setEmptyResultsMessage(
-			"there-are-no-site-teams.-you-can-add-a-site-team-by-clicking-" +
-				"the-plus-button-on-the-bottom-right-corner");
+		searchContainer.setEmptyResultsMessage("there-are-no-site-teams");
+
+		if (Validator.isNull(getKeywords())) {
+			if (isShowAddButton()) {
+				searchContainer.setEmptyResultsMessage(
+					"there-are-no-site-teams.-you-can-add-a-site-team-by-" +
+						"clicking-the-plus-button-on-the-bottom-right-corner");
+				searchContainer.setEmptyResultsMessageCssClass(
+					"taglib-empty-result-message-header-has-plus-btn");
+			}
+		}
+		else {
+			searchContainer.setSearch(true);
+		}
+
 		searchContainer.setId("teams");
 		searchContainer.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
@@ -177,7 +189,7 @@ public class SiteTeamsDisplayContext {
 		return false;
 	}
 
-	public boolean showAddButton() throws PortalException {
+	public boolean isShowAddButton() throws PortalException {
 		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 

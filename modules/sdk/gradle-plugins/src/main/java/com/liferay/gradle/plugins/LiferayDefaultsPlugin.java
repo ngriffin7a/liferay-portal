@@ -35,12 +35,14 @@ import com.liferay.gradle.plugins.tlddoc.builder.tasks.TLDDocTask;
 import com.liferay.gradle.plugins.upgrade.table.builder.UpgradeTableBuilderPlugin;
 import com.liferay.gradle.plugins.util.FileUtil;
 import com.liferay.gradle.plugins.util.GradleUtil;
+import com.liferay.gradle.plugins.whip.WhipPlugin;
 import com.liferay.gradle.plugins.wsdd.builder.WSDDBuilderPlugin;
 import com.liferay.gradle.plugins.wsdl.builder.WSDLBuilderPlugin;
 import com.liferay.gradle.plugins.xsd.builder.XSDBuilderPlugin;
 import com.liferay.gradle.util.Validator;
 import com.liferay.gradle.util.copy.ExcludeExistingFileAction;
 import com.liferay.gradle.util.copy.RenameDependencyClosure;
+import com.liferay.gradle.util.copy.ReplaceLeadingPathAction;
 
 import groovy.json.JsonSlurper;
 
@@ -100,6 +102,7 @@ import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.execution.TaskExecutionGraph;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DuplicatesStrategy;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.GradleInternal;
@@ -241,7 +244,7 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 			"com.liferay.portal.test", "default");
 		GradleUtil.addDependency(
 			project, PORTAL_TEST_CONFIGURATION_NAME, "com.liferay.portal",
-			"com.liferay.portal.test.internal", "default");
+			"com.liferay.portal.test.integration", "default");
 	}
 
 	protected void addDependenciesTestCompile(Project project) {
@@ -284,6 +287,24 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 				project, JavaPlugin.JAR_TASK_NAME);
 
 			baselineTask.dependsOn(jar);
+
+			baselineTask.doFirst(
+				new Action<Task>() {
+
+					@Override
+					public void execute(Task task) {
+						BaselineTask baselineTask = (BaselineTask)task;
+
+						File oldJarFile = baselineTask.getOldJarFile();
+
+						if (GradleUtil.isFromMavenLocal(project, oldJarFile)) {
+							throw new GradleException(
+								"Please delete " + oldJarFile.getParent() +
+									" and try again");
+						}
+					}
+
+				});
 
 			baselineTask.setNewJarFile(
 				new Callable<File>() {
@@ -391,8 +412,7 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 	}
 
 	protected Jar addTaskJarSources(Project project, boolean testProject) {
-		final Jar jar = GradleUtil.addTask(
-			project, JAR_SOURCES_TASK_NAME, Jar.class);
+		Jar jar = GradleUtil.addTask(project, JAR_SOURCES_TASK_NAME, Jar.class);
 
 		jar.setClassifier("sources");
 		jar.setGroup(BasePlugin.BUILD_GROUP);
@@ -424,35 +444,6 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 				jar.from(sourceSet.getAllSource());
 			}
 		}
-
-		TaskContainer taskContainer = project.getTasks();
-
-		taskContainer.withType(
-			PatchTask.class,
-			new Action<PatchTask>() {
-
-				@Override
-				public void execute(final PatchTask patchTask) {
-					jar.from(
-						new Callable<File>() {
-
-							@Override
-							public File call() throws Exception {
-								return patchTask.getPatchesDir();
-							}
-
-						},
-						new Closure<Void>(null) {
-
-							@SuppressWarnings("unused")
-							public void doCall(CopySpec copySpec) {
-								copySpec.into("META-INF/patches");
-							}
-
-						});
-				}
-
-			});
 
 		return jar;
 	}
@@ -986,8 +977,9 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 
 					String projectPath = project.getPath();
 
-					if ((gitRepoDir == null) &&
-						!projectPath.startsWith(":core:")) {
+					if (!projectPath.startsWith(":apps:") &&
+						!projectPath.startsWith(":core:") &&
+						!projectPath.startsWith(":ee:")) {
 
 						return true;
 					}
@@ -1202,8 +1194,37 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 			bundleDefaultInstructions);
 	}
 
+	protected void configureBundleExportPackage(
+		Project project, Map<String, String> bundleInstructions) {
+
+		String projectPath = project.getPath();
+
+		if (!projectPath.startsWith(":apps:") &&
+			!projectPath.startsWith(":ee:")) {
+
+			return;
+		}
+
+		String exportPackage = bundleInstructions.get(Constants.EXPORT_PACKAGE);
+
+		if (Validator.isNull(exportPackage)) {
+			return;
+		}
+
+		exportPackage = "!com.liferay.*.kernel.*," + exportPackage;
+
+		bundleInstructions.put(Constants.EXPORT_PACKAGE, exportPackage);
+	}
+
 	protected void configureBundleInstructions(Project project) {
 		Map<String, String> bundleInstructions = getBundleInstructions(project);
+
+		configureBundleExportPackage(project, bundleInstructions);
+		configureBundleLiferayIncludeResource(project, bundleInstructions);
+	}
+
+	protected void configureBundleLiferayIncludeResource(
+		Project project, Map<String, String> bundleInstructions) {
 
 		String includeResource = bundleInstructions.get(
 			_LIFERAY_INCLUDERESOURCE);
@@ -1329,13 +1350,24 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 
 		applyConfigScripts(project);
 
-		Configuration portalConfiguration = GradleUtil.getConfiguration(
-			project, LiferayJavaPlugin.PORTAL_CONFIGURATION_NAME);
-		Configuration portalTestConfiguration = addConfigurationPortalTest(
-			project);
+		if (testProject || hasTests(project)) {
+			GradleUtil.applyPlugin(project, WhipDefaultsPlugin.class);
+			GradleUtil.applyPlugin(project, WhipPlugin.class);
 
-		addDependenciesPortalTest(project);
-		addDependenciesTestCompile(project);
+			Configuration portalConfiguration = GradleUtil.getConfiguration(
+				project, LiferayJavaPlugin.PORTAL_CONFIGURATION_NAME);
+			Configuration portalTestConfiguration = addConfigurationPortalTest(
+				project);
+
+			addDependenciesPortalTest(project);
+			addDependenciesTestCompile(project);
+			configureEclipse(project, portalTestConfiguration);
+			configureIdea(project, portalTestConfiguration);
+			configureSourceSetTest(
+				project, portalConfiguration, portalTestConfiguration);
+			configureSourceSetTestIntegration(
+				project, portalConfiguration, portalTestConfiguration);
+		}
 
 		final Jar jarJavadocTask = addTaskJarJavadoc(project);
 		final Jar jarSourcesTask = addTaskJarSources(project, testProject);
@@ -1373,16 +1405,10 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 
 		configureBasePlugin(project, portalRootDir);
 		configureConfigurations(project);
-		configureEclipse(project, portalTestConfiguration);
-		configureIdea(project, portalTestConfiguration);
 		configureJavaPlugin(project);
 		configureProject(project);
 		configureRepositories(project);
 		configureSourceSetMain(project);
-		configureSourceSetTest(
-			project, portalConfiguration, portalTestConfiguration);
-		configureSourceSetTestIntegration(
-			project, portalConfiguration, portalTestConfiguration);
 		configureTaskJar(project, testProject);
 		configureTaskTest(project);
 		configureTaskTestIntegration(project);
@@ -1440,6 +1466,7 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 					configureArtifacts(
 						project, jarJavadocTask, jarSourcesTask, jarTLDDocTask);
 					configureProjectVersion(project);
+					configureTaskJarSources(jarSourcesTask);
 					configureTaskUpdateFileVersions(
 						updateFileVersionsTask, portalRootDir);
 
@@ -1851,6 +1878,78 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 		}
 
 		jar.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
+	}
+
+	protected void configureTaskJarSources(final Jar jarSourcesTask) {
+		Project project = jarSourcesTask.getProject();
+
+		TaskContainer taskContainer = project.getTasks();
+
+		taskContainer.withType(
+			PatchTask.class,
+			new Action<PatchTask>() {
+
+				@Override
+				public void execute(final PatchTask patchTask) {
+					jarSourcesTask.from(
+						new Callable<FileCollection>() {
+
+							@Override
+							public FileCollection call() throws Exception {
+								Project project = patchTask.getProject();
+
+								return project.zipTree(
+									patchTask.getOriginalLibSrcFile());
+							}
+
+						},
+						new Closure<Void>(null) {
+
+							@SuppressWarnings("unused")
+							public void doCall(CopySpec copySpec) {
+								String originalLibSrcDirName =
+									patchTask.getOriginalLibSrcDirName();
+
+								if (originalLibSrcDirName.equals(".")) {
+									return;
+								}
+
+								Map<Object, Object> leadingPathReplacementsMap =
+									new HashMap<>();
+
+								leadingPathReplacementsMap.put(
+									originalLibSrcDirName, "");
+
+								copySpec.eachFile(
+									new ReplaceLeadingPathAction(
+										leadingPathReplacementsMap));
+
+								copySpec.include(originalLibSrcDirName + "/");
+								copySpec.setIncludeEmptyDirs(false);
+							}
+
+						});
+
+					jarSourcesTask.from(
+						new Callable<File>() {
+
+							@Override
+							public File call() throws Exception {
+								return patchTask.getPatchesDir();
+							}
+
+						},
+						new Closure<Void>(null) {
+
+							@SuppressWarnings("unused")
+							public void doCall(CopySpec copySpec) {
+								copySpec.into("META-INF/patches");
+							}
+
+						});
+				}
+
+			});
 	}
 
 	protected void configureTaskJavaCompile(JavaCompile javaCompile) {
@@ -2384,6 +2483,29 @@ public class LiferayDefaultsPlugin extends BaseDefaultsPlugin<LiferayPlugin> {
 		if ((version != null) &&
 			(version.compareTo(_LOWEST_BASELINE_VERSION) > 0)) {
 
+			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean hasTests(Project project) {
+		SourceSet sourceSet = GradleUtil.getSourceSet(
+			project, SourceSet.TEST_SOURCE_SET_NAME);
+
+		SourceDirectorySet sourceDirectorySet = sourceSet.getAllSource();
+
+		if (!sourceDirectorySet.isEmpty()) {
+			return true;
+		}
+
+		sourceSet = GradleUtil.getSourceSet(
+			project,
+			TestIntegrationBasePlugin.TEST_INTEGRATION_SOURCE_SET_NAME);
+
+		sourceDirectorySet = sourceSet.getAllSource();
+
+		if (!sourceDirectorySet.isEmpty()) {
 			return true;
 		}
 

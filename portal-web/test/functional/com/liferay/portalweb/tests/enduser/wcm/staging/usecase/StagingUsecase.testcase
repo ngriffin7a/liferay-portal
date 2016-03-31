@@ -149,8 +149,6 @@
 			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<execute function="Refresh" />
-
 		<execute macro="Blogs#addEntry">
 			<var name="entryContent" value="Blogs Entry Content" />
 			<var name="entryTitle" value="Blogs Entry Title" />
@@ -364,8 +362,6 @@
 			<var name="sitePagesVariationName" value="Test Site Pages Variation" />
 		</execute>
 
-		<execute function="Refresh" />
-
 		<execute macro="Staging#enablePageInSitePagesVariation">
 			<var name="pageName" value="Test Page Name" />
 			<var name="sitePagesVariationName" value="main-variation" />
@@ -514,7 +510,7 @@
 			<var name="portletOption" value="Look and Feel Configuration" />
 		</execute>
 
-		<execute macro="SitesDirectory#configureCustomTitleViaLookandfeelPG">
+		<execute macro="Portlet#configureCustomTitleViaLookandfeelPG">
 			<var name="portletName" value="${portletName}" />
 		</execute>
 
@@ -1458,8 +1454,6 @@
 			<var name="sitePagesVariationMenulistName" value="Main Variation Edit" />
 			<var name="sitePagesVariationName" value="Christmas Variation" />
 		</execute>
-
-		<execute function="Refresh" />
 
 		<execute macro="Staging#enablePageInSitePagesVariation">
 			<var name="pageName" value="Test Page Name" />
@@ -2506,6 +2500,13 @@
 			<var name="dmDocumentFileList" value="Document_1.jpeg,Document_2.docx,Document_3.mp3,Document_4.txt" />
 		</execute>
 
+		<execute macro="Navigator#gotoSitePage">
+			<var name="pageName" value="Staging Test Page" />
+			<var name="siteName" value="Site Name" />
+		</execute>
+
+		<execute macro="DMPortlet#setDescriptiveView" />
+
 		<for list="Document_1.jpeg,Document_2.docx,Document_3.mp3,Document_4.txt" param="dmDocumentTitle">
 			<execute macro="Navigator#gotoSitePage">
 				<var name="pageName" value="Staging Test Page" />
@@ -3186,7 +3187,7 @@
 
 	<command name="StagingRemoteDMViaGlobalScope" priority="3">
 		<property name="app.server.bundles.size" value="1" />
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 
 		<var name="siteID" value="${siteID}" />
 
@@ -3307,7 +3308,7 @@
 	</command>
 
 	<command name="StagingRemoteDocumentSubtypeViaAP" priority="3">
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 
 		<execute macro="Staging#remoteStagingSetUp">
 			<var name="siteName" value="Site Name" />
@@ -3382,7 +3383,7 @@
 	</command>
 
 	<command name="StagingRemoteLiveWebContent" priority="4">
-		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelingServletAuthVerifier.hosts.allowed=" />
+		<property name="custom.properties" value="tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=" />
 
 		<execute macro="Staging#remoteStagingSetUp">
 			<var name="siteName" value="Site Name" />

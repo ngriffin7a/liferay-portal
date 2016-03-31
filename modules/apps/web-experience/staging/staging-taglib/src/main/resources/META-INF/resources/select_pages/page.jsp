@@ -20,57 +20,59 @@
 
 <aui:fieldset collapsible="<%= true %>" cssClass="options-group" label="pages" markupView="lexicon">
 	<ul class="flex-container layout-selector" id="<portlet:namespace />pages">
-		<li class="layout-selector-options">
-			<aui:fieldset label="pages-options">
-				<c:if test="<%= !disableInputs %>">
-					<c:choose>
-						<c:when test="<%= privateLayout %>">
-							<aui:button id="changeToPublicLayoutsButton" value="change-to-public-pages" />
-						</c:when>
-						<c:otherwise>
-							<aui:button id="changeToPrivateLayoutsButton" value="change-to-private-pages" />
-						</c:otherwise>
-					</c:choose>
-				</c:if>
+		<c:if test="<%= !disableInputs || LayoutStagingUtil.isBranchingLayoutSet(group, privateLayout) %>">
+			<li class="layout-selector-options">
+				<aui:fieldset label="pages-options">
+					<c:if test="<%= !disableInputs %>">
+						<c:choose>
+							<c:when test="<%= privateLayout %>">
+								<aui:button id="changeToPublicLayoutsButton" value="change-to-public-pages" />
+							</c:when>
+							<c:otherwise>
+								<aui:button id="changeToPrivateLayoutsButton" value="change-to-private-pages" />
+							</c:otherwise>
+						</c:choose>
+					</c:if>
 
-				<c:if test="<%= LayoutStagingUtil.isBranchingLayoutSet(group, privateLayout) %>">
-
-					<%
-					List<LayoutSetBranch> layoutSetBranches = null;
-
-					long layoutSetBranchId = MapUtil.getLong(parameterMap, "layoutSetBranchId");
-
-					if (disableInputs && (layoutSetBranchId > 0)) {
-						layoutSetBranches = new ArrayList<>(1);
-
-						layoutSetBranches.add(LayoutSetBranchLocalServiceUtil.getLayoutSetBranch(layoutSetBranchId));
-					}
-					else {
-						layoutSetBranches = LayoutSetBranchLocalServiceUtil.getLayoutSetBranches(group.getGroupId(), privateLayout);
-					}
-					%>
-
-					<aui:select disabled="<%= disableInputs %>" label="site-pages-variation" name="layoutSetBranchId">
+					<c:if test="<%= LayoutStagingUtil.isBranchingLayoutSet(group, privateLayout) %>">
 
 						<%
-						for (LayoutSetBranch layoutSetBranch : layoutSetBranches) {
-							boolean selected = false;
+						List<LayoutSetBranch> layoutSetBranches = null;
 
-							if ((layoutSetBranchId == layoutSetBranch.getLayoutSetBranchId()) || ((layoutSetBranchId == 0) && layoutSetBranch.isMaster())) {
-								selected = true;
-							}
-						%>
+						long layoutSetBranchId = MapUtil.getLong(parameterMap, "layoutSetBranchId");
 
-						<aui:option label="<%= HtmlUtil.escape(layoutSetBranch.getName()) %>" selected="<%= selected %>" value="<%= layoutSetBranch.getLayoutSetBranchId() %>" />
+						if (disableInputs && (layoutSetBranchId > 0)) {
+							layoutSetBranches = new ArrayList<>(1);
 
-						<%
+							layoutSetBranches.add(LayoutSetBranchLocalServiceUtil.getLayoutSetBranch(layoutSetBranchId));
+						}
+						else {
+							layoutSetBranches = LayoutSetBranchLocalServiceUtil.getLayoutSetBranches(group.getGroupId(), privateLayout);
 						}
 						%>
 
-					</aui:select>
-				</c:if>
-			</aui:fieldset>
-		</li>
+						<aui:select disabled="<%= disableInputs %>" label="site-pages-variation" name="layoutSetBranchId">
+
+							<%
+							for (LayoutSetBranch layoutSetBranch : layoutSetBranches) {
+								boolean selected = false;
+
+								if ((layoutSetBranchId == layoutSetBranch.getLayoutSetBranchId()) || ((layoutSetBranchId == 0) && layoutSetBranch.isMaster())) {
+									selected = true;
+								}
+							%>
+
+							<aui:option label="<%= HtmlUtil.escape(layoutSetBranch.getName()) %>" selected="<%= selected %>" value="<%= layoutSetBranch.getLayoutSetBranchId() %>" />
+
+							<%
+							}
+							%>
+
+						</aui:select>
+					</c:if>
+				</aui:fieldset>
+			</li>
+		</c:if>
 
 		<li class="layout-selector-options">
 			<aui:fieldset label="pages-to-export">
@@ -79,21 +81,33 @@
 				long selPlid = ParamUtil.getLong(request, "selPlid", LayoutConstants.DEFAULT_PLID);
 				%>
 
-				<div class="pages-selector">
-					<liferay-layout:layouts-tree
-						defaultStateChecked="<%= true %>"
-						draggableTree="<%= false %>"
-						groupId="<%= groupId %>"
-						incomplete="<%= false %>"
-						portletURL="<%= renderResponse.createRenderURL() %>"
-						privateLayout="<%= privateLayout %>"
-						rootNodeName="<%= group.getLayoutRootNodeName(privateLayout, locale) %>"
-						selectableTree="<%= true %>"
-						selectedLayoutIds="<%= selectedLayoutIds %>"
-						selPlid="<%= selPlid %>"
-						treeId="<%= treeId %>"
-					/>
-				</div>
+				<c:choose>
+					<c:when test="<%= disableInputs %>">
+
+						<%
+						int layoutsCount = LayoutLocalServiceUtil.getLayoutsCount(group, privateLayout);
+						%>
+
+						<liferay-ui:message arguments="<%= new String[] {String.valueOf(selectedLayoutIdsArray.length), String.valueOf(layoutsCount)} %>" key="x-selected-out-of-x" />
+					</c:when>
+					<c:otherwise>
+						<div class="pages-selector">
+							<liferay-layout:layouts-tree
+								defaultStateChecked="<%= true %>"
+								draggableTree="<%= false %>"
+								groupId="<%= groupId %>"
+								incomplete="<%= false %>"
+								portletURL="<%= renderResponse.createRenderURL() %>"
+								privateLayout="<%= privateLayout %>"
+								rootNodeName="<%= group.getLayoutRootNodeName(privateLayout, locale) %>"
+								selectableTree="<%= true %>"
+								selectedLayoutIds="<%= selectedLayoutIds %>"
+								selPlid="<%= selPlid %>"
+								treeId="<%= treeId %>"
+							/>
+						</div>
+					</c:otherwise>
+				</c:choose>
 			</aui:fieldset>
 		</li>
 

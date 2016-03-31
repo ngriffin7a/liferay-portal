@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String displayStyle = ParamUtil.getString(request, "displayStyle", "icon");
+String displayStyle = portalPreferences.getValue(SiteMembershipsPortletKeys.SITE_MEMBERSHIPS_ADMIN, "display-style", "icon");
 String orderByCol = ParamUtil.getString(request, "orderByCol", "name");
 String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
@@ -35,6 +35,12 @@ userGroupSearch.setEmptyResultsMessage("no-user-group-was-found-that-is-a-member
 RowChecker rowChecker = new EmptyOnClickRowChecker(renderResponse);
 
 UserGroupDisplayTerms searchTerms = (UserGroupDisplayTerms)userGroupSearch.getSearchTerms();
+
+boolean hasAssignMembersPermission = GroupPermissionUtil.contains(permissionChecker, siteMembershipsDisplayContext.getGroupId(), ActionKeys.ASSIGN_MEMBERS);
+
+if (!searchTerms.isSearch() && hasAssignMembersPermission) {
+	userGroupSearch.setEmptyResultsMessageCssClass("taglib-empty-result-message-header-has-plus-btn");
+}
 
 LinkedHashMap<String, Object> userGroupParams = new LinkedHashMap<String, Object>();
 
@@ -59,9 +65,13 @@ userGroupSearch.setResults(userGroups);
 	searchContainerId="userGroups"
 >
 	<liferay-frontend:management-bar-buttons>
+		<liferay-portlet:actionURL name="changeDisplayStyle" varImpl="changeDisplayStyleURL">
+			<portlet:param name="redirect" value="<%= currentURL %>" />
+		</liferay-portlet:actionURL>
+
 		<liferay-frontend:management-bar-display-buttons
 			displayViews='<%= new String[] {"icon", "descriptive", "list"} %>'
-			portletURL="<%= PortletURLUtil.clone(viewUserGroupsURL, renderResponse) %>"
+			portletURL="<%= changeDisplayStyleURL %>"
 			selectedDisplayStyle="<%= displayStyle %>"
 		/>
 	</liferay-frontend:management-bar-buttons>
@@ -133,7 +143,7 @@ userGroupSearch.setResults(userGroups);
 	<aui:input name="userGroupId" type="hidden" />
 </aui:form>
 
-<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, siteMembershipsDisplayContext.getGroupId(), ActionKeys.ASSIGN_MEMBERS) %>">
+<c:if test="<%= hasAssignMembersPermission %>">
 	<liferay-frontend:add-menu>
 		<liferay-frontend:add-menu-item id="selectUserGroups" title='<%= LanguageUtil.get(request, "assign-user-groups") %>' url="javascript:;" />
 	</liferay-frontend:add-menu>

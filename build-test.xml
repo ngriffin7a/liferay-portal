@@ -1806,7 +1806,7 @@ tell application "Safari" to quit
 
 							<ant dir="portal-test" target="deploy" inheritAll="false" />
 
-							<ant dir="portal-test-internal" target="deploy" inheritAll="false" />
+							<ant dir="portal-test-integration" target="deploy" inheritAll="false" />
 
 							<ant dir="util-java" target="deploy" inheritAll="false" />
 
@@ -1815,7 +1815,7 @@ tell application "Safari" to quit
 							<ant dir="portal-impl" target="install-portal-snapshot" inheritAll="false" />
 							<ant dir="portal-kernel" target="install-portal-snapshot" inheritAll="false" />
 							<ant dir="portal-test" target="install-portal-snapshot" inheritAll="false" />
-							<ant dir="portal-test-internal" target="install-portal-snapshot" inheritAll="false" />
+							<ant dir="portal-test-integration" target="install-portal-snapshot" inheritAll="false" />
 							<ant dir="util-java" target="install-portal-snapshot" inheritAll="false" />
 
 							<gradle-execute dir="${project.dir}/modules/core" task="deploy">
@@ -2379,6 +2379,8 @@ module.framework.base.dir=${liferay.home}/osgi]]></echo>
 
 			<setup-testable-tomcat-jmx />
 
+			<setup-testable-tomcat-jpda-address />
+
 			<setup-testable-tomcat-manager />
 
 			<setup-testable-tomcat-osgi-modules />
@@ -2414,6 +2416,23 @@ module.framework.base.dir=${liferay.home}/osgi]]></echo>
 							JMX_OPTS="${testable.tomcat.jmx.opts}"
 
 							CATALINA_OPTS="${CATALINA_OPTS} ${JMX_OPTS}"
+						]]>
+					</echo>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="setup-testable-tomcat-jpda-address">
+		<sequential>
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.sh" substring="JPDA_ADDRESS" />
+				</not>
+				<then>
+					<echo file="${app.server.tomcat.dir}/bin/setenv.sh" append="true">
+						<![CDATA[
+							JPDA_ADDRESS="8000"
 						]]>
 					</echo>
 				</then>
@@ -3209,6 +3228,12 @@ create database lportal${database.index} character set utf8;</echo>
 									<then>
 										<property name="sql.file" value="create${database.create.suffix}-mysql.sql" />
 									</then>
+									<elseif>
+										<equals arg1="${database.type}" arg2="sqlserver" />
+										<then>
+											<property name="sql.file" value="create${database.create.suffix}-sql-server.sql" />
+										</then>
+									</elseif>
 									<else>
 										<property name="sql.file" value="create${database.create.suffix}-${database.type}.sql" />
 									</else>
@@ -6571,6 +6596,22 @@ cluster.link.bind.addr["cluster-link-udp"]=127.0.0.1</echo>
 								<arg value="create.sql" />
 								<arg value="-U" />
 								<arg value="${database.username}" />
+							</exec>
+						</then>
+					</elseif>
+					<elseif>
+						<equals arg1="${database.type}" arg2="sqlserver" />
+						<then>
+							<get-database-property property.name="database.password" />
+							<get-database-property property.name="database.username" />
+
+							<exec executable="${sqlserver.executable}" failonerror="true">
+								<arg value="-U" />
+								<arg value="${database.username}" />
+								<arg value="-P" />
+								<arg value="${database.password}" />
+								<arg value="i" />
+								<arg value="create.sql" />
 							</exec>
 						</then>
 					</elseif>
