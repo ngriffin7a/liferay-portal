@@ -920,7 +920,7 @@ public class EntryPersistenceImpl extends BasePersistenceImpl<Entry>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((EntryModelImpl)entry);
+		clearUniqueFindersCache((EntryModelImpl)entry, true);
 	}
 
 	@Override
@@ -932,49 +932,35 @@ public class EntryPersistenceImpl extends BasePersistenceImpl<Entry>
 			entityCache.removeResult(EntryModelImpl.ENTITY_CACHE_ENABLED,
 				EntryImpl.class, entry.getPrimaryKey());
 
-			clearUniqueFindersCache((EntryModelImpl)entry);
+			clearUniqueFindersCache((EntryModelImpl)entry, true);
 		}
 	}
 
-	protected void cacheUniqueFindersCache(EntryModelImpl entryModelImpl,
-		boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					entryModelImpl.getUserId(), entryModelImpl.getEmailAddress()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_U_EA, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_U_EA, args,
-				entryModelImpl);
-		}
-		else {
-			if ((entryModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_U_EA.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						entryModelImpl.getUserId(),
-						entryModelImpl.getEmailAddress()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_U_EA, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_U_EA, args,
-					entryModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(EntryModelImpl entryModelImpl) {
+	protected void cacheUniqueFindersCache(EntryModelImpl entryModelImpl) {
 		Object[] args = new Object[] {
 				entryModelImpl.getUserId(), entryModelImpl.getEmailAddress()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_U_EA, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_U_EA, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_U_EA, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_U_EA, args, entryModelImpl,
+			false);
+	}
+
+	protected void clearUniqueFindersCache(EntryModelImpl entryModelImpl,
+		boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					entryModelImpl.getUserId(), entryModelImpl.getEmailAddress()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_EA, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_U_EA, args);
+		}
 
 		if ((entryModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_U_EA.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					entryModelImpl.getOriginalUserId(),
 					entryModelImpl.getOriginalEmailAddress()
 				};
@@ -1137,8 +1123,20 @@ public class EntryPersistenceImpl extends BasePersistenceImpl<Entry>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !EntryModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!EntryModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { entryModelImpl.getUserId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_USERID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1161,8 +1159,8 @@ public class EntryPersistenceImpl extends BasePersistenceImpl<Entry>
 		entityCache.putResult(EntryModelImpl.ENTITY_CACHE_ENABLED,
 			EntryImpl.class, entry.getPrimaryKey(), entry, false);
 
-		clearUniqueFindersCache(entryModelImpl);
-		cacheUniqueFindersCache(entryModelImpl, isNew);
+		clearUniqueFindersCache(entryModelImpl, false);
+		cacheUniqueFindersCache(entryModelImpl);
 
 		entry.resetOriginalValues();
 
@@ -1340,7 +1338,7 @@ public class EntryPersistenceImpl extends BasePersistenceImpl<Entry>
 		query.append(_SQL_SELECT_ENTRY_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

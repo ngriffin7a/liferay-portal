@@ -14,20 +14,23 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Peter Yoo
  */
 public class ModulesIntegrationBatchBuild extends BatchBuild {
 
-	public ModulesIntegrationBatchBuild(String url) throws Exception {
+	public ModulesIntegrationBatchBuild(String url) {
 		super(url);
 	}
 
-	public ModulesIntegrationBatchBuild(String url, TopLevelBuild topLevelBuild)
-		throws Exception {
+	public ModulesIntegrationBatchBuild(
+		String url, TopLevelBuild topLevelBuild) {
 
 		super(url, topLevelBuild);
 	}
@@ -43,11 +46,16 @@ public class ModulesIntegrationBatchBuild extends BatchBuild {
 	public void update() {
 		super.update();
 
-		if (badBuildNumbers.size() > 0) {
+		if (_notificationsComplete) {
 			return;
 		}
 
-		Build arquillianErrorAxisBuild = null;
+		if (verifiedAxisBuilds == null) {
+			verifiedAxisBuilds = new ArrayList<>();
+		}
+
+		Build reinvokeErrorAxisBuild = null;
+		String reinvokeErrorMarker = null;
 
 		for (Build axisBuild : getDownstreamBuilds("completed")) {
 			if (verifiedAxisBuilds.contains(axisBuild)) {
@@ -64,33 +72,102 @@ public class ModulesIntegrationBatchBuild extends BatchBuild {
 
 			String axisBuildConsoleText = axisBuild.getConsoleText();
 
-			if (axisBuildConsoleText.contains(_ARQUILLIAN_ERROR_MARKER)) {
-				arquillianErrorAxisBuild = axisBuild;
+			for (int i = 1; hasReinvokeErrorMarker(i); i++) {
+				if (axisBuildConsoleText.contains(getReinvokeErrorMarker(i))) {
+					reinvokeErrorAxisBuild = axisBuild;
+					reinvokeErrorMarker = getReinvokeErrorMarker(i);
 
-				break;
+					break;
+				}
 			}
 
-			verifiedAxisBuilds.add(axisBuild);
+			if (reinvokeErrorAxisBuild == null) {
+				verifiedAxisBuilds.add(axisBuild);
+			}
 		}
 
-		if (arquillianErrorAxisBuild != null) {
-			StringBuilder sb = new StringBuilder();
+		if (reinvokeErrorAxisBuild != null) {
+			String body;
+			String subject = "Arquillian broken connection failure";
 
-			sb.append("Arquillian broken connection failure ");
-			sb.append("detected at ");
-			sb.append(arquillianErrorAxisBuild.getBuildURL());
-			sb.append(". This batch will be reinvoked.");
+			if (badBuildNumbers.size() == 0) {
+				body = JenkinsResultsParserUtil.combine(
+					"Arquillian broken connection failure detected at ",
+					reinvokeErrorAxisBuild.getBuildURL(),
+					". This batch will be reinvoked.\n\nError marker:\n",
+					reinvokeErrorMarker);
 
-			System.out.println(sb);
+				System.out.println(body);
 
-			reinvoke();
+				reinvoke();
+			}
+			else {
+				subject = "Second " + subject;
+
+				List<String> badBuildURLs = getBadBuildURLs();
+
+				body = JenkinsResultsParserUtil.combine(
+					"Second Arquillian broken connection failure detected at ",
+					reinvokeErrorAxisBuild.getBuildURL(),
+					". Previous failure was at ", badBuildURLs.get(0),
+					"\n\nError marker:\n", reinvokeErrorMarker);
+
+				System.out.println(body);
+
+				_notificationsComplete = true;
+			}
+
+			/*try {
+				JenkinsResultsParserUtil.sendEmail(
+					body,
+					"root@" + JenkinsResultsParserUtil.getHostName("UNKNOWN"),
+					subject, "peter.yoo@liferay.com, shuyang.zhou@liferay.com");
+			}
+			catch (Exception e) {
+				System.out.println(
+					"Unable to send email notification: " + e.getMessage());
+			}*/
 		}
 	}
 
-	protected List<Build> verifiedAxisBuilds = new ArrayList<>();
+	protected String getReinvokedErrorMarkerPropertyName(int index) {
+		return _REINVOKE_ERROR_MARKER_TEMPLATE.replace(
+			"?", Integer.toString(index));
+	}
 
-	private static final String _ARQUILLIAN_ERROR_MARKER =
-		"org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.invoke(" +
-			"JMXMethodExecutor.java";
+	protected String getReinvokeErrorMarker(int index) {
+		if (buildProperties == null) {
+			loadBuildProperties();
+		}
+
+		return buildProperties.getProperty(
+			getReinvokedErrorMarkerPropertyName(index));
+	}
+
+	protected boolean hasReinvokeErrorMarker(int index) {
+		if (buildProperties == null) {
+			loadBuildProperties();
+		}
+
+		return buildProperties.containsKey(
+			getReinvokedErrorMarkerPropertyName(index));
+	}
+
+	protected void loadBuildProperties() {
+		try {
+			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException("Unable to get build.properties.", ioe);
+		}
+	}
+
+	protected Properties buildProperties;
+	protected List<Build> verifiedAxisBuilds;
+
+	private static final String _REINVOKE_ERROR_MARKER_TEMPLATE =
+		"reinvoke.error.marker[modules-integration-?]";
+
+	private boolean _notificationsComplete;
 
 }

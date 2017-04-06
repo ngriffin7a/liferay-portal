@@ -20,7 +20,7 @@
 PortletURL configurationRenderURL = (PortletURL)request.getAttribute("configuration.jsp-configurationRenderURL");
 String eventName = "_" + HtmlUtil.escapeJS(assetPublisherDisplayContext.getPortletResource()) + "_selectAsset";
 
-List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(renderRequest, portletPreferences, permissionChecker, assetPublisherDisplayContext.getGroupIds(), true, assetPublisherDisplayContext.isEnablePermissions(), true);
+List<AssetEntry> assetEntries = AssetPublisherUtil.getAssetEntries(renderRequest, portletPreferences, permissionChecker, assetPublisherDisplayContext.getGroupIds(), true, assetPublisherDisplayContext.isEnablePermissions(), true, AssetRendererFactory.TYPE_LATEST);
 %>
 
 <liferay-ui:search-container
@@ -121,6 +121,12 @@ for (long groupId : groupIds) {
 
 					if (assetBrowserURL == null) {
 						continue;
+					}
+
+					String portletId = curRendererFactory.getPortletId();
+
+					if (group.isStagingGroup() && !group.isStagedPortlet(portletId)) {
+						groupId = group.getLiveGroupId();
 					}
 
 					assetBrowserURL.setParameter("groupId", String.valueOf(groupId));
@@ -250,7 +256,7 @@ for (long groupId : groupIds) {
 					uri: currentTarget.data('href')
 				},
 				function(event) {
-					selectAsset(event.assetentryid, event.assetclassname, event.assettype, event.assettitle, event.groupdescriptivename);
+					selectAsset(event.entityid, event.assetclassname, event.assettype, event.assettitle, event.groupdescriptivename);
 				}
 			);
 		}

@@ -31,7 +31,7 @@
 			delta="<%= GetterUtil.getInteger(blogsGroupServiceOverriddenConfiguration.rssDelta()) %>"
 			displayStyle="<%= blogsGroupServiceOverriddenConfiguration.rssDisplayStyle() %>"
 			feedType="<%= blogsGroupServiceOverriddenConfiguration.rssFeedType() %>"
-			url='<%= themeDisplay.getPathMain() + "/blogs/rss" %>'
+			url='<%= themeDisplay.getPathMain() + "/blogs/rss?p_l_id=" + plid + "&groupId=" + themeDisplay.getScopeGroupId() %>'
 		/>
 	</c:if>
 
@@ -78,6 +78,10 @@ Map<String, Object> contextObjects = new HashMap<String, Object>();
 contextObjects.put("blogsPortletInstanceConfiguration", blogsPortletInstanceConfiguration);
 contextObjects.put("blogsPortletInstanceSettingsHelper", blogsPortletInstanceSettingsHelper);
 %>
+
+<c:if test="<%= results.isEmpty() %>">
+	<liferay-ui:empty-result-message message="no-entries-were-found" />
+</c:if>
 
 <liferay-ddm:template-renderer className="<%= BlogsEntry.class.getName() %>" contextObjects="<%= contextObjects %>" displayStyle="<%= blogsPortletInstanceConfiguration.displayStyle() %>" displayStyleGroupId="<%= blogsPortletInstanceSettingsHelper.getDisplayStyleGroupId() %>" entries="<%= _convertToBlogEntries(results) %>">
 

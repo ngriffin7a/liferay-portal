@@ -54,9 +54,6 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 		defaultIgnoredParameters = new LinkedHashSet<>();
 
 		defaultIgnoredParameters.add("p_p_id");
-		defaultIgnoredParameters.add("p_p_col_id");
-		defaultIgnoredParameters.add("p_p_col_pos");
-		defaultIgnoredParameters.add("p_p_col_count");
 
 		defaultReservedParameters = new LinkedHashMap<>();
 
@@ -219,19 +216,13 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 
 		// Hide reserved parameters removed by the router or set to the defaults
 
-		Map<String, String> reservedParameters =
-			liferayPortletURL.getReservedParameterMap();
-
-		for (Map.Entry<String, String> entry : reservedParameters.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-
+		liferayPortletURL.visitReservedParameters((key, value) -> {
 			if (!routeParameters.containsKey(key) ||
 				value.equals(defaultReservedParameters.get(key))) {
 
 				liferayPortletURL.addParameterIncludedInPath(key);
 			}
-		}
+		});
 	}
 
 	/**
@@ -289,19 +280,19 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 
 		// Copy reserved parameters
 
-		routeParameters.putAll(liferayPortletURL.getReservedParameterMap());
+		liferayPortletURL.visitReservedParameters(routeParameters::put);
 	}
 
 	/**
 	 * Returns the portlet ID, including the instance ID if applicable, from the
 	 * parameter map.
 	 *
+	 * @param      routeParameters the parameter map. For an instanceable
+	 *             portlet, this must contain either <code>p_p_id</code> or
+	 *             <code>instanceId</code>.
+	 * @return     the portlet ID, including the instance ID if applicable, or
+	 *             <code>null</code> if it cannot be determined
 	 * @deprecated As of 7.0.0, replaced by {@link #getPortletInstanceKey(Map)}
-	 * @param  routeParameters the parameter map. For an instanceable portlet,
-	 *         this must contain either <code>p_p_id</code> or
-	 *         <code>instanceId</code>.
-	 * @return the portlet ID, including the instance ID if applicable, or
-	 *         <code>null</code> if it cannot be determined
 	 */
 	@Deprecated
 	protected String getPortletId(Map<String, String> routeParameters) {

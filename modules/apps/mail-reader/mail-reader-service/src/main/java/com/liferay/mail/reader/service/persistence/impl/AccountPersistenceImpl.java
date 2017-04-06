@@ -924,7 +924,7 @@ public class AccountPersistenceImpl extends BasePersistenceImpl<Account>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((AccountModelImpl)account);
+		clearUniqueFindersCache((AccountModelImpl)account, true);
 	}
 
 	@Override
@@ -936,49 +936,35 @@ public class AccountPersistenceImpl extends BasePersistenceImpl<Account>
 			entityCache.removeResult(AccountModelImpl.ENTITY_CACHE_ENABLED,
 				AccountImpl.class, account.getPrimaryKey());
 
-			clearUniqueFindersCache((AccountModelImpl)account);
+			clearUniqueFindersCache((AccountModelImpl)account, true);
 		}
 	}
 
-	protected void cacheUniqueFindersCache(AccountModelImpl accountModelImpl,
-		boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					accountModelImpl.getUserId(), accountModelImpl.getAddress()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_U_A, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_U_A, args,
-				accountModelImpl);
-		}
-		else {
-			if ((accountModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_U_A.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						accountModelImpl.getUserId(),
-						accountModelImpl.getAddress()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_U_A, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_U_A, args,
-					accountModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(AccountModelImpl accountModelImpl) {
+	protected void cacheUniqueFindersCache(AccountModelImpl accountModelImpl) {
 		Object[] args = new Object[] {
 				accountModelImpl.getUserId(), accountModelImpl.getAddress()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_U_A, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_U_A, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_U_A, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_U_A, args, accountModelImpl,
+			false);
+	}
+
+	protected void clearUniqueFindersCache(AccountModelImpl accountModelImpl,
+		boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					accountModelImpl.getUserId(), accountModelImpl.getAddress()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_A, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_U_A, args);
+		}
 
 		if ((accountModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_U_A.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					accountModelImpl.getOriginalUserId(),
 					accountModelImpl.getOriginalAddress()
 				};
@@ -1142,8 +1128,20 @@ public class AccountPersistenceImpl extends BasePersistenceImpl<Account>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !AccountModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!AccountModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { accountModelImpl.getUserId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_USERID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1168,8 +1166,8 @@ public class AccountPersistenceImpl extends BasePersistenceImpl<Account>
 		entityCache.putResult(AccountModelImpl.ENTITY_CACHE_ENABLED,
 			AccountImpl.class, account.getPrimaryKey(), account, false);
 
-		clearUniqueFindersCache(accountModelImpl);
-		cacheUniqueFindersCache(accountModelImpl, isNew);
+		clearUniqueFindersCache(accountModelImpl, false);
+		cacheUniqueFindersCache(accountModelImpl);
 
 		account.resetOriginalValues();
 
@@ -1364,7 +1362,7 @@ public class AccountPersistenceImpl extends BasePersistenceImpl<Account>
 		query.append(_SQL_SELECT_ACCOUNT_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

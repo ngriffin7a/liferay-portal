@@ -33,7 +33,7 @@ import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -84,7 +84,42 @@ import org.osgi.service.component.annotations.Reference;
 public class ArticlePortlet extends BaseKBPortlet {
 
 	@Override
-	public void render(
+	protected void addSuccessMessage(
+		ActionRequest actionRequest, ActionResponse actionResponse) {
+
+		String actionName = ParamUtil.getString(
+			actionRequest, ActionRequest.ACTION_NAME);
+
+		if (actionName.equals("deleteKBArticle")) {
+			return;
+		}
+
+		super.addSuccessMessage(actionRequest, actionResponse);
+	}
+
+	@Override
+	protected void doDispatch(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		if (SessionErrors.contains(
+				renderRequest, NoSuchArticleException.class.getName()) ||
+			SessionErrors.contains(
+				renderRequest, NoSuchCommentException.class.getName()) ||
+			SessionErrors.contains(
+				renderRequest, NoSuchSubscriptionException.class.getName()) ||
+			SessionErrors.contains(
+				renderRequest, PrincipalException.getNestedClasses())) {
+
+			include(templatePath + "error.jsp", renderRequest, renderResponse);
+		}
+		else {
+			super.doDispatch(renderRequest, renderResponse);
+		}
+	}
+
+	@Override
+	protected void doRender(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
@@ -123,43 +158,6 @@ public class ArticlePortlet extends BaseKBPortlet {
 			else {
 				throw new PortletException(e);
 			}
-		}
-
-		super.render(renderRequest, renderResponse);
-	}
-
-	@Override
-	protected void addSuccessMessage(
-		ActionRequest actionRequest, ActionResponse actionResponse) {
-
-		String actionName = ParamUtil.getString(
-			actionRequest, ActionRequest.ACTION_NAME);
-
-		if (actionName.equals("deleteKBArticle")) {
-			return;
-		}
-
-		super.addSuccessMessage(actionRequest, actionResponse);
-	}
-
-	@Override
-	protected void doDispatch(
-			RenderRequest renderRequest, RenderResponse renderResponse)
-		throws IOException, PortletException {
-
-		if (SessionErrors.contains(
-				renderRequest, NoSuchArticleException.class.getName()) ||
-			SessionErrors.contains(
-				renderRequest, NoSuchCommentException.class.getName()) ||
-			SessionErrors.contains(
-				renderRequest, NoSuchSubscriptionException.class.getName()) ||
-			SessionErrors.contains(
-				renderRequest, PrincipalException.getNestedClasses())) {
-
-			include(templatePath + "error.jsp", renderRequest, renderResponse);
-		}
-		else {
-			super.doDispatch(renderRequest, renderResponse);
 		}
 	}
 
@@ -226,12 +224,12 @@ public class ArticlePortlet extends BaseKBPortlet {
 
 		if (Validator.isNull(kbFolderUrlTitle)) {
 			kbArticle = _kbArticleLocalService.fetchKBArticleByUrlTitle(
-				PortalUtil.getScopeGroupId(renderRequest),
+				_portal.getScopeGroupId(renderRequest),
 				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID, urlTitle);
 		}
 		else {
 			kbArticle = _kbArticleLocalService.fetchKBArticleByUrlTitle(
-				PortalUtil.getScopeGroupId(renderRequest), kbFolderUrlTitle,
+				_portal.getScopeGroupId(renderRequest), kbFolderUrlTitle,
 				urlTitle);
 		}
 
@@ -257,5 +255,8 @@ public class ArticlePortlet extends BaseKBPortlet {
 	}
 
 	private KBArticleLocalService _kbArticleLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }

@@ -33,12 +33,18 @@ import org.osgi.service.component.annotations.Reference;
 public class SiteAdminUserDemoDataCreatorImpl
 	extends BaseUserDemoDataCreator implements SiteAdminUserDemoDataCreator {
 
+	@Override
+	public User create(long groupId) throws PortalException {
+		return create(groupId, null);
+	}
+
+	@Override
 	public User create(long groupId, String emailAddress)
 		throws PortalException {
 
 		Group group = _groupLocalService.getGroup(groupId);
 
-		User user = createBaseUser(group.getCompanyId(), emailAddress);
+		User user = createUser(group.getCompanyId(), emailAddress);
 
 		userLocalService.setGroupUsers(groupId, new long[] {user.getUserId()});
 

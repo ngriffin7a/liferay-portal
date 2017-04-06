@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
@@ -56,8 +57,14 @@ public class InstallCacheTask extends DefaultTask {
 		_cacheRootDir = new File(
 			gradle.getGradleUserHomeDir(), "caches/modules-2/files-2.1");
 
-		_mavenRootDir = new File(
-			System.getProperty("user.home"), ".m2/repository");
+		_mavenRootDir = new Callable<File>() {
+
+			@Override
+			public File call() throws Exception {
+				return GradleUtil.getMavenLocalDir(getProject());
+			}
+
+		};
 	}
 
 	@Input
@@ -105,8 +112,8 @@ public class InstallCacheTask extends DefaultTask {
 
 	@TaskAction
 	public void installCache() throws IOException {
-		installCache("jar");
-		installCache("pom");
+		_installCache("jar");
+		_installCache("pom");
 	}
 
 	public void setArtifactGroup(Object artifactGroup) {
@@ -129,7 +136,7 @@ public class InstallCacheTask extends DefaultTask {
 		_mavenRootDir = mavenRootDir;
 	}
 
-	protected void copy(final File file, final File destinationDir) {
+	private void _copy(final File file, final File destinationDir) {
 		Project project = getProject();
 
 		project.copy(
@@ -144,7 +151,7 @@ public class InstallCacheTask extends DefaultTask {
 			});
 	}
 
-	protected void installCache(String extension) throws IOException {
+	private void _installCache(String extension) throws IOException {
 		File file = new File(
 			getMavenInputDir(),
 			getArtifactName() + "-" + getArtifactVersion() + "." + extension);
@@ -154,7 +161,7 @@ public class InstallCacheTask extends DefaultTask {
 		}
 
 		if (extension.equals("pom")) {
-			file = normalizeTextFile(file);
+			file = _normalizeTextFile(file);
 		}
 
 		HashValue hashValue = HashUtil.sha1(file);
@@ -163,15 +170,15 @@ public class InstallCacheTask extends DefaultTask {
 
 		hash = hash.replaceFirst("^0*", "");
 
-		copy(file, new File(getCacheDestinationDir(), hash));
+		_copy(file, new File(getCacheDestinationDir(), hash));
 	}
 
-	protected File normalizeTextFile(File file) throws IOException {
+	private File _normalizeTextFile(File file) throws IOException {
 		Project project = getProject();
 
 		final File tempFile = new File(getTemporaryDir(), file.getName());
 
-		copy(file, tempFile.getParentFile());
+		_copy(file, tempFile.getParentFile());
 
 		CharsetToolkit charsetToolkit = new CharsetToolkit(tempFile);
 

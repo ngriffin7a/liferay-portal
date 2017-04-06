@@ -16,14 +16,18 @@ package com.liferay.gradle.plugins.defaults.internal;
 
 import com.liferay.gradle.plugins.BaseDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
-import com.liferay.gradle.plugins.node.NodeExtension;
 import com.liferay.gradle.plugins.node.NodePlugin;
 import com.liferay.gradle.plugins.node.tasks.NpmShrinkwrapTask;
+import com.liferay.gradle.plugins.node.tasks.PublishNodeModuleTask;
 
 import java.util.Collections;
 
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.tasks.Delete;
+import org.gradle.api.tasks.TaskContainer;
 
 /**
  * @author Andrea Di Giorgi
@@ -34,8 +38,9 @@ public class NodeDefaultsPlugin extends BaseDefaultsPlugin<NodePlugin> {
 
 	@Override
 	protected void configureDefaults(Project project, NodePlugin nodePlugin) {
-		_configureNode(project);
+		_configureTaskClean(project);
 		_configureTaskNpmShrinkwrap(project);
+		_configureTasksPublishNodeModule(project);
 	}
 
 	@Override
@@ -46,11 +51,15 @@ public class NodeDefaultsPlugin extends BaseDefaultsPlugin<NodePlugin> {
 	private NodeDefaultsPlugin() {
 	}
 
-	private void _configureNode(Project project) {
-		NodeExtension nodeExtension = GradleUtil.getExtension(
-			project, NodeExtension.class);
+	private void _configureTaskClean(Project project) {
+		boolean cleanNodeModules = Boolean.getBoolean("clean.node.modules");
 
-		nodeExtension.setNodeVersion(_NODE_VERSION);
+		if (cleanNodeModules) {
+			Delete delete = (Delete)GradleUtil.getTask(
+				project, BasePlugin.CLEAN_TASK_NAME);
+
+			delete.delete("node_modules");
+		}
 	}
 
 	private void _configureTaskNpmShrinkwrap(Project project) {
@@ -62,7 +71,23 @@ public class NodeDefaultsPlugin extends BaseDefaultsPlugin<NodePlugin> {
 			_NPM_SHRINKWRAP_EXCLUDED_DEPENDENCIES);
 	}
 
-	private static final String _NODE_VERSION = "6.6.0";
+	private void _configureTasksPublishNodeModule(Project project) {
+		TaskContainer taskContainer = project.getTasks();
+
+		taskContainer.withType(
+			PublishNodeModuleTask.class,
+			new Action<PublishNodeModuleTask>() {
+
+				@Override
+				public void execute(
+					PublishNodeModuleTask publishNodeModuleTask) {
+
+					publishNodeModuleTask.doFirst(
+						MavenDefaultsPlugin.failReleaseOnWrongBranchAction);
+				}
+
+			});
+	}
 
 	private static final Iterable<String>
 		_NPM_SHRINKWRAP_EXCLUDED_DEPENDENCIES = Collections.singleton(

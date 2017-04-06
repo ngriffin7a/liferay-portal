@@ -20,6 +20,7 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.HashMap;
@@ -41,11 +42,16 @@ import org.osgi.service.component.annotations.Component;
 public class KeyValueDDMFormFieldTemplateContextContributor
 	implements DDMFormFieldTemplateContextContributor {
 
+	@Override
 	public Map<String, Object> getParameters(
 		DDMFormField ddmFormField,
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
 		Map<String, Object> parameters = new HashMap<>();
+
+		parameters.put(
+			"autoFocus",
+			GetterUtil.getBoolean(ddmFormField.getProperty("autoFocus")));
 
 		LocalizedValue placeholder = (LocalizedValue)ddmFormField.getProperty(
 			"placeholder");
@@ -56,8 +62,8 @@ public class KeyValueDDMFormFieldTemplateContextContributor
 
 		Map<String, String> stringsMap = new HashMap<>();
 
-		stringsMap.put("done", LanguageUtil.get(locale, "done"));
 		stringsMap.put("cancel", LanguageUtil.get(locale, "cancel"));
+		stringsMap.put("done", LanguageUtil.get(locale, "done"));
 		stringsMap.put("keyLabel", LanguageUtil.get(locale, "field-name"));
 
 		parameters.put("strings", stringsMap);

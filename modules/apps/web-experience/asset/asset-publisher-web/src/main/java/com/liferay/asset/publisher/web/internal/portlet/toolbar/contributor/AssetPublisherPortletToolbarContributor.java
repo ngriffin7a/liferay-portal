@@ -17,31 +17,31 @@ package com.liferay.asset.publisher.web.internal.portlet.toolbar.contributor;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
+import com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.web.display.context.AssetPublisherDisplayContext;
+import com.liferay.asset.publisher.web.util.AssetPublisherCustomizer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.toolbar.contributor.BasePortletToolbarContributor;
 import com.liferay.portal.kernel.portlet.toolbar.contributor.PortletToolbarContributor;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.servlet.taglib.ui.Menu;
 import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.asset.util.AssetUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -71,25 +71,7 @@ import org.osgi.service.component.annotations.Reference;
 	}
 )
 public class AssetPublisherPortletToolbarContributor
-	implements PortletToolbarContributor {
-
-	@Override
-	public List<Menu> getPortletTitleMenus(
-		PortletRequest portletRequest, PortletResponse portletResponse) {
-
-		Menu addEntryPortletTitleMenu = getAddEntryPortletTitleMenu(
-			portletRequest, portletResponse);
-
-		if (addEntryPortletTitleMenu == null) {
-			return Collections.emptyList();
-		}
-
-		List<Menu> menus = new ArrayList<>();
-
-		menus.add(addEntryPortletTitleMenu);
-
-		return menus;
-	}
+	extends BasePortletToolbarContributor {
 
 	protected void addPortletTitleAddAssetEntryMenuItems(
 			List<MenuItem> menuItems, PortletRequest portletRequest,
@@ -99,20 +81,22 @@ public class AssetPublisherPortletToolbarContributor
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Group scopeGroup = themeDisplay.getScopeGroup();
+		Layout layout = themeDisplay.getLayout();
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		String portletName = portletDisplay.getPortletName();
 
+		AssetPublisherCustomizer assetPublisherCustomizer =
+			(AssetPublisherCustomizer)portletRequest.getAttribute(
+				AssetPublisherWebKeys.ASSET_PUBLISHER_CUSTOMIZER);
+
 		AssetPublisherDisplayContext assetPublisherDisplayContext =
 			new AssetPublisherDisplayContext(
-				portletRequest, portletResponse,
+				assetPublisherCustomizer, portletRequest, portletResponse,
 				portletRequest.getPreferences());
 
 		if (!assetPublisherDisplayContext.isShowAddContentButton() ||
-			(scopeGroup == null) || scopeGroup.isLayoutPrototype() ||
-			(scopeGroup.hasStagingGroup() && !scopeGroup.isStagingGroup() &&
-			 PropsValues.STAGING_LIVE_GROUP_LOCKING_ENABLED) ||
+			layout.isLayoutPrototypeLinkActive() ||
 			portletName.equals(
 				AssetPublisherPortletKeys.HIGHEST_RATED_ASSETS) ||
 			portletName.equals(AssetPublisherPortletKeys.MOST_VIEWED_ASSETS) ||
@@ -176,7 +160,7 @@ public class AssetPublisherPortletToolbarContributor
 		urlMenuItem.setLabel(title);
 
 		LiferayPortletResponse liferayPortletResponse =
-			PortalUtil.getLiferayPortletResponse(portletResponse);
+			_portal.getLiferayPortletResponse(portletResponse);
 
 		PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
@@ -191,36 +175,7 @@ public class AssetPublisherPortletToolbarContributor
 		menuItems.add(urlMenuItem);
 	}
 
-	protected Menu getAddEntryPortletTitleMenu(
-		PortletRequest portletRequest, PortletResponse portletResponse) {
-
-		List<MenuItem> portletTitleMenuItems = getPortletTitleMenuItems(
-			portletRequest, portletResponse);
-
-		if (ListUtil.isEmpty(portletTitleMenuItems)) {
-			return null;
-		}
-
-		Menu menu = new Menu();
-
-		Map<String, Object> data = new HashMap<>();
-
-		data.put("qa-id", "addButton");
-
-		menu.setData(data);
-
-		menu.setDirection("right");
-		menu.setExtended(false);
-		menu.setIcon("plus");
-		menu.setMarkupView("lexicon");
-		menu.setMenuItems(portletTitleMenuItems);
-		menu.setScroll(false);
-		menu.setShowArrow(false);
-		menu.setShowWhenSingleIcon(true);
-
-		return menu;
-	}
-
+	@Override
 	protected List<MenuItem> getPortletTitleMenuItems(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
@@ -302,5 +257,8 @@ public class AssetPublisherPortletToolbarContributor
 		AssetPublisherPortletToolbarContributor.class);
 
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }

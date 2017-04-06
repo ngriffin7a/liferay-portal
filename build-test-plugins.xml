@@ -16,7 +16,7 @@
 				<then>
 					<pathconvert pathsep="," property="plugin.war" setonempty="false">
 						<path>
-							<fileset dir="plugins" includes="@{plugin}*.war" />
+							<fileset dir="plugins/marketplace" includes="@{plugin}*.war" />
 						</path>
 					</pathconvert>
 
@@ -75,21 +75,46 @@
 	<target name="deploy-extra-apps">
 		<for list="${plugins.includes}" param="plugin">
 			<sequential>
-				<pathconvert pathsep="," property="extraapps.zip" setonempty="false">
-					<path>
-						<fileset
-							dir="extraapps"
-							includes="@{plugin}*"
+				<if>
+					<available file="extraapps" />
+					<then>
+						<pathconvert pathsep="," property="extraapps.zip" setonempty="false">
+							<path>
+								<fileset
+									dir="extraapps"
+									includes="@{plugin}*"
+								/>
+							</path>
+						</pathconvert>
+					</then>
+				</if>
+
+				<if>
+					<isset property="extraapps.zip" />
+					<then>
+						<get-auto-deploy-dir />
+
+						<unzip
+							dest="${auto.deploy.dir}"
+							src="${extraapps.zip}"
 						/>
-					</path>
-				</pathconvert>
+					</then>
+					<elseif>
+						<and>
+							<available file="plugins/marketplace" />
+							<isset property="marketplace.app[@{plugin}]" />
+						</and>
+						<then>
+							<local name="marketplace.app" />
 
-				<get-auto-deploy-dir />
+							<propertycopy from="marketplace.app[@{plugin}]" name="marketplace.app" />
 
-				<unzip
-					dest="${auto.deploy.dir}"
-					src="${extraapps.zip}"
-				/>
+							<get-auto-deploy-dir />
+
+							<copy file="plugins/marketplace/${marketplace.app}" todir="${auto.deploy.dir}" />
+						</then>
+					</elseif>
+				</if>
 			</sequential>
 		</for>
 	</target>
@@ -230,6 +255,8 @@ app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.42</echo>
 							</then>
 						</if>
 
+						<get-testcase-property property.name="direct.deploy.enabled" />
+
 						<if>
 							<isset property="plugin.war" />
 							<then>
@@ -249,6 +276,12 @@ app.server.tomcat.dir=${app.server.parent.dir}/tomcat-7.0.42</echo>
 								<contains string="${plugin.path}" substring="${project.dir}/modules/" />
 								<then>
 									<gradle-execute dir="${plugin.path}" task="deploy" />
+								</then>
+							</elseif>
+							<elseif>
+								<isset property="direct.deploy.enabled" />
+								<then>
+									<ant dir="${plugin.path}" inheritAll="false" target="direct-deploy" />
 								</then>
 							</elseif>
 							<else>

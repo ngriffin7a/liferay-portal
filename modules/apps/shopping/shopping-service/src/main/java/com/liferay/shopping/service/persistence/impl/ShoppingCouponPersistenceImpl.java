@@ -900,7 +900,7 @@ public class ShoppingCouponPersistenceImpl extends BasePersistenceImpl<ShoppingC
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((ShoppingCouponModelImpl)shoppingCoupon);
+		clearUniqueFindersCache((ShoppingCouponModelImpl)shoppingCoupon, true);
 	}
 
 	@Override
@@ -912,43 +912,35 @@ public class ShoppingCouponPersistenceImpl extends BasePersistenceImpl<ShoppingC
 			entityCache.removeResult(ShoppingCouponModelImpl.ENTITY_CACHE_ENABLED,
 				ShoppingCouponImpl.class, shoppingCoupon.getPrimaryKey());
 
-			clearUniqueFindersCache((ShoppingCouponModelImpl)shoppingCoupon);
+			clearUniqueFindersCache((ShoppingCouponModelImpl)shoppingCoupon,
+				true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		ShoppingCouponModelImpl shoppingCouponModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] { shoppingCouponModelImpl.getCode() };
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_CODE, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_CODE, args,
-				shoppingCouponModelImpl);
-		}
-		else {
-			if ((shoppingCouponModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_CODE.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] { shoppingCouponModelImpl.getCode() };
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_CODE, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_CODE, args,
-					shoppingCouponModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		ShoppingCouponModelImpl shoppingCouponModelImpl) {
 		Object[] args = new Object[] { shoppingCouponModelImpl.getCode() };
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_CODE, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_CODE, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_CODE, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_CODE, args,
+			shoppingCouponModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		ShoppingCouponModelImpl shoppingCouponModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] { shoppingCouponModelImpl.getCode() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_CODE, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_CODE, args);
+		}
 
 		if ((shoppingCouponModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_CODE.getColumnBitmask()) != 0) {
-			args = new Object[] { shoppingCouponModelImpl.getOriginalCode() };
+			Object[] args = new Object[] {
+					shoppingCouponModelImpl.getOriginalCode()
+				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_CODE, args);
 			finderCache.removeResult(FINDER_PATH_FETCH_BY_CODE, args);
@@ -1111,8 +1103,20 @@ public class ShoppingCouponPersistenceImpl extends BasePersistenceImpl<ShoppingC
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !ShoppingCouponModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!ShoppingCouponModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { shoppingCouponModelImpl.getGroupId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1138,8 +1142,8 @@ public class ShoppingCouponPersistenceImpl extends BasePersistenceImpl<ShoppingC
 			ShoppingCouponImpl.class, shoppingCoupon.getPrimaryKey(),
 			shoppingCoupon, false);
 
-		clearUniqueFindersCache(shoppingCouponModelImpl);
-		cacheUniqueFindersCache(shoppingCouponModelImpl, isNew);
+		clearUniqueFindersCache(shoppingCouponModelImpl, false);
+		cacheUniqueFindersCache(shoppingCouponModelImpl);
 
 		shoppingCoupon.resetOriginalValues();
 
@@ -1327,7 +1331,7 @@ public class ShoppingCouponPersistenceImpl extends BasePersistenceImpl<ShoppingC
 		query.append(_SQL_SELECT_SHOPPINGCOUPON_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

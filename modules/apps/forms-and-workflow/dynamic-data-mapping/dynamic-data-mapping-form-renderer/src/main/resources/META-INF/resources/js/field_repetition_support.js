@@ -25,6 +25,7 @@ AUI.add(
 			},
 
 			repeatedIndex: {
+				state: true,
 				value: 0
 			},
 
@@ -39,7 +40,6 @@ AUI.add(
 
 				if (instance.get('repeatable')) {
 					instance._eventHandlers.push(
-						instance.after('repeatedIndexChange', instance._afterRepeatableIndexChange),
 						instance.after('render', instance._afterRepeatableFieldRender)
 					);
 				}
@@ -48,15 +48,63 @@ AUI.add(
 			destructor: function() {
 				var instance = this;
 
+				instance._removeCurrentFieldFromRepetitionList();
+
+				instance._syncOtherRepeatableFields();
+			},
+
+			copy: function() {
+				var instance = this;
+
+				var config = instance.copyConfiguration();
+
+				var fieldClass = instance.getFieldClass();
+
+				return new fieldClass(config);
+			},
+
+			copyConfiguration: function() {
+				var instance = this;
+
+				var context = instance.get('context');
+
 				var repetitions = instance.get('repetitions');
 
-				var index = repetitions.indexOf(instance);
+				var config = A.merge(
+					context,
+					{
+						enableEvaluations: instance.get('enableEvaluations'),
+						fieldName: instance.get('fieldName'),
+						parent: instance.get('parent'),
+						portletNamespace: instance.get('portletNamespace'),
+						repeatable: instance.get('repeatable'),
+						repeatedIndex: repetitions.length,
+						repetitions: repetitions,
+						type: instance.get('type'),
+						visible: instance.get('visible')
+					}
+				);
 
-				if (index > -1) {
-					repetitions.splice(index, 1);
-				}
+				config.context = A.clone(context);
 
-				repetitions.forEach(A.bind('_syncRepeatableField', instance));
+				delete config.context.name;
+				delete config.context.value;
+				delete config.name;
+				delete config.value;
+
+				return config;
+			},
+
+			getFieldClass: function() {
+				var instance = this;
+
+				var type = instance.get('type');
+
+				var fieldType = FieldTypes.get(type);
+
+				var fieldClassName = fieldType.get('className');
+
+				return AObject.getValue(window, fieldClassName.split('.'));
 			},
 
 			getRepeatedSiblings: function() {
@@ -75,6 +123,7 @@ AUI.add(
 				var instance = this;
 
 				instance.renderRepeatableUI();
+
 				instance.syncRepeatablelUI();
 			},
 
@@ -91,35 +140,29 @@ AUI.add(
 			repeat: function() {
 				var instance = this;
 
-				var config = instance._copyConfiguration();
-
-				var type = instance.get('type');
-
-				var fieldType = FieldTypes.get(type);
-
-				var fieldClassName = fieldType.get('className');
-
-				var fieldClass = AObject.getValue(window, fieldClassName.split('.'));
-
-				var field = new fieldClass(config).render();
+				var copiedField = instance.copy();
 
 				var repetitions = instance.getRepeatedSiblings();
 
 				var index = repetitions.indexOf(instance) + 1;
 
-				repetitions.splice(index, 0, field);
+				copiedField.set('repeatedIndex', index);
+
+				repetitions.splice(index, 0, copiedField);
 
 				var container = instance.get('container');
 
-				container.insert(field.get('container'), 'after');
+				container.insert(copiedField.get('container'), 'after');
 
-				if (repetitions.length > index + 1) {
-					for (var i = index; i < repetitions.length; i++) {
-						instance._syncRepeatableField(repetitions[i]);
+				copiedField.render();
+
+				repetitions.filter(
+					function(repetition, currentIndex) {
+						return currentIndex > index;
 					}
-				}
+				).forEach(A.bind('_syncRepeatableField', instance));
 
-				return field;
+				return copiedField;
 			},
 
 			syncRepeatablelUI: function() {
@@ -148,43 +191,6 @@ AUI.add(
 				}
 			},
 
-			_afterRepeatableIndexChange: function() {
-				var instance = this;
-
-				instance.render();
-			},
-
-			_copyConfiguration: function() {
-				var instance = this;
-
-				var context = instance.get('context');
-
-				var repetitions = instance.get('repetitions');
-
-				var config = A.merge(
-					context,
-					{
-						enableEvaluations: instance.get('enableEvaluations'),
-						fieldName: instance.get('fieldName'),
-						parent: instance.get('parent'),
-						portletNamespace: instance.get('portletNamespace'),
-						repeatedIndex: repetitions.length,
-						repetitions: repetitions,
-						type: instance.get('type'),
-						visible: instance.get('visible')
-					}
-				);
-
-				config.context = A.clone(context);
-
-				delete config.context.name;
-				delete config.context.value;
-				delete config.name;
-				delete config.value;
-
-				return config;
-			},
-
 			_handleToolbarClick: function(event) {
 				var instance = this;
 
@@ -200,6 +206,26 @@ AUI.add(
 				event.stopPropagation();
 			},
 
+			_removeCurrentFieldFromRepetitionList: function() {
+				var instance = this;
+
+				var repetitions = instance.get('repetitions');
+
+				var index = repetitions.indexOf(instance);
+
+				if (index > -1) {
+					repetitions.splice(index, 1);
+				}
+			},
+
+			_syncOtherRepeatableFields: function() {
+				var instance = this;
+
+				var repetitions = instance.get('repetitions');
+
+				repetitions.forEach(A.bind('_syncRepeatableField', instance));
+			},
+
 			_syncRepeatableField: function(field) {
 				var instance = this;
 
@@ -211,6 +237,8 @@ AUI.add(
 				field.set('repetitions', repeatedSiblings);
 
 				field.setValue(value);
+
+				field.render();
 			},
 
 			_valueRepetitions: function() {

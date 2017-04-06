@@ -500,6 +500,11 @@ public class LayoutLocalServiceUtil {
 		return getService().deleteLayout(plid);
 	}
 
+	public static com.liferay.portal.kernel.model.Layout fetchDefaultLayout(
+		long groupId, boolean privateLayout) {
+		return getService().fetchDefaultLayout(groupId, privateLayout);
+	}
+
 	public static com.liferay.portal.kernel.model.Layout fetchFirstLayout(
 		long groupId, boolean privateLayout, long parentLayoutId) {
 		return getService()
@@ -524,6 +529,12 @@ public class LayoutLocalServiceUtil {
 		long groupId, boolean privateLayout, java.lang.String friendlyURL) {
 		return getService()
 				   .fetchLayoutByFriendlyURL(groupId, privateLayout, friendlyURL);
+	}
+
+	public static com.liferay.portal.kernel.model.Layout fetchLayoutByIconImageId(
+		boolean privateLayout, long iconImageId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().fetchLayoutByIconImageId(privateLayout, iconImageId);
 	}
 
 	/**

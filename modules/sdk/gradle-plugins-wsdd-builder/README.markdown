@@ -5,6 +5,8 @@ tool in order to generate the [Apache Axis](http://axis.apache.org/axis/) Web
 Service Deployment Descriptor (WSDD) files from a [Service Builder](https://dev.liferay.com/develop/tutorials/-/knowledge_base/7-0/what-is-service-builder)
 `service.xml` file.
 
+The plugin has been successfully tested with Gradle 2.5 up to 3.3.
+
 ## Usage
 
 To use the plugin, include it in your build script:
@@ -109,6 +111,6 @@ manually adding a dependency to the `wsddBuilder` configuration:
 
 ```gradle
 dependencies {
-	wsddBuilder group: "com.liferay", name: "com.liferay.portal.tools.wsdd.builder", version: "1.0.6"
+	wsddBuilder group: "com.liferay", name: "com.liferay.portal.tools.wsdd.builder", version: "1.0.7"
 }
 ```

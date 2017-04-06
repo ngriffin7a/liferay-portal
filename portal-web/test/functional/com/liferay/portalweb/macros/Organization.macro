@@ -117,44 +117,32 @@
 	</command>
 
 	<command name="addMemberCP">
-		<execute macro="Organization#gotoActionsCmd">
+		<execute macro="Organization#gotoCP">
 			<var name="orgName" value="${orgName}" />
+			<var name="searchToken" value="Organization" />
 		</execute>
 
-		<var name="key_orgName" value="${orgName}" />
+		<execute function="Click" locator1="Button#PLUS" />
 
 		<execute function="AssertClick" locator1="MenuItem#ASSIGN_USERS" value1="Assign Users" />
 
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Available" />
-		</execute>
+		<execute function="AssertElementPresent#assertVisible" locator1="Button#DONE" />
+
+		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
 
 		<var name="key_userScreenName" value="${userScreenName}" />
 
 		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
+
 		<execute function="Check" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_CHECKBOX" />
 
-		<execute function="AssertClick" locator1="Button#UPDATE_ASSOCIATIONS" value1="Update Associations" />
+		<execute function="Pause" locator1="5000" />
+
+		<execute function="SelectFrameTop" />
+
+		<execute function="AssertClick#assertTextClickAtWaitForLastScript" locator1="Button#DONE" value1="Done" />
 
 		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Current" />
-		</execute>
-
-		<execute function="AssertChecked" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_CHECKBOX" />
-
-		<if>
-			<isset var="userMiddleName" />
-			<then>
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_USER_NAME" value1="${userFirstName} ${userMiddleName} ${userLastName}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_USER_NAME" value1="${userFirstName} ${userLastName}" />
-			</else>
-		</if>
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
 	</command>
 
 	<command name="addPhoneNumbersCP">
@@ -284,6 +272,33 @@
 		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditOrganization#WEBSITES_URL_FIELD" value1="${orgWebsite}" />
 	</command>
 
+	<command name="addWithLocalizedCountryCP">
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="${navItem}" />
+		</execute>
+
+		<execute macro="LexiconEntry#gotoAdd" />
+
+		<if>
+			<condition function="IsElementPresent" locator1="MenuItem#ORGANIZATION" />
+			<then>
+				<execute function="AssertClick" locator1="MenuItem#ORGANIZATION" value1="${localizedOption}" />
+			</then>
+		</if>
+
+		<execute function="Type" locator1="UsersAndOrganizationsEditOrganization#DETAILS_NAME_FIELD" value1="${orgName}" />
+
+		<execute function="Select" locator1="UsersAndOrganizations#ORGANIZATION_COUNTRY_NAME" value1="${countryName}">
+			<var name="key_countryName" value="${countryName}" />
+		</execute>
+
+		<execute function="AssertClick" locator1="Button#SAVE_LOCALIZED" value1="${saveButton}">
+			<var name="key_saveButton" value="${saveButton}" />
+		</execute>
+
+		<execute macro="Alert#viewSuccessMessage" />
+	</command>
+
 	<command name="advancedSearchCP">
 		<execute function="AssertClick" locator1="NavTab#ALL_ORGANIZATIONS" value1="All Organizations" />
 
@@ -359,15 +374,15 @@
 
 		<execute function="SelectFrame" locator1="//iframe[contains(@class,'dialog-iframe-node')]" />
 
-		<execute function="AssertTextEquals" locator1="//tr[contains(.,'${roleTitle}')]/td[1]/a" value1="${roleTitle}" />
+		<execute function="AssertTextEquals" locator1="//tr[contains(.,'${roleTitle}')]/td[1]/span/a" value1="${roleTitle}" />
 
-		<execute function="Click" locator1="//tr[contains(.,'${roleTitle}')]/td[1]/a" value1="${roleTitle}" />
+		<execute function="Click" locator1="//tr[contains(.,'${roleTitle}')]/td[1]/span/a" value1="${roleTitle}" />
 
-		<execute function="AssertClick" locator1="UsersAndOrganizationsAssignOrganizationalRoles#AVAILABLE_TAB" value1="Available" />
+		<execute function="AssertClick" locator1="MenuItem#AVAILABLE" value1="Available" />
 
-		<execute function="Type" locator1="TextInput#KEYWORDS" value1="${userScreenName}" />
+		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userScreenName}" />
 
-		<execute function="AssertClick" locator1="Button#SEARCH" value1="Search" />
+		<execute function="Click" locator1="NavBar#SEARCH_BUTTON" />
 
 		<var name="key_userScreenName" value="${userScreenName}" />
 
@@ -379,7 +394,7 @@
 
 		<execute macro="Alert#viewSuccessMessage" />
 
-		<execute function="AssertClick" locator1="UsersAndOrganizationsAssignOrganizationalRoles#CURRENT_TAB" value1="Current" />
+		<execute function="AssertClick" locator1="MenuItem#CURRENT" value1="Current" />
 
 		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_USER_NAME" value1="${userFirstName} ${userLastName}" />
 		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsAssignUsers#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
@@ -502,7 +517,7 @@
 	</command>
 
 	<command name="gotoIdentificationCP">
-		<execute function="AssertClick" locator1="UsersAndOrganizations#IDENTIFICATION" value1="Identification" />
+		<execute function="AssertClick" locator1="NavTab#IDENTIFICATION" value1="Identification" />
 
 		<if>
 			<isset var="panelHeading" />
@@ -683,9 +698,19 @@
 	</command>
 
 	<command name="viewAssignMemberCP">
-		<var name="key_userName" value="${userName}" />
+		<if>
+			<isset var="userMiddleName" />
+			<then>
+				<var name="key_userName" value="${userFirstName} ${userMiddleName} ${userLastName}" />
 
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsOrganization#USER_TABLE_NAME" value1="${userName}" />
+				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsOrganization#USER_TABLE_NAME" value1="${userFirstName} ${userMiddleName} ${userLastName}" />
+			</then>
+			<else>
+				<var name="key_userName" value="${userName}" />
+
+				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsOrganization#USER_TABLE_NAME" value1="${userName}" />
+			</else>
+		</if>
 	</command>
 
 	<command name="viewCP">
@@ -705,8 +730,26 @@
 		<execute function="AssertTextEquals#assertValue" locator1="UsersAndOrganizationsEditOrganization#DETAILS_TYPE" value1="${orgType}" />
 	</command>
 
+	<command name="viewLocalizedCountryCP">
+		<execute function="AssertClick" locator1="NavBar#NAV_ITEM_LINK" value1="${navItem}">
+			<var name="key_navItem" value="${navItem}" />
+		</execute>
+
+		<execute function="Click" locator1="UsersAndOrganizations#ORGANIZATION_TABLE_ACTIONS">
+			<var name="key_orgName" value="${orgName}" />
+		</execute>
+
+		<execute function="AssertClick" locator1="MenuItem#EDIT_LOCALIZED" value1="${editLocalized}">
+			<var name="key_editLocalized" value="${editLocalized}" />
+		</execute>
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="UsersAndOrganizations#ORGANIZATION_COUNTRY_NAME" value1="${countryName}">
+			<var name="key_countryName" value="${countryName}" />
+		</execute>
+	</command>
+
 	<command name="viewMembersNotFoundCP">
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="This organization does not have any users." />
+		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No results were found." />
 	</command>
 
 	<command name="viewNoOrganizationsFoundCP">

@@ -17,23 +17,20 @@ package com.liferay.blogs.web.internal.portlet.action;
 import com.liferay.blogs.exception.NoSuchEntryException;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.web.constants.BlogsPortletKeys;
-import com.liferay.friendly.url.model.FriendlyURL;
-import com.liferay.friendly.url.service.FriendlyURLLocalService;
-import com.liferay.portal.kernel.portlet.LiferayPortletURL;
-import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.friendly.url.model.FriendlyURLEntry;
+import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 
 import javax.portlet.PortletException;
-import javax.portlet.PortletRequest;
+import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -73,37 +70,30 @@ public class ViewEntryMVCRenderCommand implements MVCRenderCommand {
 		try {
 			BlogsEntry entry = ActionUtil.getEntry(renderRequest);
 
-			FriendlyURL mainFriendlyURL =
-				_friendlyURLLocalService.getMainFriendlyURL(
-					entry.getCompanyId(), entry.getGroupId(), BlogsEntry.class,
+			FriendlyURLEntry mainFriendlyURLEntry =
+				_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
+					entry.getGroupId(), entry.getCompanyId(), BlogsEntry.class,
 					entry.getEntryId());
 
 			String urlTitle = ParamUtil.getString(renderRequest, "urlTitle");
 
-			if (!urlTitle.equals(mainFriendlyURL.getUrlTitle())) {
-				HttpServletRequest request = PortalUtil.getHttpServletRequest(
-					renderRequest);
+			if (!urlTitle.equals(mainFriendlyURLEntry.getUrlTitle())) {
+				PortletURL portletURL = renderResponse.createRenderURL();
 
-				ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-					WebKeys.THEME_DISPLAY);
+				portletURL.setParameter(
+					"mvcRenderCommandName", "/blogs/view_entry");
+				portletURL.setParameter(
+					"urlTitle", mainFriendlyURLEntry.getUrlTitle());
 
-				LiferayPortletURL liferayPortletURL =
-					PortletURLFactoryUtil.create(
-						renderRequest, PortalUtil.getPortletId(renderRequest),
-						themeDisplay.getPlid(), PortletRequest.RENDER_PHASE);
+				HttpServletResponse response = _portal.getHttpServletResponse(
+					renderResponse);
 
-				liferayPortletURL.setParameter(
-					"urlTitle", mainFriendlyURL.getUrlTitle());
-
-				HttpServletResponse response =
-					PortalUtil.getHttpServletResponse(renderResponse);
-
-				response.sendRedirect(liferayPortletURL.toString());
+				response.sendRedirect(portletURL.toString());
 
 				return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;
 			}
 
-			HttpServletRequest request = PortalUtil.getHttpServletRequest(
+			HttpServletRequest request = _portal.getHttpServletRequest(
 				renderRequest);
 
 			request.setAttribute(WebKeys.BLOGS_ENTRY, entry);
@@ -111,11 +101,11 @@ public class ViewEntryMVCRenderCommand implements MVCRenderCommand {
 			if (PropsValues.BLOGS_PINGBACK_ENABLED) {
 				if ((entry != null) && entry.isAllowPingbacks()) {
 					HttpServletResponse response =
-						PortalUtil.getHttpServletResponse(renderResponse);
+						_portal.getHttpServletResponse(renderResponse);
 
 					response.addHeader(
 						"X-Pingback",
-						PortalUtil.getPortalURL(renderRequest) +
+						_portal.getPortalURL(renderRequest) +
 							"/xmlrpc/pingback");
 				}
 			}
@@ -137,12 +127,15 @@ public class ViewEntryMVCRenderCommand implements MVCRenderCommand {
 	}
 
 	@Reference(unbind = "-")
-	protected void setFriendlyURLLocalService(
-		FriendlyURLLocalService friendlyURLLocalService) {
+	protected void setFriendlyURLEntryLocalService(
+		FriendlyURLEntryLocalService friendlyURLEntryLocalService) {
 
-		_friendlyURLLocalService = friendlyURLLocalService;
+		_friendlyURLEntryLocalService = friendlyURLEntryLocalService;
 	}
 
-	private FriendlyURLLocalService _friendlyURLLocalService;
+	private FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }

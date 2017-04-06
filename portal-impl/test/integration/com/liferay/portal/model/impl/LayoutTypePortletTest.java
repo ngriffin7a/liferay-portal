@@ -29,10 +29,13 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.service.impl.PortletLocalServiceImpl;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.portlet.util.test.PortletKeys;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
 import java.util.List;
 
@@ -170,7 +173,7 @@ public class LayoutTypePortletTest {
 
 		String column1 = columns.get(0);
 
-		Assert.assertEquals(2, columns.size());
+		Assert.assertEquals(columns.toString(), 2, columns.size());
 
 		portletId = _layoutTypePortlet.addPortletId(
 			_user.getUserId(), portletId);
@@ -179,7 +182,7 @@ public class LayoutTypePortletTest {
 
 		List<Portlet> portlets = _layoutTypePortlet.getAllPortlets(column1);
 
-		Assert.assertEquals(1, portlets.size());
+		Assert.assertEquals(portlets.toString(), 1, portlets.size());
 	}
 
 	@Test
@@ -194,7 +197,7 @@ public class LayoutTypePortletTest {
 
 		List<String> columns = layoutTemplate.getColumns();
 
-		Assert.assertEquals(2, columns.size());
+		Assert.assertEquals(columns.toString(), 2, columns.size());
 
 		String column1 = columns.get(0);
 		String column2 = columns.get(1);
@@ -206,11 +209,11 @@ public class LayoutTypePortletTest {
 
 		List<Portlet> portlets = _layoutTypePortlet.getAllPortlets(column1);
 
-		Assert.assertEquals(0, portlets.size());
+		Assert.assertEquals(portlets.toString(), 0, portlets.size());
 
 		portlets = _layoutTypePortlet.getAllPortlets(column2);
 
-		Assert.assertEquals(1, portlets.size());
+		Assert.assertEquals(portlets.toString(), 1, portlets.size());
 	}
 
 	@Test
@@ -256,41 +259,54 @@ public class LayoutTypePortletTest {
 
 		List<Portlet> portlets = _layoutTypePortlet.getAllPortlets();
 
-		Assert.assertEquals(initialPortletsSize + 1, portlets.size());
+		Assert.assertEquals(
+			portlets.toString(), initialPortletsSize + 1, portlets.size());
 
 		final long companyId = TestPropsValues.getCompanyId();
 
-		PortletLocalService portletLocalService =
+		final PortletLocalService portletLocalService =
 			PortletLocalServiceUtil.getService();
+
+		final Method getPortletByIdMethod = PortletLocalService.class.getMethod(
+			"getPortletById", long.class, String.class);
 
 		ReflectionTestUtil.setFieldValue(
 			PortletLocalServiceUtil.class, "_service",
-			new PortletLocalServiceImpl() {
+			ProxyUtil.newProxyInstance(
+				PortletLocalService.class.getClassLoader(),
+				new Class<?>[] {PortletLocalService.class},
+				new InvocationHandler() {
 
-				@Override
-				public Portlet getPortletById(
-					long localCompanyId, String localPortletId) {
+					@Override
+					public Object invoke(
+							Object proxy, Method method, Object[] args)
+						throws Throwable {
 
-					Portlet portlet = super.getPortletById(
-						localCompanyId, localPortletId);
+						if (getPortletByIdMethod.equals(method)) {
+							Portlet portlet = (Portlet)method.invoke(
+								portletLocalService, args);
 
-					if ((companyId == localCompanyId) &&
-						portletId.equals(localPortletId)) {
+							if ((companyId == (long)args[0]) &&
+								portletId.equals(args[1])) {
 
-						portlet = (Portlet)portlet.clone();
+								portlet = (Portlet)portlet.clone();
 
-						portlet.setUndeployedPortlet(true);
+								portlet.setUndeployedPortlet(true);
+							}
+
+							return portlet;
+						}
+
+						return method.invoke(portletLocalService, args);
 					}
 
-					return portlet;
-				}
-
-			});
+				}));
 
 		try {
 			portlets = _layoutTypePortlet.getAllPortlets();
 
-			Assert.assertEquals(initialPortletsSize + 1, portlets.size());
+			Assert.assertEquals(
+				portlets.toString(), initialPortletsSize + 1, portlets.size());
 		}
 		finally {
 			ReflectionTestUtil.setFieldValue(

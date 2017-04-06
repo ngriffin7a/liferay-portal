@@ -64,6 +64,13 @@ public class KBFolderServiceUtil {
 		return getService().fetchFirstChildKBFolder(groupId, kbFolderId);
 	}
 
+	public static com.liferay.knowledge.base.model.KBFolder fetchFirstChildKBFolder(
+		long groupId, long kbFolderId,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.knowledge.base.model.KBFolder> obc)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().fetchFirstChildKBFolder(groupId, kbFolderId, obc);
+	}
+
 	public static com.liferay.knowledge.base.model.KBFolder fetchKBFolder(
 		long kbFolderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -90,6 +97,12 @@ public class KBFolderServiceUtil {
 				   .getKBFolderByUrlTitle(groupId, parentKbFolderId, urlTitle);
 	}
 
+	/**
+	* @deprecated As of 1.1.0, replaced by {@link
+	#updateKBFolder(long, long, long, String, String,
+	ServiceContext)}
+	*/
+	@Deprecated
 	public static com.liferay.knowledge.base.model.KBFolder updateKBFolder(
 		long parentResourceClassNameId, long parentResourcePrimKey,
 		long kbFolderId, java.lang.String name, java.lang.String description)
@@ -97,6 +110,16 @@ public class KBFolderServiceUtil {
 		return getService()
 				   .updateKBFolder(parentResourceClassNameId,
 			parentResourcePrimKey, kbFolderId, name, description);
+	}
+
+	public static com.liferay.knowledge.base.model.KBFolder updateKBFolder(
+		long parentResourceClassNameId, long parentResourcePrimKey,
+		long kbFolderId, java.lang.String name, java.lang.String description,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .updateKBFolder(parentResourceClassNameId,
+			parentResourcePrimKey, kbFolderId, name, description, serviceContext);
 	}
 
 	public static int getKBFoldersAndKBArticlesCount(long groupId,

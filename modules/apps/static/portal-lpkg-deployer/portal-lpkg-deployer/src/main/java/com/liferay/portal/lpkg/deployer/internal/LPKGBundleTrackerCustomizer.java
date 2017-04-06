@@ -14,6 +14,7 @@
 
 package com.liferay.portal.lpkg.deployer.internal;
 
+import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
@@ -47,6 +48,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -60,8 +62,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.Version;
 import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.url.URLConstants;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
@@ -111,6 +116,10 @@ public class LPKGBundleTrackerCustomizer
 						continue;
 					}
 
+					if (_isBundleInstalled(bundle, url)) {
+						continue;
+					}
+
 					Bundle newBundle = _bundleContext.installBundle(
 						url.getPath(), url.openStream());
 
@@ -155,9 +164,34 @@ public class LPKGBundleTrackerCustomizer
 
 				bundles.add(newBundle);
 			}
+
+			Bundle systemBundle = _bundleContext.getBundle(0);
+
+			FrameworkWiring frameworkWiring = systemBundle.adapt(
+				FrameworkWiring.class);
+
+			final DefaultNoticeableFuture<FrameworkEvent>
+				defaultNoticeableFuture = new DefaultNoticeableFuture<>();
+
+			frameworkWiring.refreshBundles(
+				null,
+				new FrameworkListener() {
+
+					@Override
+					public void frameworkEvent(FrameworkEvent frameworkEvent) {
+						defaultNoticeableFuture.set(frameworkEvent);
+					}
+
+				});
+
+			FrameworkEvent frameworkEvent = defaultNoticeableFuture.get();
+
+			if (frameworkEvent.getType() != FrameworkEvent.PACKAGES_REFRESHED) {
+				throw frameworkEvent.getThrowable();
+			}
 		}
-		catch (Exception e) {
-			_log.error("Rollback bundle installation for " + bundles, e);
+		catch (Throwable t) {
+			_log.error("Rollback bundle installation for " + bundles, t);
 
 			for (Bundle newBundle : bundles) {
 				try {
@@ -249,6 +283,51 @@ public class LPKGBundleTrackerCustomizer
 			}
 
 			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isBundleInstalled(Bundle bundle, URL url)
+		throws IOException {
+
+		try (InputStream inputStream = url.openStream();
+			JarInputStream jarInputStream = new JarInputStream(inputStream)) {
+
+			Manifest manifest = jarInputStream.getManifest();
+
+			Attributes attributes = manifest.getMainAttributes();
+
+			String symbolicName = attributes.getValue(
+				Constants.BUNDLE_SYMBOLICNAME);
+
+			Version version = new Version(
+				attributes.getValue(Constants.BUNDLE_VERSION));
+
+			String location = url.getPath();
+
+			for (Bundle installedBundle : _bundleContext.getBundles()) {
+				if (symbolicName.equals(installedBundle.getSymbolicName()) &&
+					version.equals(installedBundle.getVersion()) &&
+					!location.equals(installedBundle.getLocation())) {
+
+					if (_log.isInfoEnabled()) {
+						StringBundler sb = new StringBundler();
+
+						sb.append("Skipping installation of ");
+						sb.append(symbolicName);
+						sb.append(" with version ");
+						sb.append(version.toString());
+						sb.append(" in ");
+						sb.append(bundle.getSymbolicName());
+						sb.append(" because an identical bundle exists");
+
+						_log.info(sb.toString());
+					}
+
+					return true;
+				}
+			}
 		}
 
 		return false;

@@ -28,6 +28,7 @@ import java.io.File;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -63,10 +65,8 @@ public class ProjectTemplates {
 				while (iterator.hasNext()) {
 					Path templateBundleFile = iterator.next();
 
-					Path templateBundleFileNamePath =
-						templateBundleFile.getFileName();
-
-					String template = templateBundleFileNamePath.toString();
+					String template = String.valueOf(
+						templateBundleFile.getFileName());
 
 					template = template.substring(
 						TEMPLATE_BUNDLE_PREFIX.length(),
@@ -172,24 +172,35 @@ public class ProjectTemplates {
 		templateDirPath = templateDirPath.resolve(
 			projectTemplatesArgs.getName());
 
-		FileUtil.extractDirectory("gradle-wrapper", templateDirPath);
-
-		try {
-			Files.setPosixFilePermissions(
-				templateDirPath.resolve("gradlew"),
-				PosixFilePermissions.fromString("rwxrwxr--"));
-		}
-		catch (UnsupportedOperationException uoe) {
-		}
-
 		if (WorkspaceUtil.isWorkspace(destinationDir)) {
-			FileUtil.deleteDir(templateDirPath.resolve("gradle"));
-			Files.delete(templateDirPath.resolve("gradlew"));
-			Files.delete(templateDirPath.resolve("gradlew.bat"));
 			Files.deleteIfExists(templateDirPath.resolve("settings.gradle"));
 		}
+		else {
+			if (projectTemplatesArgs.isGradle()) {
+				FileUtil.extractDirectory("gradle-wrapper", templateDirPath);
 
-		Files.delete(templateDirPath.resolve("pom.xml"));
+				FileUtil.setPosixFilePermissions(
+					templateDirPath.resolve("gradlew"),
+					_wrapperPosixFilePermissions);
+			}
+
+			if (projectTemplatesArgs.isMaven()) {
+				FileUtil.extractDirectory("maven-wrapper", templateDirPath);
+
+				FileUtil.setPosixFilePermissions(
+					templateDirPath.resolve("mvnw"),
+					_wrapperPosixFilePermissions);
+			}
+		}
+
+		if (!projectTemplatesArgs.isGradle()) {
+			FileUtil.deleteFiles(
+				templateDirPath, "build.gradle", "settings.gradle");
+		}
+
+		if (!projectTemplatesArgs.isMaven()) {
+			FileUtil.deleteFiles(templateDirPath, "pom.xml");
+		}
 	}
 
 	private static void _printHelp(JCommander jCommander) throws Exception {
@@ -238,6 +249,10 @@ public class ProjectTemplates {
 	}
 
 	private void _checkArgs(ProjectTemplatesArgs projectTemplatesArgs) {
+		if (Validator.isNull(projectTemplatesArgs.getAuthor())) {
+			throw new IllegalArgumentException("Author is required");
+		}
+
 		String template = projectTemplatesArgs.getTemplate();
 
 		if (Validator.isNull(projectTemplatesArgs.getTemplate())) {
@@ -284,7 +299,7 @@ public class ProjectTemplates {
 		}
 		else if ((template.equals("mvc-portlet") ||
 				  template.equals("portlet")) &&
-				 className.endsWith("Portlet")) {
+				 (className.length() > 7) && className.endsWith("Portlet")) {
 
 			className = className.substring(0, className.length() - 7);
 		}
@@ -323,5 +338,8 @@ public class ProjectTemplates {
 
 		return name.toLowerCase();
 	}
+
+	private static final Set<PosixFilePermission> _wrapperPosixFilePermissions =
+		PosixFilePermissions.fromString("rwxrwxr--");
 
 }

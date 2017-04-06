@@ -989,7 +989,7 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((ResourceActionModelImpl)resourceAction);
+		clearUniqueFindersCache((ResourceActionModelImpl)resourceAction, true);
 	}
 
 	@Override
@@ -1001,52 +1001,39 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 			entityCache.removeResult(ResourceActionModelImpl.ENTITY_CACHE_ENABLED,
 				ResourceActionImpl.class, resourceAction.getPrimaryKey());
 
-			clearUniqueFindersCache((ResourceActionModelImpl)resourceAction);
+			clearUniqueFindersCache((ResourceActionModelImpl)resourceAction,
+				true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		ResourceActionModelImpl resourceActionModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					resourceActionModelImpl.getName(),
-					resourceActionModelImpl.getActionId()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_N_A, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_N_A, args,
-				resourceActionModelImpl);
-		}
-		else {
-			if ((resourceActionModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_N_A.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						resourceActionModelImpl.getName(),
-						resourceActionModelImpl.getActionId()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_N_A, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_N_A, args,
-					resourceActionModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		ResourceActionModelImpl resourceActionModelImpl) {
 		Object[] args = new Object[] {
 				resourceActionModelImpl.getName(),
 				resourceActionModelImpl.getActionId()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_N_A, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_N_A, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_N_A, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_N_A, args,
+			resourceActionModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		ResourceActionModelImpl resourceActionModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					resourceActionModelImpl.getName(),
+					resourceActionModelImpl.getActionId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_N_A, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_N_A, args);
+		}
 
 		if ((resourceActionModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_N_A.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					resourceActionModelImpl.getOriginalName(),
 					resourceActionModelImpl.getOriginalActionId()
 				};
@@ -1188,8 +1175,20 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !ResourceActionModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!ResourceActionModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { resourceActionModelImpl.getName() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_NAME, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_NAME,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1215,8 +1214,8 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 			ResourceActionImpl.class, resourceAction.getPrimaryKey(),
 			resourceAction, false);
 
-		clearUniqueFindersCache(resourceActionModelImpl);
-		cacheUniqueFindersCache(resourceActionModelImpl, isNew);
+		clearUniqueFindersCache(resourceActionModelImpl, false);
+		cacheUniqueFindersCache(resourceActionModelImpl);
 
 		resourceAction.resetOriginalValues();
 
@@ -1391,7 +1390,7 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 		query.append(_SQL_SELECT_RESOURCEACTION_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

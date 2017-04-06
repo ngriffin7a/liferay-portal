@@ -26,13 +26,22 @@ import aQute.bnd.annotation.metatype.Meta;
 )
 public interface PortletTCKBridgeConfiguration {
 
+	@Meta.AD(deflt = "", required = false)
+	public String[] excludeWarNames();
+
 	@Meta.AD(deflt = "8239", required = false)
 	public int handshakeServerPort();
 
 	@Meta.AD(deflt = "", required = false)
 	public String[] servletContextNames();
 
-	@Meta.AD(deflt = "300", required = false)
+	@Meta.AD(deflt = "", required = false)
+	public String tckDeployFiles();
+
+	@Meta.AD(deflt = "", required = false)
+	public String testContext();
+
+	@Meta.AD(deflt = "1200", required = false)
 	public long timeout();
 
 }

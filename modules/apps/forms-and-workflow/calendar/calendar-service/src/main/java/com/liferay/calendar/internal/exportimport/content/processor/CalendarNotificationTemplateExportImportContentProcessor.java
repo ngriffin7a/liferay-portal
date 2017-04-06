@@ -14,10 +14,64 @@
 
 package com.liferay.calendar.internal.exportimport.content.processor;
 
+import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
+import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.StagedModel;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Gergely Mathe
- * @deprecated As of 2.2.0, with no direct replacement
+ * @author Daniel Kocsis
  */
-@Deprecated
-public class CalendarNotificationTemplateExportImportContentProcessor {
+@Component(
+	property = {
+		"model.class.name=com.liferay.calendar.model.CalendarNotificationTemplate"
+	},
+	service = {
+		CalendarNotificationTemplateExportImportContentProcessor.class,
+		ExportImportContentProcessor.class
+	}
+)
+public class CalendarNotificationTemplateExportImportContentProcessor
+	implements ExportImportContentProcessor<String> {
+
+	@Override
+	public String replaceExportContentReferences(
+			PortletDataContext portletDataContext, StagedModel stagedModel,
+			String content, boolean exportReferencedContent,
+			boolean escapeContent)
+		throws Exception {
+
+		return _defaultTextExportImportContentProcessor.
+			replaceExportContentReferences(
+				portletDataContext, stagedModel, content,
+				exportReferencedContent, escapeContent);
+	}
+
+	@Override
+	public String replaceImportContentReferences(
+			PortletDataContext portletDataContext, StagedModel stagedModel,
+			String content)
+		throws Exception {
+
+		return _defaultTextExportImportContentProcessor.
+			replaceImportContentReferences(
+				portletDataContext, stagedModel, content);
+	}
+
+	@Override
+	public void validateContentReferences(long groupId, String content)
+		throws PortalException {
+
+		_defaultTextExportImportContentProcessor.validateContentReferences(
+			groupId, content);
+	}
+
+	@Reference(target = "(model.class.name=java.lang.String)")
+	private ExportImportContentProcessor<String>
+		_defaultTextExportImportContentProcessor;
+
 }

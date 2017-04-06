@@ -5937,7 +5937,7 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((LayoutRevisionModelImpl)layoutRevision);
+		clearUniqueFindersCache((LayoutRevisionModelImpl)layoutRevision, true);
 	}
 
 	@Override
@@ -5949,42 +5949,12 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 			entityCache.removeResult(LayoutRevisionModelImpl.ENTITY_CACHE_ENABLED,
 				LayoutRevisionImpl.class, layoutRevision.getPrimaryKey());
 
-			clearUniqueFindersCache((LayoutRevisionModelImpl)layoutRevision);
+			clearUniqueFindersCache((LayoutRevisionModelImpl)layoutRevision,
+				true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		LayoutRevisionModelImpl layoutRevisionModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					layoutRevisionModelImpl.getLayoutSetBranchId(),
-					layoutRevisionModelImpl.getHead(),
-					layoutRevisionModelImpl.getPlid()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_L_H_P, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_L_H_P, args,
-				layoutRevisionModelImpl);
-		}
-		else {
-			if ((layoutRevisionModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_L_H_P.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						layoutRevisionModelImpl.getLayoutSetBranchId(),
-						layoutRevisionModelImpl.getHead(),
-						layoutRevisionModelImpl.getPlid()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_L_H_P, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_L_H_P, args,
-					layoutRevisionModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		LayoutRevisionModelImpl layoutRevisionModelImpl) {
 		Object[] args = new Object[] {
 				layoutRevisionModelImpl.getLayoutSetBranchId(),
@@ -5992,12 +5962,28 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 				layoutRevisionModelImpl.getPlid()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_L_H_P, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_L_H_P, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_L_H_P, args,
+			Long.valueOf(1), false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_L_H_P, args,
+			layoutRevisionModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		LayoutRevisionModelImpl layoutRevisionModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getHead(),
+					layoutRevisionModelImpl.getPlid()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_H_P, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_L_H_P, args);
+		}
 
 		if ((layoutRevisionModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_L_H_P.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					layoutRevisionModelImpl.getOriginalLayoutSetBranchId(),
 					layoutRevisionModelImpl.getOriginalHead(),
 					layoutRevisionModelImpl.getOriginalPlid()
@@ -6165,8 +6151,95 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !LayoutRevisionModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!LayoutRevisionModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_LAYOUTSETBRANCHID,
+				args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTSETBRANCHID,
+				args);
+
+			args = new Object[] { layoutRevisionModelImpl.getPlid() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_PLID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PLID,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getHead()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_H, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_L_H,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getPlid()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_P, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_L_P,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getStatus()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_S, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_L_S,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getHead(),
+					layoutRevisionModelImpl.getPlid()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_H_P, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_H_P,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getLayoutBranchId(),
+					layoutRevisionModelImpl.getPlid()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_L_P, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_L_L_P,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getParentLayoutRevisionId(),
+					layoutRevisionModelImpl.getPlid()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_P_P, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_L_P_P,
+				args);
+
+			args = new Object[] {
+					layoutRevisionModelImpl.getLayoutSetBranchId(),
+					layoutRevisionModelImpl.getPlid(),
+					layoutRevisionModelImpl.getStatus()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_L_P_S, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_L_P_S,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -6366,8 +6439,8 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 			LayoutRevisionImpl.class, layoutRevision.getPrimaryKey(),
 			layoutRevision, false);
 
-		clearUniqueFindersCache(layoutRevisionModelImpl);
-		cacheUniqueFindersCache(layoutRevisionModelImpl, isNew);
+		clearUniqueFindersCache(layoutRevisionModelImpl, false);
+		cacheUniqueFindersCache(layoutRevisionModelImpl);
 
 		layoutRevision.resetOriginalValues();
 
@@ -6566,7 +6639,7 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 		query.append(_SQL_SELECT_LAYOUTREVISION_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

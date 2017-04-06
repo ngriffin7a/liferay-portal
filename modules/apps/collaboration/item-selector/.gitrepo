@@ -2,8 +2,10 @@
 ; Do not manually edit this file.
 ;
 [subrepo]
+	autopull = false
 	cmdver = liferay
-	commit = e3dc719add46811e1b3d8218e15e7a3dedef8427
+	commit = 70aa5e6a509bcb46334a2520375e8e48f0355d01
+	mergebuttonmergecommits = false
 	mode = push
-	parent = 26826974deb9dcdadf6efe0cf96df1eb2b6e5379
+	parent = 51ba6cc98af63dbabd804c3ea5d99bff05fb6d31
 	remote = git@github.com:liferay/com-liferay-item-selector.git

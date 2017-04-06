@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.io.ReaderInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.IOException;
@@ -52,6 +53,9 @@ import javax.sql.DataSource;
 import org.apache.felix.cm.NotCachablePersistenceManager;
 import org.apache.felix.cm.PersistenceManager;
 import org.apache.felix.cm.file.ConfigurationHandler;
+
+import org.osgi.framework.Constants;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author Raymond Augé
@@ -298,6 +302,31 @@ public class ConfigurationPersistenceManager
 	}
 
 	protected void doDelete(String pid) throws IOException {
+		ConfigurationModelListener configurationModelListener = null;
+
+		if (!pid.endsWith("factory") && hasPid(pid)) {
+			Dictionary dictionary = getDictionary(pid);
+
+			String pidKey = (String)dictionary.get(
+				ConfigurationAdmin.SERVICE_FACTORYPID);
+
+			if (pidKey == null) {
+				pidKey = (String)dictionary.get(Constants.SERVICE_PID);
+			}
+
+			if (pidKey == null) {
+				pidKey = pid;
+			}
+
+			configurationModelListener =
+				ConfigurationModelListenerProvider.
+					getConfigurationModelListener(pidKey);
+		}
+
+		if (configurationModelListener != null) {
+			configurationModelListener.onBeforeDelete(pid);
+		}
+
 		Lock lock = _readWriteLock.writeLock();
 
 		try {
@@ -312,6 +341,10 @@ public class ConfigurationPersistenceManager
 		finally {
 			lock.unlock();
 		}
+
+		if (configurationModelListener != null) {
+			configurationModelListener.onAfterDelete(pid);
+		}
 	}
 
 	protected void doStore(
@@ -320,10 +353,19 @@ public class ConfigurationPersistenceManager
 
 		ConfigurationModelListener configurationModelListener = null;
 
-		if (hasPid(pid)) {
+		if (!pid.endsWith("factory") &&
+			(dictionary.get("_felix_.cm.newConfiguration") == null)) {
+
+			String pidKey = (String)dictionary.get(
+				ConfigurationAdmin.SERVICE_FACTORYPID);
+
+			if (pidKey == null) {
+				pidKey = pid;
+			}
+
 			configurationModelListener =
 				ConfigurationModelListenerProvider.
-					getConfigurationModelListener(pid);
+					getConfigurationModelListener(pidKey);
 		}
 
 		if (configurationModelListener != null) {
@@ -337,7 +379,7 @@ public class ConfigurationPersistenceManager
 
 			storeInDatabase(pid, dictionary);
 
-			_dictionaries.put(pid, dictionary);
+			_dictionaries.put(pid, _copyDictionary(dictionary));
 		}
 		finally {
 			lock.unlock();
@@ -553,6 +595,20 @@ public class ConfigurationPersistenceManager
 			new StringReader(dictionaryString));
 
 		return ConfigurationHandler.read(inputStream);
+	}
+
+	private Dictionary<?, ?> _copyDictionary(Dictionary<?, ?> dictionary) {
+		Dictionary newDictionary = new HashMapDictionary<>();
+
+		Enumeration<?> keys = dictionary.keys();
+
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+
+			newDictionary.put(key, dictionary.get(key));
+		}
+
+		return newDictionary;
 	}
 
 	private static final Dictionary<?, ?> _emptyDictionary = new Hashtable<>();

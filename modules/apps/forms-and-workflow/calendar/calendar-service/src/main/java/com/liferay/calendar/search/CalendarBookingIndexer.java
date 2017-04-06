@@ -28,9 +28,10 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
+import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.IndexWriterHelperUtil;
+import com.liferay.portal.kernel.search.IndexWriterHelper;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineHelperUtil;
@@ -42,7 +43,6 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.trash.kernel.util.TrashUtil;
 
 import java.util.Locale;
@@ -113,6 +113,17 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 	}
 
 	@Override
+	public void postProcessSearchQuery(
+			BooleanQuery searchQuery, BooleanFilter fullQueryBooleanFilter,
+			SearchContext searchContext)
+		throws Exception {
+
+		addSearchLocalizedTerm(
+			searchQuery, searchContext, Field.DESCRIPTION, false);
+		addSearchLocalizedTerm(searchQuery, searchContext, Field.TITLE, false);
+	}
+
+	@Override
 	protected void doDelete(CalendarBooking calendarBooking) throws Exception {
 		deleteDocument(
 			calendarBooking.getCompanyId(),
@@ -134,10 +145,6 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 
 		String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
 
-		String descriptionDefaultLanguageId =
-			LocalizationUtil.getDefaultLanguageId(
-				calendarBooking.getDescription());
-
 		String[] descriptionLanguageIds = getLanguageIds(
 			defaultLanguageId, calendarBooking.getDescription());
 
@@ -145,20 +152,13 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 			String description = calendarBooking.getDescription(
 				descriptionLanguageId);
 
-			if (descriptionLanguageId.equals(descriptionDefaultLanguageId)) {
-				document.addText(Field.DESCRIPTION, description);
-			}
-
 			document.addText(
-				Field.DESCRIPTION.concat(StringPool.UNDERLINE).concat(
-					descriptionLanguageId),
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, descriptionLanguageId),
 				description);
 		}
 
 		document.addKeyword(Field.RELATED_ENTRY, true);
-
-		String titleDefaultLanguageId = LocalizationUtil.getDefaultLanguageId(
-			calendarBooking.getTitle());
 
 		String[] titleLanguageIds = getLanguageIds(
 			defaultLanguageId, calendarBooking.getTitle());
@@ -166,13 +166,8 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 		for (String titleLanguageId : titleLanguageIds) {
 			String title = calendarBooking.getTitle(titleLanguageId);
 
-			if (titleLanguageId.equals(titleDefaultLanguageId)) {
-				document.addText(Field.TITLE, title);
-			}
-
 			document.addText(
-				Field.TITLE.concat(StringPool.UNDERLINE).concat(
-					titleLanguageId),
+				LocalizationUtil.getLocalizedName(Field.TITLE, titleLanguageId),
 				title);
 		}
 
@@ -218,7 +213,7 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 
 			Document document = getDocument(calendarBooking);
 
-			IndexWriterHelperUtil.updateDocument(
+			_indexWriterHelper.updateDocument(
 				getSearchEngineId(), calendarBooking.getCompanyId(), document,
 				isCommitImmediately());
 		}
@@ -326,5 +321,8 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 
 	private CalendarBookingLocalService _calendarBookingLocalService;
 	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private IndexWriterHelper _indexWriterHelper;
 
 }

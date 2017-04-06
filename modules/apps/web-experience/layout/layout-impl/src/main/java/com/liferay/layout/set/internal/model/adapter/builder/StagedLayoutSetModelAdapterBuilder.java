@@ -14,7 +14,7 @@
 
 package com.liferay.layout.set.internal.model.adapter.builder;
 
-import com.liferay.layout.set.internal.model.adapter.impl.StagedLayoutSetImpl;
+import com.liferay.layout.set.internal.model.adapter.StagedLayoutSetImpl;
 import com.liferay.layout.set.model.adapter.StagedLayoutSet;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.adapter.builder.ModelAdapterBuilder;
@@ -28,6 +28,7 @@ import org.osgi.service.component.annotations.Component;
 public class StagedLayoutSetModelAdapterBuilder
 	implements ModelAdapterBuilder<LayoutSet, StagedLayoutSet> {
 
+	@Override
 	public StagedLayoutSet build(LayoutSet layoutSet) {
 		return new StagedLayoutSetImpl(layoutSet);
 	}

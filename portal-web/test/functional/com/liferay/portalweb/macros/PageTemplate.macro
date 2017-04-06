@@ -2,8 +2,13 @@
 	<command name="addCP">
 		<execute function="Click" locator1="Button#PLUS" />
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${pageTemplateName}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="This is a page template description" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${pageTemplateName}" />
+		</execute>
+
+		<execute macro="PortletEntry#inputDescription">
+			<var name="description" value="This is a page template description" />
+		</execute>
 
 		<if>
 			<equals arg1="${pageTemplateActive}" arg2="No" />
@@ -41,8 +46,11 @@
 
 	<command name="deleteCP">
 		<var name="key_pageTemplateName" value="${pageTemplateName}" />
+
 		<execute function="Click" locator1="PageTemplates#PAGE_TEMPLATE_TABLE_ACTIONS" />
+
 		<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
+
 		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
 		<execute macro="Alert#viewSuccessMessage" />
@@ -57,7 +65,9 @@
 
 		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${pageTemplateName} Edit" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${pageTemplateName} Edit" />
+		</execute>
 
 		<if>
 			<equals arg1="${pageTemplateActive}" arg2="No" />
@@ -88,7 +98,9 @@
 
 		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
 
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="This is a page template description edit" />
+		<execute macro="PortletEntry#inputDescription">
+			<var name="description" value="This is a page template description edit" />
+		</execute>
 
 		<execute macro="PortletEntry#save" />
 	</command>
@@ -112,8 +124,11 @@
 			<condition function="IsElementPresent" locator1="PageTemplates#PAGE_TEMPLATE_TABLE_ACTIONS" />
 			<then>
 				<execute function="Click" locator1="PageTemplates#PAGE_TEMPLATE_TABLE_ACTIONS" />
+
 				<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
+
 				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+
 				<execute macro="Alert#viewSuccessMessage" />
 			</then>
 		</while>

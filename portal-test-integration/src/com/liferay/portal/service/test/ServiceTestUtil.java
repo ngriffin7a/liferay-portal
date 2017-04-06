@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
-import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -66,7 +65,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -183,7 +181,8 @@ public class ServiceTestUtil {
 				"QuartzSchemaManager)");
 
 		schedulerServiceDependencyManager.registerDependencies(
-			new Class[] {SchedulerEngineHelper.class}, new Filter[] {filter});
+			new Class<?>[] {SchedulerEngineHelper.class},
+			new Filter[] {filter});
 
 		// Verify
 
@@ -259,6 +258,8 @@ public class ServiceTestUtil {
 				DestinationNames.DOCUMENT_LIBRARY_PDF_PROCESSOR);
 			_replaceWithSynchronousDestination(
 				DestinationNames.DOCUMENT_LIBRARY_RAW_METADATA_PROCESSOR);
+			_replaceWithSynchronousDestination(
+				DestinationNames.DOCUMENT_LIBRARY_SYNC_EVENT_PROCESSOR);
 			_replaceWithSynchronousDestination(
 				DestinationNames.DOCUMENT_LIBRARY_VIDEO_PROCESSOR);
 		}
@@ -367,22 +368,7 @@ public class ServiceTestUtil {
 			portlet.setPortletId(portletId);
 			portlet.setPortletModes(new HashMap<String, Set<String>>());
 
-			List<String> portletActions =
-				ResourceActionsUtil.getPortletResourceActions(portletId);
-
-			ResourceActionLocalServiceUtil.checkResourceActions(
-				portletId, portletActions);
-
-			List<String> modelNames =
-				ResourceActionsUtil.getPortletModelResources(portletId);
-
-			for (String modelName : modelNames) {
-				List<String> modelActions =
-					ResourceActionsUtil.getModelResourceActions(modelName);
-
-				ResourceActionLocalServiceUtil.checkResourceActions(
-					modelName, modelActions);
-			}
+			ResourceActionsUtil.check(portletId);
 		}
 	}
 

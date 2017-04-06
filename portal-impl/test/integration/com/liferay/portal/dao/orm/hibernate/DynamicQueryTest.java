@@ -65,7 +65,7 @@ public class DynamicQueryTest {
 		List<ClassName> classNames = ClassNameLocalServiceUtil.dynamicQuery(
 			dynamicQuery);
 
-		Assert.assertEquals(1, classNames.size());
+		Assert.assertEquals(classNames.toString(), 1, classNames.size());
 		Assert.assertEquals(className, classNames.get(0));
 	}
 
@@ -161,8 +161,15 @@ public class DynamicQueryTest {
 	public void testOrderBy() {
 		DynamicQuery dynamicQuery = ClassNameLocalServiceUtil.dynamicQuery();
 
+		Property classNameIdProperty = PropertyFactoryUtil.forName(
+			"classNameId");
+
+		ClassName lastClassName = _allClassNames.get(_allClassNames.size() - 1);
+
+		dynamicQuery.add(
+			classNameIdProperty.le(lastClassName.getClassNameId()));
+
 		dynamicQuery.addOrder(OrderFactoryUtil.desc("classNameId"));
-		dynamicQuery.setLimit(QueryUtil.ALL_POS, _allClassNames.size());
 
 		_allClassNames = new ArrayList<>(_allClassNames);
 
@@ -183,7 +190,9 @@ public class DynamicQueryTest {
 		List<ClassName> dynamicQueryClassNames =
 			ClassNameLocalServiceUtil.dynamicQuery(dynamicQuery);
 
-		Assert.assertEquals(1, dynamicQueryClassNames.size());
+		Assert.assertEquals(
+			dynamicQueryClassNames.toString(), 1,
+			dynamicQueryClassNames.size());
 		Assert.assertEquals(
 			_allClassNames.get(10), dynamicQueryClassNames.get(0));
 	}

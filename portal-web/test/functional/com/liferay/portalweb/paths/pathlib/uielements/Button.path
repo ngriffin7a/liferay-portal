@@ -134,6 +134,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADVANCED_REPLY</td>
+	<td>//button/span[contains(.,'Advanced Reply')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>APPLY_EFFECTS</td>
 	<td>//div[contains(@class,'controls-container') and contains(@class,'open')]//button[contains(@class,'btn') and contains(.,'Apply')]</td>
 	<td></td>
@@ -329,6 +334,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EDIT_PENCIL</td>
+	<td>//a[contains(@class,'btn')]//i[contains(@class,'icon-pencil')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENTER</td>
 	<td>//button[contains(.,'Enter')]</td>
 	<td></td>
@@ -419,6 +429,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>LEAVE</td>
+	<td>//button[contains(.,'Leave')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MERGE</td>
 	<td>//button[contains(.,'Merge')]</td>
 	<td></td>
@@ -504,6 +519,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PREVIOUS</td>
+	<td>//button[contains(.,'Previous')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PUBLISH</td>
 	<td>//button[span[contains(.,'Publish')]]</td>
 	<td></td>
@@ -570,12 +590,12 @@
 </tr>
 <tr>
 	<td>ROTATE_LEFT</td>
-	<td>//a[contains(@class,'btn') and (@data-onclick='rotateLeft')]</td>
+	<td>//a[contains(@class,'btn-link') and (@data-onclick='data-onclick')][1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ROTATE_RIGHT</td>
-	<td>//a[contains(@class,'btn') and (@data-onclick='rotateRight')]</td>
+	<td>//a[contains(@class,'btn-link') and (@data-onclick='data-onclick')][2]</td>
 	<td></td>
 </tr>
 <tr>
@@ -691,6 +711,11 @@
 <tr>
 	<td>SOURCE</td>
 	<td>//a[@role='button' and (@title='Source')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>STAY</td>
+	<td>//button[contains(.,'Stay')]</td>
 	<td></td>
 </tr>
 <tr>

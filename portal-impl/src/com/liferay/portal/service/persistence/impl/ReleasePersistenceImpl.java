@@ -397,7 +397,7 @@ public class ReleasePersistenceImpl extends BasePersistenceImpl<Release>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((ReleaseModelImpl)release);
+		clearUniqueFindersCache((ReleaseModelImpl)release, true);
 	}
 
 	@Override
@@ -409,46 +409,37 @@ public class ReleasePersistenceImpl extends BasePersistenceImpl<Release>
 			entityCache.removeResult(ReleaseModelImpl.ENTITY_CACHE_ENABLED,
 				ReleaseImpl.class, release.getPrimaryKey());
 
-			clearUniqueFindersCache((ReleaseModelImpl)release);
+			clearUniqueFindersCache((ReleaseModelImpl)release, true);
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ReleaseModelImpl releaseModelImpl,
-		boolean isNew) {
-		if (isNew) {
+	protected void cacheUniqueFindersCache(ReleaseModelImpl releaseModelImpl) {
+		Object[] args = new Object[] { releaseModelImpl.getServletContextName() };
+
+		finderCache.putResult(FINDER_PATH_COUNT_BY_SERVLETCONTEXTNAME, args,
+			Long.valueOf(1), false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME, args,
+			releaseModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(ReleaseModelImpl releaseModelImpl,
+		boolean clearCurrent) {
+		if (clearCurrent) {
 			Object[] args = new Object[] {
 					releaseModelImpl.getServletContextName()
 				};
 
-			finderCache.putResult(FINDER_PATH_COUNT_BY_SERVLETCONTEXTNAME,
-				args, Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME,
-				args, releaseModelImpl);
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_SERVLETCONTEXTNAME,
+				args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME,
+				args);
 		}
-		else {
-			if ((releaseModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						releaseModelImpl.getServletContextName()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_SERVLETCONTEXTNAME,
-					args, Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME,
-					args, releaseModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(ReleaseModelImpl releaseModelImpl) {
-		Object[] args = new Object[] { releaseModelImpl.getServletContextName() };
-
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_SERVLETCONTEXTNAME, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME, args);
 
 		if ((releaseModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_SERVLETCONTEXTNAME.getColumnBitmask()) != 0) {
-			args = new Object[] { releaseModelImpl.getOriginalServletContextName() };
+			Object[] args = new Object[] {
+					releaseModelImpl.getOriginalServletContextName()
+				};
 
 			finderCache.removeResult(FINDER_PATH_COUNT_BY_SERVLETCONTEXTNAME,
 				args);
@@ -609,15 +600,21 @@ public class ReleasePersistenceImpl extends BasePersistenceImpl<Release>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !ReleaseModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!ReleaseModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		entityCache.putResult(ReleaseModelImpl.ENTITY_CACHE_ENABLED,
 			ReleaseImpl.class, release.getPrimaryKey(), release, false);
 
-		clearUniqueFindersCache(releaseModelImpl);
-		cacheUniqueFindersCache(releaseModelImpl, isNew);
+		clearUniqueFindersCache(releaseModelImpl, false);
+		cacheUniqueFindersCache(releaseModelImpl);
 
 		release.resetOriginalValues();
 
@@ -797,7 +794,7 @@ public class ReleasePersistenceImpl extends BasePersistenceImpl<Release>
 		query.append(_SQL_SELECT_RELEASE_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

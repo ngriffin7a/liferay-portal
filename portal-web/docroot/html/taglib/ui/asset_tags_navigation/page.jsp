@@ -62,10 +62,10 @@ private String _buildTagsNavigation(long scopeGroupId, String selectedTagName, P
 	List<AssetTag> tags = null;
 
 	if (showAssetCount && (classNameId > 0)) {
-		tags = AssetTagServiceUtil.getTags(scopeGroupId, classNameId, null, 0, maxAssetTags, new AssetTagCountComparator());
+		tags = AssetTagServiceUtil.getTags(PortalUtil.getSiteGroupId(scopeGroupId), classNameId, null, 0, maxAssetTags, new AssetTagCountComparator());
 	}
 	else {
-		tags = AssetTagServiceUtil.getGroupTags(scopeGroupId, 0, maxAssetTags, new AssetTagCountComparator());
+		tags = AssetTagServiceUtil.getGroupTags(PortalUtil.getSiteGroupId(scopeGroupId), 0, maxAssetTags, new AssetTagCountComparator());
 	}
 
 	if (tags.isEmpty()) {
@@ -167,7 +167,7 @@ private String _buildTagsNavigation(long scopeGroupId, String selectedTagName, P
 		sb.append("</a></span></li>");
 	}
 
-	sb.append("</ul><br style=\"clear: both;\" />");
+	sb.append("</ul>");
 
 	return sb.toString();
 }

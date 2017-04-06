@@ -122,7 +122,7 @@ public class ReplaceRegexTask extends DefaultTask {
 			FileCollection fileCollection = entry.getValue();
 
 			for (File file : fileCollection) {
-				replaceRegex(file, pattern);
+				_replaceRegex(file, pattern);
 			}
 		}
 	}
@@ -159,7 +159,7 @@ public class ReplaceRegexTask extends DefaultTask {
 		replaceOnlyIf(replaceOnlyIfClosures);
 	}
 
-	protected void replaceRegex(File file, Pattern pattern) throws IOException {
+	private void _replaceRegex(File file, Pattern pattern) throws IOException {
 		Logger logger = getLogger();
 
 		Path path = file.toPath();
@@ -197,7 +197,7 @@ public class ReplaceRegexTask extends DefaultTask {
 			}
 
 			for (Closure<Boolean> closure : getReplaceOnlyIf()) {
-				if (!closure.call(group, replacement, newContent)) {
+				if (!closure.call(group, replacement, newContent, file)) {
 					replace = false;
 
 					break;

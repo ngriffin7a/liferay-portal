@@ -58,6 +58,7 @@ import java.io.InputStream;
 
 import java.net.URL;
 
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -816,11 +817,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 					else {
 						bundle.uninstall();
 
-						FrameworkWiring frameworkWiring = _framework.adapt(
-							FrameworkWiring.class);
-
-						frameworkWiring.refreshBundles(
-							Collections.singletonList(bundle));
+						_refreshBundles(Collections.singletonList(bundle));
 
 						return null;
 					}
@@ -915,6 +912,8 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		}
 
 		FileUtil.mkdirs(PropsValues.MODULE_FRAMEWORK_BASE_DIR + "/static");
+		FileUtil.mkdirs(
+			PropsValues.MODULE_FRAMEWORK_MARKETPLACE_DIR + "/override");
 	}
 
 	private Bundle _installInitialBundle(
@@ -992,6 +991,36 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		}
 
 		return false;
+	}
+
+	private void _refreshBundles(List<Bundle> refreshBundles) {
+		FrameworkWiring frameworkWiring = _framework.adapt(
+			FrameworkWiring.class);
+
+		final DefaultNoticeableFuture<FrameworkEvent> defaultNoticeableFuture =
+			new DefaultNoticeableFuture<>();
+
+		frameworkWiring.refreshBundles(
+			refreshBundles,
+			new FrameworkListener() {
+
+				@Override
+				public void frameworkEvent(FrameworkEvent frameworkEvent) {
+					defaultNoticeableFuture.set(frameworkEvent);
+				}
+
+			});
+
+		try {
+			FrameworkEvent frameworkEvent = defaultNoticeableFuture.get();
+
+			if (frameworkEvent.getType() != FrameworkEvent.PACKAGES_REFRESHED) {
+				throw frameworkEvent.getThrowable();
+			}
+		}
+		catch (Throwable t) {
+			ReflectionUtil.throwException(t);
+		}
 	}
 
 	private void _registerApplicationContext(
@@ -1124,16 +1153,6 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 			});
 
-		File utilTaglibFile = new File(
-			PropsValues.LIFERAY_LIB_PORTAL_DIR, "util-taglib.jar");
-
-		if (utilTaglibFile.exists()) {
-			jarPaths.add(utilTaglibFile.toPath());
-		}
-		else {
-			_log.error("Missing " + utilTaglibFile);
-		}
-
 		Collections.sort(jarPaths);
 
 		String prefix = "reference:".concat(_STATIC_JAR);
@@ -1166,14 +1185,25 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 			}
 		}
 
-		FrameworkWiring frameworkWiring = _framework.adapt(
-			FrameworkWiring.class);
-
-		frameworkWiring.refreshBundles(refreshBundles);
+		_refreshBundles(refreshBundles);
 
 		refreshBundles.clear();
 
-		Set<String> overrideFileNames = new HashSet<>();
+		for (String staticJarFileName :
+				PropsValues.MODULE_FRAMEWORK_STATIC_JARS) {
+
+			File staticJarFile = new File(
+				PropsValues.LIFERAY_LIB_PORTAL_DIR, staticJarFileName);
+
+			if (staticJarFile.exists()) {
+				jarPaths.add(staticJarFile.toPath());
+			}
+			else {
+				_log.error("Missing " + staticJarFile);
+			}
+		}
+
+		Set<String> overrideStaticFileNames = new HashSet<>();
 
 		for (Path jarPath : jarPaths) {
 			try (InputStream inputStream = Files.newInputStream(jarPath)) {
@@ -1185,14 +1215,16 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 				if (bundle != null) {
 					bundles.add(bundle);
 
-					overrideFileNames.add(
+					overrideStaticFileNames.add(
 						path.substring(path.lastIndexOf(StringPool.SLASH) + 1));
 				}
 			}
 		}
 
+		String deployDir = bundleContext.getProperty("lpkg.deployer.dir");
+
 		File file = new File(
-			bundleContext.getProperty("lpkg.deployer.dir") + StringPool.SLASH +
+			deployDir + StringPool.SLASH +
 				StaticLPKGResolver.getStaticLPKGFileName());
 
 		if (file.exists()) {
@@ -1241,7 +1273,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 							String fileName =
 								matcher.group(1) + matcher.group(4);
 
-							if (overrideFileNames.contains(fileName)) {
+							if (overrideStaticFileNames.contains(fileName)) {
 								if (_log.isInfoEnabled()) {
 									StringBundler sb = new StringBundler(7);
 
@@ -1269,6 +1301,36 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 						}
 					}
 				}
+			}
+		}
+
+		Set<String> overrideLPKGFileNames = new HashSet<>();
+
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+				Paths.get(deployDir, "override"))) {
+
+			for (Path path : directoryStream) {
+				String fileName = String.valueOf(path.getFileName());
+
+				String pathName = StringUtil.toLowerCase(fileName);
+
+				if (pathName.endsWith("jar")) {
+					overrideLPKGFileNames.add(fileName);
+				}
+			}
+		}
+
+		for (Bundle bundle : bundleContext.getBundles()) {
+			String location = bundle.getLocation();
+
+			Matcher matcher = _pattern.matcher(location);
+
+			if (matcher.matches()) {
+				location = matcher.group(1) + matcher.group(4);
+			}
+
+			if (overrideLPKGFileNames.contains(location)) {
+				bundle.uninstall();
 			}
 		}
 
@@ -1321,15 +1383,6 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		List<String> hostBundleSymbolicNames = new ArrayList<>();
 
 		for (Bundle bundle : installedBundles) {
-			BundleStartLevel bundleStartLevel = bundle.adapt(
-				BundleStartLevel.class);
-
-			if (bundleStartLevel.getStartLevel() !=
-					PropsValues.MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL) {
-
-				continue;
-			}
-
 			Dictionary<String, String> headers = bundle.getHeaders();
 
 			String fragmentHost = headers.get(Constants.FRAGMENT_HOST);
@@ -1353,7 +1406,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 			}
 		}
 
-		frameworkWiring.refreshBundles(refreshBundles);
+		_refreshBundles(refreshBundles);
 
 		return new HashSet<>(Arrays.asList(initialBundles));
 	}
@@ -1477,7 +1530,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		ModuleFrameworkImpl.class);
 
 	private static final Pattern _pattern = Pattern.compile(
-		"(.*?)(-\\d+\\.\\d+\\.\\d+)(\\..+)?(\\.jar)");
+		"/?(.*?)(-\\d+\\.\\d+\\.\\d+)(\\..+)?(\\.jar)");
 
 	private Framework _framework;
 	private final Map<ApplicationContext, List<ServiceRegistration<?>>>

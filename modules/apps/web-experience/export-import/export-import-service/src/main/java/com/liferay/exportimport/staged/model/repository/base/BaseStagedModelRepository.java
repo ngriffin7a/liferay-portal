@@ -32,7 +32,10 @@ import java.util.List;
 
 /**
  * @author Daniel Kocsis
+ *
+ * @deprecated As of 4.0.0
  */
+@Deprecated
 public abstract class BaseStagedModelRepository<T extends StagedModel>
 	implements StagedModelRepository<T> {
 
@@ -54,14 +57,6 @@ public abstract class BaseStagedModelRepository<T extends StagedModel>
 	public abstract void deleteStagedModels(
 			PortletDataContext portletDataContext)
 		throws PortalException;
-
-	@Override
-	public abstract List<StagedModel> fetchChildrenStagedModels(
-		PortletDataContext portletDataContext, T stagedModel);
-
-	@Override
-	public abstract List<StagedModel> fetchDependencyStagedModels(
-		PortletDataContext portletDataContext, T stagedModel);
 
 	@Override
 	public T fetchMissingReference(String uuid, long groupId) {

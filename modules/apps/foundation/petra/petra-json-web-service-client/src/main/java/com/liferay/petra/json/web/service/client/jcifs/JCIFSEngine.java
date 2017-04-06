@@ -36,6 +36,7 @@ public class JCIFSEngine implements NTLMEngine {
 		_workstation = workstation;
 	}
 
+	@Override
 	public String generateType1Msg(String domain, String workstation)
 		throws NTLMEngineException {
 
@@ -45,6 +46,7 @@ public class JCIFSEngine implements NTLMEngine {
 		return Base64.encode(type1Message.toByteArray());
 	}
 
+	@Override
 	public String generateType3Msg(
 			String username, String password, String domain, String workstation,
 			String challenge)
@@ -55,9 +57,8 @@ public class JCIFSEngine implements NTLMEngine {
 		try {
 			type2Message = new Type2Message(Base64.decode(challenge));
 		}
-		catch (final IOException ioe) {
-			throw new NTLMEngineException(
-				"Invalid NTLM type 2 message", ioe);
+		catch (IOException ioe) {
+			throw new NTLMEngineException("Invalid NTLM type 2 message", ioe);
 		}
 
 		int type2Flags = type2Message.getFlags();

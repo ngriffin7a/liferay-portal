@@ -271,6 +271,10 @@ public class WebDriverHelper {
 	}
 
 	public static String getConfirmation(WebDriver webDriver) {
+		return getConfirmation(webDriver, null);
+	}
+
+	public static String getConfirmation(WebDriver webDriver, String value) {
 		webDriver.switchTo();
 
 		WebDriverWait webDriverWait = new WebDriverWait(webDriver, 1);
@@ -280,6 +284,10 @@ public class WebDriverHelper {
 				ExpectedConditions.alertIsPresent());
 
 			String confirmation = alert.getText();
+
+			if (Validator.isNotNull(value)) {
+				alert.sendKeys(value);
+			}
 
 			alert.accept();
 
@@ -1004,36 +1012,23 @@ public class WebDriverHelper {
 	}
 
 	public static void typeEditor(
-			WebDriver webDriver, String locator, String value)
-		throws Exception {
+		WebDriver webDriver, String locator, String value) {
 
-		WebElement webElement = getWebElement(webDriver, locator);
-
-		if (webElement == null) {
-			throw new Exception(
-				"Element is not present at \"" + locator + "\"");
-		}
-
-		WrapsDriver wrapsDriver = (WrapsDriver)webElement;
+		WrapsDriver wrapsDriver = (WrapsDriver)getWebElement(
+			webDriver, locator);
 
 		JavascriptExecutor javascriptExecutor =
 			(JavascriptExecutor)wrapsDriver.getWrappedDriver();
 
 		StringBuilder sb = new StringBuilder();
 
-		if (locator.contains("cke")) {
-			sb.append("var element = arguments[0].contentWindow.document;");
-			sb.append("element.body.textContent = '");
-		}
-		else {
-			sb.append("var element = arguments[0];");
-			sb.append("element.textContent = '");
-		}
+		sb.append("CKEDITOR.instances[\"");
+		sb.append(getEditorName(webDriver, locator));
+		sb.append("\"].setData(\"");
+		sb.append(HtmlUtil.escapeJS(value.replace("\\", "\\\\")));
+		sb.append("\");");
 
-		sb.append(value);
-		sb.append("';");
-
-		javascriptExecutor.executeScript(sb.toString(), webElement);
+		javascriptExecutor.executeScript(sb.toString());
 	}
 
 	public static void uncheck(WebDriver webdDriver, String locator) {
@@ -1128,10 +1123,10 @@ public class WebDriverHelper {
 		sb.append("return false;}");
 		sb.append("return true;");
 
-		Boolean isObscured = (Boolean)javascriptExecutor.executeScript(
+		Boolean obscured = (Boolean)javascriptExecutor.executeScript(
 			sb.toString(), webElement);
 
-		return isObscured.booleanValue();
+		return obscured.booleanValue();
 	}
 
 	protected static void scrollWebElementIntoView(

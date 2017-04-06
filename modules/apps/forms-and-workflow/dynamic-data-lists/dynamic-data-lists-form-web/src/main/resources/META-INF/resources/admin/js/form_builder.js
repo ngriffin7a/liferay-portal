@@ -91,6 +91,10 @@ AUI.add(
 						writeOnce: true
 					},
 
+					successPage: {
+						value: {}
+					},
+
 					visitor: {
 						getter: '_getVisitor',
 						valueFn: '_valueVisitor'
@@ -189,7 +193,7 @@ AUI.add(
 						return contains;
 					},
 
-					createField: function(fieldType) {
+					createField: function(fieldType, config) {
 						var instance = this;
 
 						var fieldClass = FormBuilderUtil.getFieldClass(fieldType.get('name'));
@@ -204,7 +208,8 @@ AUI.add(
 									getFieldTypeSettingFormContextURL: instance.get('getFieldTypeSettingFormContextURL'),
 									portletNamespace: instance.get('portletNamespace'),
 									readOnly: true
-								}
+								},
+								config
 							)
 						);
 					},
@@ -213,6 +218,24 @@ AUI.add(
 						var instance = this;
 
 						field.destroy();
+					},
+
+					duplicateField: function(field) {
+						var instance = this;
+
+						var fieldCopy = field.copy();
+
+						fieldCopy.render();
+
+						var fieldList = field.get('container').ancestor('.col').getData('layout-col').get('value');
+
+						fieldList.addField(fieldCopy, fieldList.get('fields').length);
+
+						var activeLayout = instance.getActiveLayout();
+
+						var row = instance.getFieldRow(field);
+
+						activeLayout.normalizeColsHeight(new A.NodeList(row));
 					},
 
 					eachFields: function(callback) {
@@ -273,6 +296,20 @@ AUI.add(
 						}
 
 						return instance._sidebar;
+					},
+
+					getPagesTitle: function() {
+						var instance = this;
+
+						return instance._getPageManagerInstance().get('titles');
+					},
+
+					getSuccessPageDefinition: function() {
+						var instance = this;
+
+						var pageManager = instance._getPageManagerInstance();
+
+						return pageManager.getSuccessPageDefinition();
 					},
 
 					openConfirmCancelFieldChangesDiolog: function(confirmFn) {
@@ -427,6 +464,8 @@ AUI.add(
 									config
 								)
 							);
+
+							instance._pageManager.setSuccessPage(instance.get('definition').successPage);
 						}
 
 						return instance._pageManager;

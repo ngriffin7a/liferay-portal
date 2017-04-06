@@ -85,7 +85,7 @@ public class ExecuteNodeTask extends DefaultTask {
 		}
 	}
 
-	public List<String> getArgs() {
+	public List<Object> getArgs() {
 		return _nodeExecutor.getArgs();
 	}
 
@@ -107,6 +107,10 @@ public class ExecuteNodeTask extends DefaultTask {
 
 	public boolean isInheritProxy() {
 		return _nodeExecutor.isInheritProxy();
+	}
+
+	public boolean isUseGradleExec() {
+		return _nodeExecutor.isUseGradleExec();
 	}
 
 	public void setArgs(Iterable<?> args) {
@@ -131,6 +135,10 @@ public class ExecuteNodeTask extends DefaultTask {
 
 	public void setNpmInstallRetries(int npmInstallRetries) {
 		_npmInstallRetries = npmInstallRetries;
+	}
+
+	public void setUseGradleExec(boolean useGradleExec) {
+		_nodeExecutor.setUseGradleExec(useGradleExec);
 	}
 
 	public void setWorkingDir(Object workingDir) {

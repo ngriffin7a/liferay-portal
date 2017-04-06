@@ -984,7 +984,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((PluginSettingModelImpl)pluginSetting);
+		clearUniqueFindersCache((PluginSettingModelImpl)pluginSetting, true);
 	}
 
 	@Override
@@ -996,42 +996,11 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			entityCache.removeResult(PluginSettingModelImpl.ENTITY_CACHE_ENABLED,
 				PluginSettingImpl.class, pluginSetting.getPrimaryKey());
 
-			clearUniqueFindersCache((PluginSettingModelImpl)pluginSetting);
+			clearUniqueFindersCache((PluginSettingModelImpl)pluginSetting, true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		PluginSettingModelImpl pluginSettingModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					pluginSettingModelImpl.getCompanyId(),
-					pluginSettingModelImpl.getPluginId(),
-					pluginSettingModelImpl.getPluginType()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_C_I_T, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_C_I_T, args,
-				pluginSettingModelImpl);
-		}
-		else {
-			if ((pluginSettingModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_C_I_T.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						pluginSettingModelImpl.getCompanyId(),
-						pluginSettingModelImpl.getPluginId(),
-						pluginSettingModelImpl.getPluginType()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_C_I_T, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_C_I_T, args,
-					pluginSettingModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		PluginSettingModelImpl pluginSettingModelImpl) {
 		Object[] args = new Object[] {
 				pluginSettingModelImpl.getCompanyId(),
@@ -1039,12 +1008,28 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 				pluginSettingModelImpl.getPluginType()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_C_I_T, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_C_I_T, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_C_I_T, args,
+			Long.valueOf(1), false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_C_I_T, args,
+			pluginSettingModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		PluginSettingModelImpl pluginSettingModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					pluginSettingModelImpl.getCompanyId(),
+					pluginSettingModelImpl.getPluginId(),
+					pluginSettingModelImpl.getPluginType()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_I_T, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_C_I_T, args);
+		}
 
 		if ((pluginSettingModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_C_I_T.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					pluginSettingModelImpl.getOriginalCompanyId(),
 					pluginSettingModelImpl.getOriginalPluginId(),
 					pluginSettingModelImpl.getOriginalPluginType()
@@ -1189,8 +1174,20 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !PluginSettingModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!PluginSettingModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { pluginSettingModelImpl.getCompanyId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1216,8 +1213,8 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			PluginSettingImpl.class, pluginSetting.getPrimaryKey(),
 			pluginSetting, false);
 
-		clearUniqueFindersCache(pluginSettingModelImpl);
-		cacheUniqueFindersCache(pluginSettingModelImpl, isNew);
+		clearUniqueFindersCache(pluginSettingModelImpl, false);
+		cacheUniqueFindersCache(pluginSettingModelImpl);
 
 		pluginSetting.resetOriginalValues();
 
@@ -1394,7 +1391,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		query.append(_SQL_SELECT_PLUGINSETTING_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

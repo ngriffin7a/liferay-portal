@@ -55,8 +55,8 @@ public class SyncWatchEventService {
 
 	public static void deleteSyncWatchEvent(long syncWatchEventId) {
 		try {
-			SyncWatchEvent syncWatchEvent =
-				SyncWatchEventService.fetchSyncWatchEvent(syncWatchEventId);
+			SyncWatchEvent syncWatchEvent = fetchSyncWatchEvent(
+				syncWatchEventId);
 
 			if (syncWatchEvent == null) {
 				return;
@@ -157,22 +157,6 @@ public class SyncWatchEventService {
 		try {
 			return _syncWatchEventPersistence.findBySyncAccountId(
 				syncAccountId);
-		}
-		catch (SQLException sqle) {
-			if (_logger.isDebugEnabled()) {
-				_logger.debug(sqle.getMessage(), sqle);
-			}
-
-			return Collections.emptyList();
-		}
-	}
-
-	public static List<SyncWatchEvent> findBySyncAccountId(
-		long syncAccountId, String orderByColumn, boolean ascending) {
-
-		try {
-			return _syncWatchEventPersistence.findBySyncAccountId(
-				syncAccountId, orderByColumn, ascending);
 		}
 		catch (SQLException sqle) {
 			if (_logger.isDebugEnabled()) {

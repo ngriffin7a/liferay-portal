@@ -1952,7 +1952,7 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((MBStatsUserModelImpl)mbStatsUser);
+		clearUniqueFindersCache((MBStatsUserModelImpl)mbStatsUser, true);
 	}
 
 	@Override
@@ -1964,52 +1964,38 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 			entityCache.removeResult(MBStatsUserModelImpl.ENTITY_CACHE_ENABLED,
 				MBStatsUserImpl.class, mbStatsUser.getPrimaryKey());
 
-			clearUniqueFindersCache((MBStatsUserModelImpl)mbStatsUser);
+			clearUniqueFindersCache((MBStatsUserModelImpl)mbStatsUser, true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		MBStatsUserModelImpl mbStatsUserModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					mbStatsUserModelImpl.getGroupId(),
-					mbStatsUserModelImpl.getUserId()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_G_U, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_G_U, args,
-				mbStatsUserModelImpl);
-		}
-		else {
-			if ((mbStatsUserModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_G_U.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						mbStatsUserModelImpl.getGroupId(),
-						mbStatsUserModelImpl.getUserId()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_G_U, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_G_U, args,
-					mbStatsUserModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		MBStatsUserModelImpl mbStatsUserModelImpl) {
 		Object[] args = new Object[] {
 				mbStatsUserModelImpl.getGroupId(),
 				mbStatsUserModelImpl.getUserId()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_G_U, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_G_U, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_G_U, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_G_U, args,
+			mbStatsUserModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		MBStatsUserModelImpl mbStatsUserModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					mbStatsUserModelImpl.getGroupId(),
+					mbStatsUserModelImpl.getUserId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_U, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_U, args);
+		}
 
 		if ((mbStatsUserModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_G_U.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					mbStatsUserModelImpl.getOriginalGroupId(),
 					mbStatsUserModelImpl.getOriginalUserId()
 				};
@@ -2152,8 +2138,26 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !MBStatsUserModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!MBStatsUserModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { mbStatsUserModelImpl.getGroupId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				args);
+
+			args = new Object[] { mbStatsUserModelImpl.getUserId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_USERID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -2196,8 +2200,8 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 			MBStatsUserImpl.class, mbStatsUser.getPrimaryKey(), mbStatsUser,
 			false);
 
-		clearUniqueFindersCache(mbStatsUserModelImpl);
-		cacheUniqueFindersCache(mbStatsUserModelImpl, isNew);
+		clearUniqueFindersCache(mbStatsUserModelImpl, false);
+		cacheUniqueFindersCache(mbStatsUserModelImpl);
 
 		mbStatsUser.resetOriginalValues();
 
@@ -2373,7 +2377,7 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 		query.append(_SQL_SELECT_MBSTATSUSER_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

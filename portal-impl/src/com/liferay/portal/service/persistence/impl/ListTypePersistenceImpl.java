@@ -993,7 +993,7 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((ListTypeModelImpl)listType);
+		clearUniqueFindersCache((ListTypeModelImpl)listType, true);
 	}
 
 	@Override
@@ -1005,48 +1005,35 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 			entityCache.removeResult(ListTypeModelImpl.ENTITY_CACHE_ENABLED,
 				ListTypeImpl.class, listType.getPrimaryKey());
 
-			clearUniqueFindersCache((ListTypeModelImpl)listType);
+			clearUniqueFindersCache((ListTypeModelImpl)listType, true);
 		}
 	}
 
-	protected void cacheUniqueFindersCache(
-		ListTypeModelImpl listTypeModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					listTypeModelImpl.getName(), listTypeModelImpl.getType()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_N_T, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_N_T, args,
-				listTypeModelImpl);
-		}
-		else {
-			if ((listTypeModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_N_T.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						listTypeModelImpl.getName(), listTypeModelImpl.getType()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_N_T, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_N_T, args,
-					listTypeModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(ListTypeModelImpl listTypeModelImpl) {
+	protected void cacheUniqueFindersCache(ListTypeModelImpl listTypeModelImpl) {
 		Object[] args = new Object[] {
 				listTypeModelImpl.getName(), listTypeModelImpl.getType()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_N_T, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_N_T, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_N_T, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_N_T, args,
+			listTypeModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		ListTypeModelImpl listTypeModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					listTypeModelImpl.getName(), listTypeModelImpl.getType()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_N_T, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_N_T, args);
+		}
 
 		if ((listTypeModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_N_T.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					listTypeModelImpl.getOriginalName(),
 					listTypeModelImpl.getOriginalType()
 				};
@@ -1187,8 +1174,20 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !ListTypeModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!ListTypeModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { listTypeModelImpl.getType() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_TYPE, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_TYPE,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1211,8 +1210,8 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 		entityCache.putResult(ListTypeModelImpl.ENTITY_CACHE_ENABLED,
 			ListTypeImpl.class, listType.getPrimaryKey(), listType, false);
 
-		clearUniqueFindersCache(listTypeModelImpl);
-		cacheUniqueFindersCache(listTypeModelImpl, isNew);
+		clearUniqueFindersCache(listTypeModelImpl, false);
+		cacheUniqueFindersCache(listTypeModelImpl);
 
 		listType.resetOriginalValues();
 
@@ -1385,7 +1384,7 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 		query.append(_SQL_SELECT_LISTTYPE_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

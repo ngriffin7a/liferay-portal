@@ -130,6 +130,7 @@ public class CounterLocalServiceTest {
 		List<String> arguments = new ArrayList<>();
 
 		arguments.add("-Dliferay.mode=test");
+		arguments.add("-Dsun.zip.disableMemoryMapping=true");
 
 		for (String property :
 				HypersonicServerTestRule.INSTANCE.getJdbcProperties()) {
@@ -173,7 +174,7 @@ public class CounterLocalServiceTest {
 			ids.addAll(Arrays.asList(futures.get()));
 		}
 
-		Assert.assertEquals(total, ids.size());
+		Assert.assertEquals(ids.toString(), total, ids.size());
 
 		Collections.sort(ids);
 

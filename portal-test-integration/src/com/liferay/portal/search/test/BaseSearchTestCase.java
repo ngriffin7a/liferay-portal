@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.IdentityServiceContextFunction;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.test.IdempotentRetryAssert;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -49,8 +48,6 @@ import com.liferay.portal.test.randomizerbumpers.BBCodeRandomizerBumper;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -257,20 +254,9 @@ public abstract class BaseSearchTestCase {
 			final int expectedCount, final SearchContext searchContext)
 		throws Exception {
 
-		IdempotentRetryAssert.retryAssert(
-			10, TimeUnit.SECONDS,
-			new Callable<Void>() {
+		Hits hits = searchBaseModelsCount(searchContext);
 
-				@Override
-				public Void call() throws Exception {
-					int actualCount = searchBaseModelsCount(searchContext);
-
-					Assert.assertEquals(expectedCount, actualCount);
-
-					return null;
-				}
-
-			});
+		Assert.assertEquals(hits.toString(), expectedCount, hits.getLength());
 	}
 
 	protected void assertBaseModelsCount(
@@ -288,25 +274,12 @@ public abstract class BaseSearchTestCase {
 		assertGroupEntriesCount(expectedCount, 0);
 	}
 
-	protected void assertGroupEntriesCount(
-			final long expectedCount, final long userId)
+	protected void assertGroupEntriesCount(long expectedCount, long userId)
 		throws Exception {
 
-		IdempotentRetryAssert.retryAssert(
-			3, TimeUnit.SECONDS,
-			new Callable<Void>() {
+		Hits hits = searchGroupEntries(group.getGroupId(), userId);
 
-				@Override
-				public Void call() throws Exception {
-					long actualCount = searchGroupEntriesCount(
-						group.getGroupId(), userId);
-
-					Assert.assertEquals(expectedCount, actualCount);
-
-					return null;
-				}
-
-			});
+		Assert.assertEquals(hits.toString(), expectedCount, hits.getLength());
 	}
 
 	protected void assertGroupEntriesCount(long expectedCount, User user)
@@ -435,7 +408,7 @@ public abstract class BaseSearchTestCase {
 		assertBaseModelsCount(initialBaseModelsSearchCount + 1, searchContext);
 	}
 
-	protected int searchBaseModelsCount(
+	protected Hits searchBaseModelsCount(
 			Class<?> clazz, long groupId, SearchContext searchContext)
 		throws Exception {
 
@@ -443,12 +416,10 @@ public abstract class BaseSearchTestCase {
 
 		searchContext.setGroupIds(new long[] {groupId});
 
-		Hits results = indexer.search(searchContext);
-
-		return results.getLength();
+		return indexer.search(searchContext);
 	}
 
-	protected int searchBaseModelsCount(SearchContext searchContext)
+	protected Hits searchBaseModelsCount(SearchContext searchContext)
 		throws Exception {
 
 		return searchBaseModelsCount(
@@ -779,10 +750,10 @@ public abstract class BaseSearchTestCase {
 		}
 	}
 
-	protected long searchGroupEntriesCount(long groupId, long userId)
+	protected Hits searchGroupEntries(long groupId, long userId)
 		throws Exception {
 
-		return -1;
+		return null;
 	}
 
 	protected void searchMyEntries() throws Exception {

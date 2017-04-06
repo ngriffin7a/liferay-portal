@@ -87,6 +87,11 @@
 </tr>
 <!--CHILD_PAGE-->
 <tr>
+	<td>CHILD_PAGE_CONTENT</td>
+	<td>//li[contains(@class,'list-group')]//p</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CHILD_PAGE_HEADER</td>
 	<td>//div[@class='sidenav-content']/h4</td>
 	<td></td>
@@ -289,7 +294,7 @@
 </tr>
 <tr>
 	<td>COMPARE_VERSIONS_VERSION_ACTIONS</td>
-	<td>//dl[contains(.,'${key_wikiPageVersion}')]/..//div/a/span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
+	<td>//li[@class='list-group-item']/div[contains(.,'${key_wikiPageVersion}')]/..//div//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
 	<td></td>
 </tr>
 <tr>

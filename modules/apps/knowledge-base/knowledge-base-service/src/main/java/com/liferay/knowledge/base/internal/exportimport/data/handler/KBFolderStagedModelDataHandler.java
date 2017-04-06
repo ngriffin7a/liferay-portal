@@ -20,12 +20,11 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
-import com.liferay.knowledge.base.constants.KBFolderConstants;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBFolderLocalService;
-import com.liferay.knowledge.base.service.persistence.KBFolderPersistence;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
 
 import java.util.List;
@@ -102,12 +101,13 @@ public class KBFolderStagedModelDataHandler
 
 		long userId = portletDataContext.getUserId(kbFolder.getUserUuid());
 
-		if (kbFolder.getParentKBFolderId() !=
-				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+		Map<Long, Long> kbFolderIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				KBFolder.class);
 
-			StagedModelDataHandlerUtil.importReferenceStagedModels(
-				portletDataContext, kbFolder, KBFolder.class);
-		}
+		long parentFolderId = MapUtil.getLong(
+			kbFolderIds, kbFolder.getParentKBFolderId(),
+			kbFolder.getParentKBFolderId());
 
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			kbFolder);
@@ -115,7 +115,7 @@ public class KBFolderStagedModelDataHandler
 		KBFolder importedKBFolder = null;
 
 		if (portletDataContext.isDataStrategyMirror()) {
-			KBFolder existingKBFolder = _kbFolderPersistence.fetchByUUID_G(
+			KBFolder existingKBFolder = _kbFolderLocalService.fetchKBFolder(
 				kbFolder.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingKBFolder == null) {
@@ -123,32 +123,25 @@ public class KBFolderStagedModelDataHandler
 
 				importedKBFolder = _kbFolderLocalService.addKBFolder(
 					userId, portletDataContext.getScopeGroupId(),
-					kbFolder.getClassNameId(), kbFolder.getParentKBFolderId(),
+					kbFolder.getClassNameId(), parentFolderId,
 					kbFolder.getName(), kbFolder.getDescription(),
 					serviceContext);
 			}
 			else {
 				importedKBFolder = _kbFolderLocalService.updateKBFolder(
-					kbFolder.getClassNameId(), kbFolder.getParentKBFolderId(),
-					kbFolder.getKbFolderId(), kbFolder.getName(),
-					kbFolder.getDescription());
+					kbFolder.getClassNameId(), parentFolderId,
+					existingKBFolder.getKbFolderId(), kbFolder.getName(),
+					kbFolder.getDescription(), serviceContext);
 			}
 		}
 		else {
 			importedKBFolder = _kbFolderLocalService.addKBFolder(
 				userId, portletDataContext.getScopeGroupId(),
-				kbFolder.getClassNameId(), kbFolder.getParentKBFolderId(),
-				kbFolder.getName(), kbFolder.getDescription(), serviceContext);
+				kbFolder.getClassNameId(), parentFolderId, kbFolder.getName(),
+				kbFolder.getDescription(), serviceContext);
 		}
 
 		portletDataContext.importClassedModel(kbFolder, importedKBFolder);
-
-		Map<Long, Long> kbFolderIds =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				KBFolder.class);
-
-		kbFolderIds.put(
-			kbFolder.getKbFolderId(), importedKBFolder.getKbFolderId());
 	}
 
 	@Reference(unbind = "-")
@@ -158,14 +151,6 @@ public class KBFolderStagedModelDataHandler
 		_kbFolderLocalService = kbFolderLocalService;
 	}
 
-	@Reference(unbind = "-")
-	protected void setKbFolderPersistence(
-		KBFolderPersistence kbFolderPersistence) {
-
-		_kbFolderPersistence = kbFolderPersistence;
-	}
-
 	private KBFolderLocalService _kbFolderLocalService;
-	private KBFolderPersistence _kbFolderPersistence;
 
 }

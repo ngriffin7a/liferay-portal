@@ -42,7 +42,7 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
- * @see com.liferay.petra.encryptor.Encryptor
+ * @see    com.liferay.petra.encryptor.Encryptor
  */
 public class Encryptor {
 
@@ -259,8 +259,8 @@ public class Encryptor {
 	private static final Log _log = LogFactoryUtil.getLog(Encryptor.class);
 
 	private static final Map<String, Cipher> _decryptCipherMap =
-		new ConcurrentHashMap<>(1, 1f, 1);
+		new ConcurrentHashMap<>(1, 1F, 1);
 	private static final Map<String, Cipher> _encryptCipherMap =
-		new ConcurrentHashMap<>(1, 1f, 1);
+		new ConcurrentHashMap<>(1, 1F, 1);
 
 }

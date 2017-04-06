@@ -40,11 +40,11 @@ if (threadId > 0) {
 		curParentMessage = MBMessageLocalServiceUtil.getMessage(parentMessageId);
 
 		if (Validator.isNull(subject)) {
-			if (curParentMessage.getSubject().startsWith("RE: ")) {
+			if (curParentMessage.getSubject().startsWith(MBMessageConstants.MESSAGE_SUBJECT_PREFIX_RE)) {
 				subject = curParentMessage.getSubject();
 			}
 			else {
-				subject = "RE: " + curParentMessage.getSubject();
+				subject = MBMessageConstants.MESSAGE_SUBJECT_PREFIX_RE + curParentMessage.getSubject();
 			}
 		}
 	}
@@ -114,7 +114,7 @@ if (portletTitleBasedNavigation) {
 }
 %>
 
-<div <%= portletTitleBasedNavigation ? "class=\"container-fluid-1280\"" : StringPool.BLANK %>>
+<div <%= portletTitleBasedNavigation ? "class=\"container-fluid-1280\"" : StringPool.BLANK %> id='<%= renderResponse.getNamespace() + "mbEditPageContainer" %>'>
 	<c:if test="<%= !portletTitleBasedNavigation %>">
 		<c:if test="<%= Validator.isNull(referringPortletResource) %>">
 			<liferay-util:include page="/message_boards/top_links.jsp" servletContext="<%= application %>" />
@@ -131,7 +131,7 @@ if (portletTitleBasedNavigation) {
 		<portlet:param name="mvcRenderCommandName" value="/message_boards/edit_message" />
 	</portlet:actionURL>
 
-	<aui:form action="<%= editMessageURL %>" enctype="multipart/form-data" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveMessage(false);" %>'>
+	<aui:form action="<%= editMessageURL %>" enctype="multipart/form-data" method="post" name="fm" onSubmit="event.preventDefault();">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="messageId" type="hidden" value="<%= messageId %>" />
@@ -216,9 +216,9 @@ if (portletTitleBasedNavigation) {
 
 				<aui:model-context bean="<%= message %>" model="<%= MBMessage.class %>" />
 
-				<aui:input autoFocus="<%= (windowState.equals(WindowState.MAXIMIZED) && !themeDisplay.isFacebook()) %>" name="subject" value="<%= subject %>" />
+				<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" name="subject" value="<%= subject %>" />
 
-				<aui:field-wrapper label="body">
+				<aui:field-wrapper cssClass="message-content" label="body">
 					<c:choose>
 						<c:when test='<%= ((messageId != 0) && message.isFormatBBCode()) || ((messageId == 0) && messageFormat.equals("bbcode")) %>'>
 							<%@ include file="/message_boards/bbcode_editor.jspf" %>
@@ -232,16 +232,16 @@ if (portletTitleBasedNavigation) {
 				</aui:field-wrapper>
 			</aui:fieldset>
 
-			<liferay-ui:custom-attributes-available className="<%= MBMessage.class.getName() %>">
+			<liferay-expando:custom-attributes-available className="<%= MBMessage.class.getName() %>">
 				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="custom-fields">
-					<liferay-ui:custom-attribute-list
+					<liferay-expando:custom-attribute-list
 						className="<%= MBMessage.class.getName() %>"
 						classPK="<%= messageId %>"
 						editable="<%= true %>"
 						label="<%= true %>"
 					/>
 				</aui:fieldset>
-			</liferay-ui:custom-attributes-available>
+			</liferay-expando:custom-attributes-available>
 
 			<c:if test="<%= MBCategoryPermission.contains(permissionChecker, scopeGroupId, categoryId, ActionKeys.ADD_FILE) %>">
 				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="attachments">
@@ -349,6 +349,8 @@ if (portletTitleBasedNavigation) {
 				<c:if test="<%= curParentMessage == null %>">
 
 					<%
+					MBCategory category = MBCategoryLocalServiceUtil.getCategory(categoryId);
+
 					boolean disabled = false;
 					boolean question = threadAsQuestionByDefault;
 
@@ -357,15 +359,15 @@ if (portletTitleBasedNavigation) {
 
 						if (thread.isQuestion() || message.isAnswer()) {
 							question = true;
+
+							if ((category != null) && category.getDisplayStyle().equals("question")) {
+								disabled = true;
+							}
 						}
 					}
-					else {
-						MBCategory category = MBCategoryLocalServiceUtil.getCategory(categoryId);
-
-						if ((category != null) && category.getDisplayStyle().equals("question")) {
-							disabled = true;
-							question = true;
-						}
+					else if ((category != null) && category.getDisplayStyle().equals("question")) {
+						disabled = true;
+						question = true;
 					}
 					%>
 
@@ -427,10 +429,10 @@ if (portletTitleBasedNavigation) {
 				</aui:fieldset>
 			</c:if>
 
-			<c:if test="<%= (message == null) && PropsValues.CAPTCHA_CHECK_PORTLET_MESSAGE_BOARDS_EDIT_MESSAGE %>">
+			<c:if test="<%= (message == null) && captchaConfiguration.messageBoardsEditMessageCaptchaEnabled() %>">
 				<portlet:resourceURL id="/message_boards/captcha" var="captchaURL" />
 
-				<liferay-ui:captcha url="<%= captchaURL %>" />
+				<liferay-captcha:captcha url="<%= captchaURL %>" />
 			</c:if>
 		</aui:fieldset-group>
 
@@ -473,7 +475,7 @@ if (portletTitleBasedNavigation) {
 			<aui:button cssClass="btn-lg" disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
 
 			<c:if test="<%= themeDisplay.isSignedIn() %>">
-				<aui:button cssClass="btn-lg" name="saveButton" onClick='<%= renderResponse.getNamespace() + "saveMessage(true);" %>' value="<%= saveButtonLabel %>" />
+				<aui:button cssClass="btn-lg" name="saveButton" value="<%= saveButtonLabel %>" />
 			</c:if>
 
 			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
@@ -481,20 +483,22 @@ if (portletTitleBasedNavigation) {
 	</aui:form>
 </div>
 
-<aui:script>
-	function <portlet:namespace />saveMessage(draft) {
-		var form = AUI.$(document.<portlet:namespace />fm);
-
-		form.fm('<%= Constants.CMD %>').val('<%= (message == null) ? Constants.ADD : Constants.UPDATE %>');
-		form.fm('body').val(<portlet:namespace />getHTML());
-
-		if (!draft) {
-			form.fm('workflowAction').val(<%= WorkflowConstants.ACTION_PUBLISH %>);
+<aui:script require="message-boards-web/message_boards/js/MBPortlet.es">
+	new messageBoardsWebMessage_boardsJsMBPortletEs.default(
+		{
+			constants: {
+				'ACTION_PUBLISH': '<%= WorkflowConstants.ACTION_PUBLISH %>',
+				'ACTION_SAVE_DRAFT': '<%= WorkflowConstants.ACTION_SAVE_DRAFT %>',
+				'CMD': '<%= Constants.CMD %>'
+			},
+			currentAction: '<%= (message == null) ? Constants.ADD : Constants.UPDATE %>',
+			namespace: '<portlet:namespace />',
+			rootNode: '#<portlet:namespace/>mbEditPageContainer'
 		}
+	);
+</aui:script>
 
-		submitForm(form);
-	}
-
+<aui:script>
 	<c:choose>
 		<c:when test="<%= TrashUtil.isTrashEnabled(scopeGroupId) %>">
 			function <portlet:namespace />trashAttachment(index, action) {

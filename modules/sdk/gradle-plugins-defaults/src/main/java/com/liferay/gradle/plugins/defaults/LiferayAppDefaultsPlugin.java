@@ -51,17 +51,22 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		String appDescription = null;
-		String appTitle = null;
-		String appVersion = null;
+		String appDescription = GradleUtil.getProperty(
+			project, "app.description", (String)null);
+		String appTitle = GradleUtil.getProperty(
+			project, "app.title", (String)null);
+		String appVersion = GradleUtil.getProperty(
+			project, "app.version", (String)null);
 
-		File appBndFile = project.file("app.bnd");
+		if (Validator.isNull(appDescription)) {
+			File appBndFile = project.file("app.bnd");
 
-		if (appBndFile.exists()) {
-			Properties properties = GUtil.loadProperties(appBndFile);
+			if (appBndFile.exists()) {
+				Properties properties = GUtil.loadProperties(appBndFile);
 
-			appDescription = properties.getProperty(
-				"Liferay-Releng-App-Description");
+				appDescription = properties.getProperty(
+					"Liferay-Releng-App-Description");
+			}
 		}
 
 		Properties appProperties = null;
@@ -78,8 +83,14 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 
 		if (appProperties != null) {
-			appTitle = appProperties.getProperty("app.marketplace.title");
-			appVersion = appProperties.getProperty("app.marketplace.version");
+			if (Validator.isNull(appTitle)) {
+				appTitle = appProperties.getProperty("app.marketplace.title");
+			}
+
+			if (Validator.isNull(appVersion)) {
+				appVersion = appProperties.getProperty(
+					"app.marketplace.version");
+			}
 		}
 
 		_applyPlugins(project);
@@ -88,8 +99,8 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 		_configureAppJavadocBuilder(project, privateProject);
 		_configureAppTLDDocBuilder(project, privateProject);
-		configureProject(project, appDescription, appVersion);
-		configureTaskAppJavadoc(project, appTitle, appVersion);
+		_configureProject(project, appDescription, appVersion);
+		_configureTaskAppJavadoc(project, appTitle, appVersion);
 
 		if (privateProject != null) {
 			Gradle gradle = project.getGradle();
@@ -110,104 +121,6 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 				_forceProjectHierarchyEvaluation(privateProject);
 			}
 		}
-	}
-
-	/**
-	 * @deprecated As of 1.2.0
-	 */
-	@Deprecated
-	protected void configureAppJavadocBuilder(Project project) {
-		_configureAppJavadocBuilder(project, null);
-	}
-
-	protected void configureProject(
-		Project project, String description, String version) {
-
-		if (Validator.isNotNull(description)) {
-			project.setDescription(description);
-		}
-
-		if (Validator.isNotNull(version)) {
-			project.setVersion(version);
-		}
-	}
-
-	protected void configureTaskAppJavadoc(
-		Project project, String appTitle, String appVersion) {
-
-		Javadoc javadoc = (Javadoc)GradleUtil.getTask(
-			project, AppJavadocBuilderPlugin.APP_JAVADOC_TASK_NAME);
-
-		File portalRootDir = GradleUtil.getRootDir(
-			project.getRootProject(), "portal-impl");
-
-		if (portalRootDir != null) {
-			File stylesheetFile = new File(
-				portalRootDir, "tools/styles/javadoc.css");
-
-			if (stylesheetFile.exists()) {
-				StandardJavadocDocletOptions standardJavadocDocletOptions =
-					(StandardJavadocDocletOptions)javadoc.getOptions();
-
-				standardJavadocDocletOptions.setStylesheetFile(stylesheetFile);
-			}
-		}
-
-		if (Validator.isNotNull(appTitle) && Validator.isNotNull(appVersion)) {
-			String title = String.format("%s %s API", appTitle, appVersion);
-
-			javadoc.setTitle(title);
-		}
-	}
-
-	protected String getAppJavadocGroupName(Project project) {
-		String groupName = project.getDescription();
-
-		if (Validator.isNull(groupName)) {
-			groupName = project.getName();
-		}
-
-		TaskContainer taskContainer = project.getTasks();
-
-		WritePropertiesTask recordArtifactTask =
-			(WritePropertiesTask)taskContainer.findByName(
-				LiferayRelengPlugin.RECORD_ARTIFACT_TASK_NAME);
-
-		if (recordArtifactTask != null) {
-			String artifactURL = null;
-
-			File artifactPropertiesFile = recordArtifactTask.getOutputFile();
-
-			if (artifactPropertiesFile.exists()) {
-				Properties properties = GUtil.loadProperties(
-					artifactPropertiesFile);
-
-				artifactURL = properties.getProperty("artifact.url");
-			}
-
-			if (Validator.isNotNull(artifactURL)) {
-				int start = artifactURL.lastIndexOf('/') + 1;
-				int end = artifactURL.lastIndexOf('.');
-
-				int pos = artifactURL.indexOf('-', start);
-
-				String moduleName = artifactURL.substring(start, pos);
-				String moduleVersion = artifactURL.substring(pos + 1, end);
-
-				StringBuilder sb = new StringBuilder();
-
-				sb.append("Module ");
-				sb.append(moduleName);
-				sb.append(' ');
-				sb.append(moduleVersion);
-				sb.append(" - ");
-				sb.append(groupName);
-
-				groupName = sb.toString();
-			}
-		}
-
-		return groupName;
 	}
 
 	private void _applyPlugins(Project project) {
@@ -251,7 +164,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 				@SuppressWarnings("unused")
 				public String doCall(Project subproject) {
-					return getAppJavadocGroupName(subproject);
+					return _getAppJavadocGroupName(subproject);
 				}
 
 			});
@@ -275,6 +188,46 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		appTLDDocBuilderExtension.subprojects(privateProject.getSubprojects());
 	}
 
+	private void _configureProject(
+		Project project, String description, String version) {
+
+		if (Validator.isNotNull(description)) {
+			project.setDescription(description);
+		}
+
+		if (Validator.isNotNull(version)) {
+			project.setVersion(version);
+		}
+	}
+
+	private void _configureTaskAppJavadoc(
+		Project project, String appTitle, String appVersion) {
+
+		Javadoc javadoc = (Javadoc)GradleUtil.getTask(
+			project, AppJavadocBuilderPlugin.APP_JAVADOC_TASK_NAME);
+
+		File portalRootDir = GradleUtil.getRootDir(
+			project.getRootProject(), "portal-impl");
+
+		if (portalRootDir != null) {
+			File stylesheetFile = new File(
+				portalRootDir, "tools/styles/javadoc.css");
+
+			if (stylesheetFile.exists()) {
+				StandardJavadocDocletOptions standardJavadocDocletOptions =
+					(StandardJavadocDocletOptions)javadoc.getOptions();
+
+				standardJavadocDocletOptions.setStylesheetFile(stylesheetFile);
+			}
+		}
+
+		if (Validator.isNotNull(appTitle) && Validator.isNotNull(appVersion)) {
+			String title = String.format("%s %s API", appTitle, appVersion);
+
+			javadoc.setTitle(title);
+		}
+	}
+
 	private void _forceProjectHierarchyEvaluation(Project project) {
 		GradleInternal gradleInternal = (GradleInternal)project.getGradle();
 
@@ -284,6 +237,55 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 			ProjectConfigurer.class);
 
 		projectConfigurer.configureHierarchy((ProjectInternal)project);
+	}
+
+	private String _getAppJavadocGroupName(Project project) {
+		String groupName = project.getDescription();
+
+		if (Validator.isNull(groupName)) {
+			groupName = project.getName();
+		}
+
+		TaskContainer taskContainer = project.getTasks();
+
+		WritePropertiesTask recordArtifactTask =
+			(WritePropertiesTask)taskContainer.findByName(
+				LiferayRelengPlugin.RECORD_ARTIFACT_TASK_NAME);
+
+		if (recordArtifactTask != null) {
+			String artifactURL = null;
+
+			File artifactPropertiesFile = recordArtifactTask.getOutputFile();
+
+			if (artifactPropertiesFile.exists()) {
+				Properties properties = GUtil.loadProperties(
+					artifactPropertiesFile);
+
+				artifactURL = properties.getProperty("artifact.url");
+			}
+
+			if (Validator.isNotNull(artifactURL)) {
+				int start = artifactURL.lastIndexOf('/') + 1;
+				int end = artifactURL.lastIndexOf('.');
+
+				int pos = artifactURL.indexOf('-', start);
+
+				String moduleName = artifactURL.substring(start, pos);
+				String moduleVersion = artifactURL.substring(pos + 1, end);
+
+				StringBuilder sb = new StringBuilder();
+
+				sb.append(groupName);
+				sb.append(" - com.liferay:");
+				sb.append(moduleName);
+				sb.append(':');
+				sb.append(moduleVersion);
+
+				groupName = sb.toString();
+			}
+		}
+
+		return groupName;
 	}
 
 	private Properties _getAppProperties(Project project) {

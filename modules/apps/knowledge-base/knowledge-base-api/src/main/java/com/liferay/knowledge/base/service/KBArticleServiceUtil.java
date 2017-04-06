@@ -125,6 +125,12 @@ public class KBArticleServiceUtil {
 			orderByComparator);
 	}
 
+	public static com.liferay.knowledge.base.model.KBArticle[] getPreviousAndNextKBArticles(
+		long kbArticleId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().getPreviousAndNextKBArticles(kbArticleId);
+	}
+
 	public static int addKBArticlesMarkdown(long groupId,
 		long parentKBFolderId, java.lang.String fileName,
 		boolean prioritizeByNumericalPrefix, java.io.InputStream inputStream,
@@ -218,8 +224,9 @@ public class KBArticleServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 1.1.0, replaced by {@link #getAllDescendantKBArticles(
-	long, long, int, OrderByComparator)}
+	* @deprecated As of 1.1.0, replaced by {@link
+	#getAllDescendantKBArticles(long, long, int,
+	OrderByComparator)}
 	*/
 	@Deprecated
 	public static java.util.List<com.liferay.knowledge.base.model.KBArticle> getAllDescendantKBArticles(
@@ -306,8 +313,7 @@ public class KBArticleServiceUtil {
 
 	/**
 	* @deprecated As of 1.1.0, replaced by {@link #getKBArticles(long, long,
-	int, int, int,
-	OrderByComparator)}
+	int, int, int, OrderByComparator)}
 	*/
 	@Deprecated
 	public static java.util.List<com.liferay.knowledge.base.model.KBArticle> getSiblingKBArticles(

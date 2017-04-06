@@ -44,13 +44,17 @@ public class KBArticleKBArticleSelector implements KBArticleSelector {
 				ancestorResourcePrimKey, WorkflowConstants.STATUS_APPROVED);
 
 		if (ancestorKBArticle == null) {
-			return new KBArticleSelection(null, false);
+			return new KBArticleSelection(null, true);
 		}
 
 		if (resourcePrimKey ==
 				KBArticleConstants.DEFAULT_PARENT_RESOURCE_PRIM_KEY) {
 
-			return new KBArticleSelection(ancestorKBArticle, true);
+			KBArticle kbArticle =
+				_kbArticleLocalService.fetchFirstChildKBArticle(
+					groupId, ancestorKBArticle.getResourcePrimKey());
+
+			return new KBArticleSelection(kbArticle, true);
 		}
 
 		KBArticle kbArticle = _kbArticleLocalService.fetchLatestKBArticle(
@@ -72,7 +76,7 @@ public class KBArticleKBArticleSelector implements KBArticleSelector {
 				ancestorResourcePrimKey, WorkflowConstants.STATUS_APPROVED);
 
 		if (ancestorKBArticle == null) {
-			return new KBArticleSelection(null, false);
+			return new KBArticleSelection(null, true);
 		}
 
 		KBArticle kbArticle =

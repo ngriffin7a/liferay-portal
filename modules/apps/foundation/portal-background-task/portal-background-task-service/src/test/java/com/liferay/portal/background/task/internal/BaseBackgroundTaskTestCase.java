@@ -113,7 +113,8 @@ public abstract class BaseBackgroundTaskTestCase {
 		Map<String, Serializable> threadLocalValues) {
 
 		Assert.assertTrue(MapUtil.isNotEmpty(threadLocalValues));
-		Assert.assertEquals(7, threadLocalValues.size());
+		Assert.assertEquals(
+			threadLocalValues.toString(), 7, threadLocalValues.size());
 		Assert.assertEquals(_companyId, threadLocalValues.get("companyId"));
 		Assert.assertEquals(
 			_clusterInvokeEnabled, threadLocalValues.get("clusterInvoke"));
@@ -142,8 +143,8 @@ public abstract class BaseBackgroundTaskTestCase {
 	protected HashMap<String, Serializable> initializeThreadLocalValues() {
 		HashMap<String, Serializable> threadLocalValues = new HashMap<>();
 
-		threadLocalValues.put("companyId", _companyId);
 		threadLocalValues.put("clusterInvoke", _clusterInvokeEnabled);
+		threadLocalValues.put("companyId", _companyId);
 		threadLocalValues.put("defaultLocale", _defaultLocale);
 		threadLocalValues.put("groupId", _groupId);
 		threadLocalValues.put("principalName", _principalName);

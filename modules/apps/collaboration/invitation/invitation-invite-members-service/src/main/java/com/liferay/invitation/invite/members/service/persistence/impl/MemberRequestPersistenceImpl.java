@@ -1735,7 +1735,7 @@ public class MemberRequestPersistenceImpl extends BasePersistenceImpl<MemberRequ
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((MemberRequestModelImpl)memberRequest);
+		clearUniqueFindersCache((MemberRequestModelImpl)memberRequest, true);
 	}
 
 	@Override
@@ -1747,72 +1747,18 @@ public class MemberRequestPersistenceImpl extends BasePersistenceImpl<MemberRequ
 			entityCache.removeResult(MemberRequestModelImpl.ENTITY_CACHE_ENABLED,
 				MemberRequestImpl.class, memberRequest.getPrimaryKey());
 
-			clearUniqueFindersCache((MemberRequestModelImpl)memberRequest);
+			clearUniqueFindersCache((MemberRequestModelImpl)memberRequest, true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		MemberRequestModelImpl memberRequestModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] { memberRequestModelImpl.getKey() };
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_KEY, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_KEY, args,
-				memberRequestModelImpl);
-
-			args = new Object[] {
-					memberRequestModelImpl.getGroupId(),
-					memberRequestModelImpl.getReceiverUserId(),
-					memberRequestModelImpl.getStatus()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_G_R_S, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_G_R_S, args,
-				memberRequestModelImpl);
-		}
-		else {
-			if ((memberRequestModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_KEY.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] { memberRequestModelImpl.getKey() };
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_KEY, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_KEY, args,
-					memberRequestModelImpl);
-			}
-
-			if ((memberRequestModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_G_R_S.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						memberRequestModelImpl.getGroupId(),
-						memberRequestModelImpl.getReceiverUserId(),
-						memberRequestModelImpl.getStatus()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_G_R_S, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_G_R_S, args,
-					memberRequestModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		MemberRequestModelImpl memberRequestModelImpl) {
 		Object[] args = new Object[] { memberRequestModelImpl.getKey() };
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_KEY, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_KEY, args);
-
-		if ((memberRequestModelImpl.getColumnBitmask() &
-				FINDER_PATH_FETCH_BY_KEY.getColumnBitmask()) != 0) {
-			args = new Object[] { memberRequestModelImpl.getOriginalKey() };
-
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_KEY, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_KEY, args);
-		}
+		finderCache.putResult(FINDER_PATH_COUNT_BY_KEY, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_KEY, args,
+			memberRequestModelImpl, false);
 
 		args = new Object[] {
 				memberRequestModelImpl.getGroupId(),
@@ -1820,12 +1766,43 @@ public class MemberRequestPersistenceImpl extends BasePersistenceImpl<MemberRequ
 				memberRequestModelImpl.getStatus()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_G_R_S, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_G_R_S, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_G_R_S, args,
+			Long.valueOf(1), false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_G_R_S, args,
+			memberRequestModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		MemberRequestModelImpl memberRequestModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] { memberRequestModelImpl.getKey() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_KEY, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_KEY, args);
+		}
+
+		if ((memberRequestModelImpl.getColumnBitmask() &
+				FINDER_PATH_FETCH_BY_KEY.getColumnBitmask()) != 0) {
+			Object[] args = new Object[] { memberRequestModelImpl.getOriginalKey() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_KEY, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_KEY, args);
+		}
+
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					memberRequestModelImpl.getGroupId(),
+					memberRequestModelImpl.getReceiverUserId(),
+					memberRequestModelImpl.getStatus()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_R_S, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_R_S, args);
+		}
 
 		if ((memberRequestModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_G_R_S.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					memberRequestModelImpl.getOriginalGroupId(),
 					memberRequestModelImpl.getOriginalReceiverUserId(),
 					memberRequestModelImpl.getOriginalStatus()
@@ -1993,8 +1970,31 @@ public class MemberRequestPersistenceImpl extends BasePersistenceImpl<MemberRequ
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !MemberRequestModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!MemberRequestModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] {
+					memberRequestModelImpl.getReceiverUserId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_RECEIVERUSERID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_RECEIVERUSERID,
+				args);
+
+			args = new Object[] {
+					memberRequestModelImpl.getReceiverUserId(),
+					memberRequestModelImpl.getStatus()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_S, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_R_S,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -2043,8 +2043,8 @@ public class MemberRequestPersistenceImpl extends BasePersistenceImpl<MemberRequ
 			MemberRequestImpl.class, memberRequest.getPrimaryKey(),
 			memberRequest, false);
 
-		clearUniqueFindersCache(memberRequestModelImpl);
-		cacheUniqueFindersCache(memberRequestModelImpl, isNew);
+		clearUniqueFindersCache(memberRequestModelImpl, false);
+		cacheUniqueFindersCache(memberRequestModelImpl);
 
 		memberRequest.resetOriginalValues();
 
@@ -2226,7 +2226,7 @@ public class MemberRequestPersistenceImpl extends BasePersistenceImpl<MemberRequ
 		query.append(_SQL_SELECT_MEMBERREQUEST_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

@@ -55,6 +55,7 @@ import java.io.Writer;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,11 +66,13 @@ import java.util.concurrent.Future;
 import org.apache.commons.compress.archivers.zip.UnsupportedZipFeatureException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.pdfbox.exceptions.CryptographyException;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.txt.UniversalEncodingDetector;
 import org.apache.tools.ant.DirectoryScanner;
 
 import org.mozilla.intl.chardet.nsDetector;
@@ -388,7 +391,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		String text = null;
 
 		try {
-			Tika tika = new Tika(_tikaConfig);
+			Tika tika = new Tika(TikaConfigHolder._tikaConfig);
 
 			tika.setMaxStringLength(maxStringLength);
 
@@ -417,15 +420,37 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				text = future.get();
 			}
 			else {
-				text = tika.parseToString(is);
+				TikaInputStream tikaInputStream = TikaInputStream.get(is);
+
+				UniversalEncodingDetector universalEncodingDetector =
+					new UniversalEncodingDetector();
+
+				Metadata metadata = new Metadata();
+
+				Charset charset = universalEncodingDetector.detect(
+					tikaInputStream, metadata);
+
+				String contentEncoding = StringPool.BLANK;
+
+				if (charset != null) {
+					contentEncoding = charset.name();
+				}
+
+				if (!contentEncoding.equals(StringPool.BLANK)) {
+					metadata.set("Content-Encoding", contentEncoding);
+					metadata.set(
+						"Content-Type",
+						"text/plain; charset=" + contentEncoding);
+				}
+
+				text = tika.parseToString(tikaInputStream, metadata);
 			}
 		}
 		catch (Throwable t) {
 			Throwable throwable = ExceptionUtils.getRootCause(t);
 
-			if ((throwable instanceof CryptographyException) ||
-				(throwable instanceof EncryptedDocumentException) ||
-				(throwable instanceof UnsupportedZipFeatureException)) {
+			if (throwable instanceof EncryptedDocumentException ||
+				throwable instanceof UnsupportedZipFeatureException) {
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(
@@ -1110,23 +1135,15 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	};
 
 	private static final String[] _SAFE_FILE_NAME_2 = {
-		"_AMP_", "_CP_", "_OP_", "_SEM_"
+		PropsValues.DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_AMPERSAND,
+		PropsValues.DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_CLOSE_PARENTHESIS,
+		PropsValues.DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_OPEN_PARENTHESIS,
+		PropsValues.DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_SEMICOLON
 	};
 
 	private static final Log _log = LogFactoryUtil.getLog(FileImpl.class);
 
 	private static final FileImpl _instance = new FileImpl();
-
-	private static final TikaConfig _tikaConfig;
-
-	static {
-		try {
-			_tikaConfig = new TikaConfig();
-		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
-		}
-	}
 
 	private static class ExtractTextProcessCallable
 		implements ProcessCallable<String> {
@@ -1137,7 +1154,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 		@Override
 		public String call() throws ProcessException {
-			Tika tika = new Tika(_tikaConfig);
+			Tika tika = new Tika(TikaConfigHolder._tikaConfig);
 
 			try {
 				return tika.parseToString(
@@ -1151,6 +1168,21 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		private static final long serialVersionUID = 1L;
 
 		private final byte[] _data;
+
+	}
+
+	private static class TikaConfigHolder {
+
+		private static final TikaConfig _tikaConfig;
+
+		static {
+			try {
+				_tikaConfig = new TikaConfig();
+			}
+			catch (Exception e) {
+				throw new ExceptionInInitializerError(e);
+			}
+		}
 
 	}
 

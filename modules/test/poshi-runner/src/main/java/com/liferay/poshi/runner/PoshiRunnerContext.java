@@ -110,7 +110,7 @@ public class PoshiRunnerContext {
 			PoshiRunnerGetterUtil.getCommandNameFromClassCommandName(
 				classCommandName);
 
-		return PoshiRunnerContext.getFunctionLocatorCount(
+		return getFunctionLocatorCount(
 			StringUtil.upperCaseFirstLetter(commandName));
 	}
 
@@ -760,10 +760,10 @@ public class PoshiRunnerContext {
 	private static boolean _isIgnorableCommandNames(
 		Element rootElement, Element commandElement, String commandName) {
 
-		if (commandElement.attributeValue("disabled") != null) {
-			String disabled = commandElement.attributeValue("disabled");
+		if (commandElement.attributeValue("ignore") != null) {
+			String ignore = commandElement.attributeValue("ignore");
 
-			if (disabled.equals("true")) {
+			if (ignore.equals("true")) {
 				return true;
 			}
 		}
@@ -1229,6 +1229,7 @@ public class PoshiRunnerContext {
 
 		_testCaseAvailablePropertyNames.add("known-issues");
 		_testCaseAvailablePropertyNames.add("priority");
+		_testCaseAvailablePropertyNames.add("test.run.environment");
 
 		String testCaseRequiredPropertyNames =
 			PropsValues.TEST_CASE_REQUIRED_PROPERTY_NAMES;

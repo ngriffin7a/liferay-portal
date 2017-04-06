@@ -4149,7 +4149,7 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((UserGroupModelImpl)userGroup);
+		clearUniqueFindersCache((UserGroupModelImpl)userGroup, true);
 	}
 
 	@Override
@@ -4161,51 +4161,37 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 			entityCache.removeResult(UserGroupModelImpl.ENTITY_CACHE_ENABLED,
 				UserGroupImpl.class, userGroup.getPrimaryKey());
 
-			clearUniqueFindersCache((UserGroupModelImpl)userGroup);
+			clearUniqueFindersCache((UserGroupModelImpl)userGroup, true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		UserGroupModelImpl userGroupModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					userGroupModelImpl.getCompanyId(),
-					userGroupModelImpl.getName()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_C_N, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_C_N, args,
-				userGroupModelImpl);
-		}
-		else {
-			if ((userGroupModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_C_N.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						userGroupModelImpl.getCompanyId(),
-						userGroupModelImpl.getName()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_C_N, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_C_N, args,
-					userGroupModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		UserGroupModelImpl userGroupModelImpl) {
 		Object[] args = new Object[] {
 				userGroupModelImpl.getCompanyId(), userGroupModelImpl.getName()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_C_N, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_C_N, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_C_N, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_C_N, args,
+			userGroupModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		UserGroupModelImpl userGroupModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					userGroupModelImpl.getCompanyId(),
+					userGroupModelImpl.getName()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_N, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_C_N, args);
+		}
 
 		if ((userGroupModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_C_N.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					userGroupModelImpl.getOriginalCompanyId(),
 					userGroupModelImpl.getOriginalName()
 				};
@@ -4386,8 +4372,44 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !UserGroupModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!UserGroupModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { userGroupModelImpl.getUuid() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
+				args);
+
+			args = new Object[] {
+					userGroupModelImpl.getUuid(),
+					userGroupModelImpl.getCompanyId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
+				args);
+
+			args = new Object[] { userGroupModelImpl.getCompanyId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				args);
+
+			args = new Object[] {
+					userGroupModelImpl.getCompanyId(),
+					userGroupModelImpl.getParentUserGroupId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_P, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_P,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -4471,8 +4493,8 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 		entityCache.putResult(UserGroupModelImpl.ENTITY_CACHE_ENABLED,
 			UserGroupImpl.class, userGroup.getPrimaryKey(), userGroup, false);
 
-		clearUniqueFindersCache(userGroupModelImpl);
-		cacheUniqueFindersCache(userGroupModelImpl, isNew);
+		clearUniqueFindersCache(userGroupModelImpl, false);
+		cacheUniqueFindersCache(userGroupModelImpl);
 
 		userGroup.resetOriginalValues();
 
@@ -4654,7 +4676,7 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 		query.append(_SQL_SELECT_USERGROUP_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

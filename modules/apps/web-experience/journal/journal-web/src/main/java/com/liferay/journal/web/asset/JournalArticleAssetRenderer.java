@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
@@ -53,7 +54,6 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -136,6 +136,20 @@ public class JournalArticleAssetRenderer
 
 	@Override
 	public String getDiscussionPath() {
+		if (_journalServiceConfiguration == null) {
+			try {
+				_journalServiceConfiguration =
+					ConfigurationProviderUtil.getCompanyConfiguration(
+						JournalServiceConfiguration.class,
+						_article.getCompanyId());
+			}
+			catch (Exception e) {
+				_log.error(e, e);
+
+				return null;
+			}
+		}
+
 		if (_journalServiceConfiguration.articleCommentsEnabled()) {
 			return "edit_article_discussion";
 		}
@@ -160,14 +174,17 @@ public class JournalArticleAssetRenderer
 
 	@Override
 	public String getJspPath(HttpServletRequest request, String template) {
+		if (_article.isInTrash() && template.equals(TEMPLATE_FULL_CONTENT)) {
+			return "/trash/" + template + ".jsp";
+		}
+
 		if (template.equals(TEMPLATE_ABSTRACT) ||
 			template.equals(TEMPLATE_FULL_CONTENT)) {
 
 			return "/asset/" + template + ".jsp";
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -189,7 +206,7 @@ public class JournalArticleAssetRenderer
 		String summary = _article.getDescription(locale);
 
 		if (Validator.isNotNull(summary)) {
-			return StringUtil.shorten(summary, 200);
+			return summary;
 		}
 
 		try {
@@ -208,8 +225,7 @@ public class JournalArticleAssetRenderer
 					_article, null, null, LanguageUtil.getLanguageId(locale), 1,
 					portletRequestModel, themeDisplay);
 
-			summary = StringUtil.shorten(
-				HtmlUtil.stripHtml(articleDisplay.getContent()), 200);
+			summary = HtmlUtil.stripHtml(articleDisplay.getContent());
 		}
 		catch (Exception e) {
 		}
@@ -271,9 +287,13 @@ public class JournalArticleAssetRenderer
 			LiferayPortletResponse liferayPortletResponse)
 		throws Exception {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)liferayPortletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		PortletURL portletURL = PortletURLFactoryUtil.create(
 			liferayPortletRequest, JournalPortletKeys.JOURNAL,
-			PortletRequest.RESOURCE_PHASE);
+			themeDisplay.getPlid(), PortletRequest.RESOURCE_PHASE);
 
 		LiferayPortletURL liferayPortletURL = (LiferayPortletURL)portletURL;
 
@@ -548,15 +568,11 @@ public class JournalArticleAssetRenderer
 		return new PortletRequestModel(portletRequest, portletResponse);
 	}
 
+	/**
+	 * @deprecated As of 2.0.0, with no direct replacement
+	 */
+	@Deprecated
 	protected void setJournalServiceConfiguration() {
-		try {
-			_journalServiceConfiguration =
-				ConfigurationProviderUtil.getCompanyConfiguration(
-					JournalServiceConfiguration.class, _article.getCompanyId());
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

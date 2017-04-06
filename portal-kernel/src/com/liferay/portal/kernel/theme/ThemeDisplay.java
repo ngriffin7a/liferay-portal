@@ -41,12 +41,12 @@ import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
-import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.Mergeable;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TimeZoneThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
@@ -116,6 +116,15 @@ public class ThemeDisplay
 	}
 
 	public Account getAccount() {
+		if ((_account == null) && (_company != null)) {
+			try {
+				_account = _company.getAccount();
+			}
+			catch (PortalException pe) {
+				ReflectionUtil.throwException(pe);
+			}
+		}
+
 		return _account;
 	}
 
@@ -258,6 +267,19 @@ public class ThemeDisplay
 	}
 
 	public Contact getContact() {
+		if (_contact == null) {
+			if (_user == null) {
+				return null;
+			}
+
+			try {
+				_contact = _user.getContact();
+			}
+			catch (PortalException pe) {
+				ReflectionUtil.throwException(pe);
+			}
+		}
+
 		return _contact;
 	}
 
@@ -313,6 +335,10 @@ public class ThemeDisplay
 		return _doAsUserLanguageId;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public String getFacebookCanvasPageURL() {
 		return _facebookCanvasPageURL;
 	}
@@ -1016,8 +1042,12 @@ public class ThemeDisplay
 		return _ajax;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public boolean isFacebook() {
-		return _facebook;
+		return false;
 	}
 
 	public boolean isFreeformLayout() {
@@ -1223,8 +1253,6 @@ public class ThemeDisplay
 	public void setCompany(Company company) throws PortalException {
 		_company = company;
 		_companyGroupId = company.getGroupId();
-
-		setAccount(company.getAccount());
 	}
 
 	public void setCompanyLogo(String companyLogo) {
@@ -1259,12 +1287,12 @@ public class ThemeDisplay
 		_doAsUserLanguageId = doAsUserLanguageId;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public void setFacebookCanvasPageURL(String facebookCanvasPageURL) {
 		_facebookCanvasPageURL = facebookCanvasPageURL;
-
-		if (Validator.isNotNull(facebookCanvasPageURL)) {
-			_facebook = true;
-		}
 	}
 
 	public void setFreeformLayout(boolean freeformLayout) {
@@ -1447,12 +1475,6 @@ public class ThemeDisplay
 	}
 
 	public void setPathImage(String pathImage) {
-		if (isFacebook() && !pathImage.startsWith(Http.HTTP_WITH_SLASH) &&
-			!pathImage.startsWith(Http.HTTPS_WITH_SLASH)) {
-
-			pathImage = getPortalURL() + pathImage;
-		}
-
 		_pathImage = pathImage;
 	}
 
@@ -1777,10 +1799,8 @@ public class ThemeDisplay
 		_urlUpdateManager = urlUpdateManager;
 	}
 
-	public void setUser(User user) throws PortalException {
+	public void setUser(User user) {
 		_user = user;
-
-		setContact(user.getContact());
 	}
 
 	public void setWidget(boolean widget) {
@@ -1825,8 +1845,13 @@ public class ThemeDisplay
 	private long _doAsGroupId;
 	private String _doAsUserId = StringPool.BLANK;
 	private String _doAsUserLanguageId = StringPool.BLANK;
-	private boolean _facebook;
+
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	private String _facebookCanvasPageURL;
+
 	private boolean _freeformLayout;
 	private boolean _i18n;
 	private String _i18nLanguageId;

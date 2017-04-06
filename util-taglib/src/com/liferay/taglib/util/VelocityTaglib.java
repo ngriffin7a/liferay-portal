@@ -23,7 +23,6 @@ import com.liferay.taglib.ui.AssetCategoriesSummaryTag;
 import com.liferay.taglib.ui.AssetLinksTag;
 import com.liferay.taglib.ui.AssetTagsSummaryTag;
 import com.liferay.taglib.ui.BreadcrumbTag;
-import com.liferay.taglib.ui.DiscussionTag;
 import com.liferay.taglib.ui.IconTag;
 import com.liferay.taglib.ui.JournalArticleTag;
 import com.liferay.taglib.ui.RatingsTag;
@@ -87,7 +86,7 @@ public interface VelocityTaglib {
 
 	/**
 	 * @deprecated As of 7.0.0, replaced by {@link #breadcrumb(long, String,
-	 * 				boolean, boolean, boolean, boolean)}}
+	 *             boolean, boolean, boolean, boolean)}}
 	 */
 	@Deprecated
 	public void breadcrumb(
@@ -113,7 +112,12 @@ public interface VelocityTaglib {
 
 	public BreadcrumbTag getBreadcrumbTag() throws Exception;
 
-	public DiscussionTag getDiscussionTag() throws Exception;
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
+	public com.liferay.taglib.ui.DiscussionTag getDiscussionTag()
+		throws Exception;
 
 	public IconTag getIconTag() throws Exception;
 

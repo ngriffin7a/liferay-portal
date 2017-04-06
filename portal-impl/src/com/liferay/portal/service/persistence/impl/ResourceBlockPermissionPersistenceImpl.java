@@ -1424,7 +1424,8 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((ResourceBlockPermissionModelImpl)resourceBlockPermission);
+		clearUniqueFindersCache((ResourceBlockPermissionModelImpl)resourceBlockPermission,
+			true);
 	}
 
 	@Override
@@ -1438,53 +1439,40 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 				ResourceBlockPermissionImpl.class,
 				resourceBlockPermission.getPrimaryKey());
 
-			clearUniqueFindersCache((ResourceBlockPermissionModelImpl)resourceBlockPermission);
+			clearUniqueFindersCache((ResourceBlockPermissionModelImpl)resourceBlockPermission,
+				true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		ResourceBlockPermissionModelImpl resourceBlockPermissionModelImpl,
-		boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					resourceBlockPermissionModelImpl.getResourceBlockId(),
-					resourceBlockPermissionModelImpl.getRoleId()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_R_R, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_R_R, args,
-				resourceBlockPermissionModelImpl);
-		}
-		else {
-			if ((resourceBlockPermissionModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_R_R.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						resourceBlockPermissionModelImpl.getResourceBlockId(),
-						resourceBlockPermissionModelImpl.getRoleId()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_R_R, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_R_R, args,
-					resourceBlockPermissionModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		ResourceBlockPermissionModelImpl resourceBlockPermissionModelImpl) {
 		Object[] args = new Object[] {
 				resourceBlockPermissionModelImpl.getResourceBlockId(),
 				resourceBlockPermissionModelImpl.getRoleId()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_R_R, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_R_R, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_R_R, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_R_R, args,
+			resourceBlockPermissionModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		ResourceBlockPermissionModelImpl resourceBlockPermissionModelImpl,
+		boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					resourceBlockPermissionModelImpl.getResourceBlockId(),
+					resourceBlockPermissionModelImpl.getRoleId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_R, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_R_R, args);
+		}
 
 		if ((resourceBlockPermissionModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_R_R.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					resourceBlockPermissionModelImpl.getOriginalResourceBlockId(),
 					resourceBlockPermissionModelImpl.getOriginalRoleId()
 				};
@@ -1630,8 +1618,28 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !ResourceBlockPermissionModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!ResourceBlockPermissionModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] {
+					resourceBlockPermissionModelImpl.getResourceBlockId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_RESOURCEBLOCKID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_RESOURCEBLOCKID,
+				args);
+
+			args = new Object[] { resourceBlockPermissionModelImpl.getRoleId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_ROLEID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_ROLEID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1679,8 +1687,8 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 			resourceBlockPermission.getPrimaryKey(), resourceBlockPermission,
 			false);
 
-		clearUniqueFindersCache(resourceBlockPermissionModelImpl);
-		cacheUniqueFindersCache(resourceBlockPermissionModelImpl, isNew);
+		clearUniqueFindersCache(resourceBlockPermissionModelImpl, false);
+		cacheUniqueFindersCache(resourceBlockPermissionModelImpl);
 
 		resourceBlockPermission.resetOriginalValues();
 
@@ -1859,7 +1867,7 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 		query.append(_SQL_SELECT_RESOURCEBLOCKPERMISSION_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

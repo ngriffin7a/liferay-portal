@@ -18,7 +18,7 @@ import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 
 /**
  * @author Shuyang Zhou
- * @see com.liferay.util.RSSThreadLocal
+ * @see    com.liferay.util.RSSThreadLocal
  */
 public class RSSThreadLocal {
 
@@ -31,6 +31,7 @@ public class RSSThreadLocal {
 	}
 
 	private static final ThreadLocal<Boolean> _exportRSS =
-		new AutoResetThreadLocal<>(RSSThreadLocal.class + "._exportRSS", false);
+		new AutoResetThreadLocal<>(
+			RSSThreadLocal.class + "._exportRSS", () -> Boolean.FALSE);
 
 }

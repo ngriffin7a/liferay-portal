@@ -18,13 +18,12 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
-import com.liferay.exportimport.content.processor.ExportImportContentProcessorController;
-import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
 import com.liferay.journal.exception.FeedTargetLayoutFriendlyUrlException;
 import com.liferay.journal.internal.exportimport.content.processor.JournalFeedExportImportContentProcessor;
 import com.liferay.journal.internal.exportimport.creation.strategy.JournalCreationStrategy;
@@ -37,7 +36,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
@@ -105,7 +104,7 @@ public class JournalFeedStagedModelDataHandler
 		Element feedElement = portletDataContext.getExportDataElement(feed);
 
 		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
-			feed.getGroupId(), PortalUtil.getClassNameId(JournalArticle.class),
+			feed.getGroupId(), _portal.getClassNameId(JournalArticle.class),
 			feed.getDDMStructureKey(), true);
 
 		if (ddmStructure != null) {
@@ -122,7 +121,7 @@ public class JournalFeedStagedModelDataHandler
 		}
 
 		DDMTemplate ddmTemplate = _ddmTemplateLocalService.fetchTemplate(
-			feed.getGroupId(), PortalUtil.getClassNameId(DDMStructure.class),
+			feed.getGroupId(), _portal.getClassNameId(DDMStructure.class),
 			feed.getDDMTemplateKey());
 
 		if (ddmTemplate != null) {
@@ -140,8 +139,7 @@ public class JournalFeedStagedModelDataHandler
 
 		DDMTemplate rendererDDMTemplate =
 			_ddmTemplateLocalService.fetchTemplate(
-				feed.getGroupId(),
-				PortalUtil.getClassNameId(DDMStructure.class),
+				feed.getGroupId(), _portal.getClassNameId(DDMStructure.class),
 				feed.getDDMRendererTemplateKey());
 
 		if (rendererDDMTemplate != null) {
@@ -161,7 +159,7 @@ public class JournalFeedStagedModelDataHandler
 			}
 		}
 
-		_exportImportContentProcessorController.replaceExportContentReferences(
+		_journalFeedExportImportContentProcessor.replaceExportContentReferences(
 			portletDataContext, feed, StringPool.BLANK, true, true);
 
 		portletDataContext.addClassedModel(
@@ -182,7 +180,7 @@ public class JournalFeedStagedModelDataHandler
 			userId = authorId;
 		}
 
-		_exportImportContentProcessorController.replaceImportContentReferences(
+		_journalFeedExportImportContentProcessor.replaceImportContentReferences(
 			portletDataContext, feed, StringPool.BLANK);
 
 		String feedId = feed.getFeedId();
@@ -331,13 +329,13 @@ public class JournalFeedStagedModelDataHandler
 		_journalCreationStrategy = journalCreationStrategy;
 	}
 
-	/**
-	 * @deprecated As of 4.0.0
-	 */
-	@Deprecated
+	@Reference(unbind = "-")
 	protected void setJournalFeedExportImportContentProcessor(
 		JournalFeedExportImportContentProcessor
 			journalFeedExportImportContentProcessor) {
+
+		_journalFeedExportImportContentProcessor =
+			journalFeedExportImportContentProcessor;
 	}
 
 	@Reference(unbind = "-")
@@ -352,14 +350,12 @@ public class JournalFeedStagedModelDataHandler
 
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+	private JournalCreationStrategy _journalCreationStrategy;
+	private JournalFeedExportImportContentProcessor
+		_journalFeedExportImportContentProcessor;
+	private JournalFeedLocalService _journalFeedLocalService;
 
 	@Reference
-	private ExportImportContentProcessorController
-		_exportImportContentProcessorController;
-
-	private JournalCreationStrategy _journalCreationStrategy;
-	private final JournalFeedExportImportContentProcessor
-		_journalFeedExportImportContentProcessor = null;
-	private JournalFeedLocalService _journalFeedLocalService;
+	private Portal _portal;
 
 }

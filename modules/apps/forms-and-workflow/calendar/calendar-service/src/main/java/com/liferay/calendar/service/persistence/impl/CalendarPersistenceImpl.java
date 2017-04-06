@@ -3850,7 +3850,7 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((CalendarModelImpl)calendar);
+		clearUniqueFindersCache((CalendarModelImpl)calendar, true);
 	}
 
 	@Override
@@ -3862,49 +3862,35 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 			entityCache.removeResult(CalendarModelImpl.ENTITY_CACHE_ENABLED,
 				CalendarImpl.class, calendar.getPrimaryKey());
 
-			clearUniqueFindersCache((CalendarModelImpl)calendar);
+			clearUniqueFindersCache((CalendarModelImpl)calendar, true);
 		}
 	}
 
-	protected void cacheUniqueFindersCache(
-		CalendarModelImpl calendarModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					calendarModelImpl.getUuid(), calendarModelImpl.getGroupId()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
-				calendarModelImpl);
-		}
-		else {
-			if ((calendarModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						calendarModelImpl.getUuid(),
-						calendarModelImpl.getGroupId()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
-					calendarModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(CalendarModelImpl calendarModelImpl) {
+	protected void cacheUniqueFindersCache(CalendarModelImpl calendarModelImpl) {
 		Object[] args = new Object[] {
 				calendarModelImpl.getUuid(), calendarModelImpl.getGroupId()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
+			Long.valueOf(1), false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+			calendarModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		CalendarModelImpl calendarModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					calendarModelImpl.getUuid(), calendarModelImpl.getGroupId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+		}
 
 		if ((calendarModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_UUID_G.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					calendarModelImpl.getOriginalUuid(),
 					calendarModelImpl.getOriginalGroupId()
 				};
@@ -4079,8 +4065,54 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !CalendarModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!CalendarModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { calendarModelImpl.getResourceBlockId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_RESOURCEBLOCKID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_RESOURCEBLOCKID,
+				args);
+
+			args = new Object[] { calendarModelImpl.getUuid() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
+				args);
+
+			args = new Object[] {
+					calendarModelImpl.getUuid(),
+					calendarModelImpl.getCompanyId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
+				args);
+
+			args = new Object[] {
+					calendarModelImpl.getGroupId(),
+					calendarModelImpl.getCalendarResourceId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C,
+				args);
+
+			args = new Object[] {
+					calendarModelImpl.getGroupId(),
+					calendarModelImpl.getCalendarResourceId(),
+					calendarModelImpl.getDefaultCalendar()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_D, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_D,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -4187,8 +4219,8 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 		entityCache.putResult(CalendarModelImpl.ENTITY_CACHE_ENABLED,
 			CalendarImpl.class, calendar.getPrimaryKey(), calendar, false);
 
-		clearUniqueFindersCache(calendarModelImpl);
-		cacheUniqueFindersCache(calendarModelImpl, isNew);
+		clearUniqueFindersCache(calendarModelImpl, false);
+		cacheUniqueFindersCache(calendarModelImpl);
 
 		calendar.resetOriginalValues();
 
@@ -4375,7 +4407,7 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 		query.append(_SQL_SELECT_CALENDAR_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

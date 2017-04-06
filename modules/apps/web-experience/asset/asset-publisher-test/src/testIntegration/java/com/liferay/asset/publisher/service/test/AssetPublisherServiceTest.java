@@ -55,6 +55,21 @@ import org.springframework.mock.web.portlet.MockPortletPreferences;
 import org.springframework.mock.web.portlet.MockPortletRequest;
 
 /**
+ * Tests basic capabilities of the Asset Publisher and its integration with
+ * Asset Categories and Tags services including
+ *
+ * <ul>
+ * <li>
+ * Adding vocabularies and categories
+ * </li>
+ * <li>
+ * Adding asset entries
+ * </li>
+ * <li>
+ * Searching for asset entries using category and tag filters
+ * </li>
+ * </ul>
+ *
  * @author Roberto Díaz
  */
 @RunWith(Arquillian.class)
@@ -107,6 +122,7 @@ public class AssetPublisherServiceTest {
 			new long[] {_group.getGroupId()}, false, false);
 
 		Assert.assertEquals(
+			assetEntries.toString(),
 			_assetEntries.size() + expectedAssetEntries.size(),
 			assetEntries.size());
 
@@ -143,6 +159,7 @@ public class AssetPublisherServiceTest {
 			new long[] {_group.getGroupId()}, false, false);
 
 		Assert.assertEquals(
+			assetEntries.toString(),
 			_assetEntries.size() + expectedAssetEntries.size(),
 			assetEntries.size());
 
@@ -170,6 +187,7 @@ public class AssetPublisherServiceTest {
 			new long[] {_group.getGroupId()}, false, false);
 
 		Assert.assertEquals(
+			assetEntries.toString(),
 			_assetEntries.size() + expectedAssetEntries.size(),
 			assetEntries.size());
 

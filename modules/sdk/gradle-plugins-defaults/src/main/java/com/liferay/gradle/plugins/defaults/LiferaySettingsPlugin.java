@@ -76,7 +76,7 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 		}
 	}
 
-	protected Set<Path> getDirPaths(String key, Path rootDirPath) {
+	private Set<Path> _getDirPaths(String key, Path rootDirPath) {
 		String dirNamesString = System.getProperty(key);
 
 		if (Validator.isNull(dirNamesString)) {
@@ -90,28 +90,6 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 		}
 
 		return dirPaths;
-	}
-
-	/**
-	 * @deprecated As of 1.1.0
-	 */
-	@Deprecated
-	protected void includeProject(
-		Settings settings, Path projectDirPath, Path projectPathRootDirPath) {
-
-		_includeProject(settings, projectDirPath, projectPathRootDirPath, "");
-	}
-
-	/**
-	 * @deprecated As of 1.1.0
-	 */
-	@Deprecated
-	protected void includeProjects(
-			final Settings settings, final Path rootDirPath,
-			final Path projectPathRootDirPath)
-		throws IOException {
-
-		_includeProjects(settings, rootDirPath, projectPathRootDirPath, "");
 	}
 
 	private <T extends Enum<T>> Set<T> _getFlags(
@@ -178,8 +156,10 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 		throws IOException {
 
 		final String buildProfile = System.getProperty("build.profile");
-		final Set<Path> excludedDirPaths = getDirPaths(
+		final Set<Path> excludedDirPaths = _getDirPaths(
 			"build.exclude.dirs", rootDirPath);
+		final Set<Path> includedDirPaths = _getDirPaths(
+			"build.include.dirs", rootDirPath);
 		final Set<ProjectDirType> excludedProjectDirTypes = _getFlags(
 			"build.exclude.", ProjectDirType.class);
 
@@ -209,6 +189,12 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 
+					if (!includedDirPaths.isEmpty() &&
+						!_startsWith(dirPath, includedDirPaths)) {
+
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+
 					if (Validator.isNotNull(buildProfile) &&
 						Files.notExists(
 							dirPath.resolve(".lfrbuild-" + buildProfile))) {
@@ -224,6 +210,16 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 				}
 
 			});
+	}
+
+	private boolean _startsWith(Path path, Iterable<Path> parentPaths) {
+		for (Path parentPath : parentPaths) {
+			if (path.startsWith(parentPath)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static enum ProjectDirType {

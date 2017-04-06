@@ -490,10 +490,7 @@ public class JournalArticleFinderImpl
 			session = openSession();
 
 			String sql = CustomSQLUtil.get(
-				getClass(), FIND_BY_EXPIRATION_DATE, queryDefinition,
-				"JournalArticle");
-
-			sql = replaceStatusJoin(sql, queryDefinition);
+				getClass(), FIND_BY_EXPIRATION_DATE, queryDefinition);
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -1386,7 +1383,7 @@ public class JournalArticleFinderImpl
 				titles);
 			sql = CustomSQLUtil.replaceKeywords(
 				sql, "JournalArticleLocalization.description", StringPool.LIKE,
-				false, descriptions);
+				true, descriptions);
 			sql = CustomSQLUtil.replaceKeywords(
 				sql, "JournalArticle.content", StringPool.LIKE, false,
 				contents);

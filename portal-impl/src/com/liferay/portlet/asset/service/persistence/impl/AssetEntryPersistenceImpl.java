@@ -3522,7 +3522,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 * Returns the asset entry where classNameId = &#63; and classPK = &#63; or throws a {@link NoSuchEntryException} if it could not be found.
 	 *
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @return the matching asset entry
 	 * @throws NoSuchEntryException if a matching asset entry could not be found
 	 */
@@ -3558,7 +3558,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 * Returns the asset entry where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	 *
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @return the matching asset entry, or <code>null</code> if a matching asset entry could not be found
 	 */
 	@Override
@@ -3570,7 +3570,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 * Returns the asset entry where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param retrieveFromCache whether to retrieve from the finder cache
 	 * @return the matching asset entry, or <code>null</code> if a matching asset entry could not be found
 	 */
@@ -3661,7 +3661,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 * Removes the asset entry where classNameId = &#63; and classPK = &#63; from the database.
 	 *
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @return the asset entry that was removed
 	 */
 	@Override
@@ -3676,7 +3676,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 * Returns the number of asset entries where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @return the number of matching asset entries
 	 */
 	@Override
@@ -3806,7 +3806,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((AssetEntryModelImpl)assetEntry);
+		clearUniqueFindersCache((AssetEntryModelImpl)assetEntry, true);
 	}
 
 	@Override
@@ -3818,75 +3818,48 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			entityCache.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 				AssetEntryImpl.class, assetEntry.getPrimaryKey());
 
-			clearUniqueFindersCache((AssetEntryModelImpl)assetEntry);
+			clearUniqueFindersCache((AssetEntryModelImpl)assetEntry, true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		AssetEntryModelImpl assetEntryModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					assetEntryModelImpl.getGroupId(),
-					assetEntryModelImpl.getClassUuid()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_G_CU, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU, args,
-				assetEntryModelImpl);
-
-			args = new Object[] {
-					assetEntryModelImpl.getClassNameId(),
-					assetEntryModelImpl.getClassPK()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_C_C, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_C_C, args,
-				assetEntryModelImpl);
-		}
-		else {
-			if ((assetEntryModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_G_CU.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						assetEntryModelImpl.getGroupId(),
-						assetEntryModelImpl.getClassUuid()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_G_CU, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU, args,
-					assetEntryModelImpl);
-			}
-
-			if ((assetEntryModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_C_C.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						assetEntryModelImpl.getClassNameId(),
-						assetEntryModelImpl.getClassPK()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_C_C, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_C_C, args,
-					assetEntryModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		AssetEntryModelImpl assetEntryModelImpl) {
 		Object[] args = new Object[] {
 				assetEntryModelImpl.getGroupId(),
 				assetEntryModelImpl.getClassUuid()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_G_CU, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_G_CU, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU, args,
+			assetEntryModelImpl, false);
+
+		args = new Object[] {
+				assetEntryModelImpl.getClassNameId(),
+				assetEntryModelImpl.getClassPK()
+			};
+
+		finderCache.putResult(FINDER_PATH_COUNT_BY_C_C, args, Long.valueOf(1),
+			false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_C_C, args,
+			assetEntryModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		AssetEntryModelImpl assetEntryModelImpl, boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					assetEntryModelImpl.getGroupId(),
+					assetEntryModelImpl.getClassUuid()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_CU, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
+		}
 
 		if ((assetEntryModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_G_CU.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					assetEntryModelImpl.getOriginalGroupId(),
 					assetEntryModelImpl.getOriginalClassUuid()
 				};
@@ -3895,17 +3868,19 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
 		}
 
-		args = new Object[] {
-				assetEntryModelImpl.getClassNameId(),
-				assetEntryModelImpl.getClassPK()
-			};
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					assetEntryModelImpl.getClassNameId(),
+					assetEntryModelImpl.getClassPK()
+				};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
+		}
 
 		if ((assetEntryModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_C_C.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					assetEntryModelImpl.getOriginalClassNameId(),
 					assetEntryModelImpl.getOriginalClassPK()
 				};
@@ -4074,8 +4049,50 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !AssetEntryModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!AssetEntryModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { assetEntryModelImpl.getGroupId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getCompanyId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getVisible() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getPublishDate() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_PUBLISHDATE, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getExpirationDate() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_EXPIRATIONDATE, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getLayoutUuid() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_LAYOUTUUID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTUUID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -4187,8 +4204,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		entityCache.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 			AssetEntryImpl.class, assetEntry.getPrimaryKey(), assetEntry, false);
 
-		clearUniqueFindersCache(assetEntryModelImpl);
-		cacheUniqueFindersCache(assetEntryModelImpl, isNew);
+		clearUniqueFindersCache(assetEntryModelImpl, false);
+		cacheUniqueFindersCache(assetEntryModelImpl);
 
 		assetEntry.resetOriginalValues();
 
@@ -4385,7 +4402,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		query.append(_SQL_SELECT_ASSETENTRY_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

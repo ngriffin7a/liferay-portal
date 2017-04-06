@@ -338,6 +338,9 @@ AUI.add(
 									destroyOnHide: true,
 									modal: true
 								},
+								dialogIframe: {
+									bodyCssClass: 'dialog-with-footer'
+								},
 								refreshWindow: window,
 								title: Liferay.Language.get('edit-calendar-booking'),
 								uri: Lang.sub(editCalendarBookingURL, data)
@@ -361,7 +364,7 @@ AUI.add(
 						if (schedulerEvent && linkEnabled) {
 							var remoteServices = instance.get('remoteServices');
 
-							if (schedulerEvent.get('recurrence')) {
+							if (schedulerEvent.isRecurring()) {
 								Liferay.RecurrenceUtil.openConfirmationPanel(
 									'invokeTransition',
 									function() {

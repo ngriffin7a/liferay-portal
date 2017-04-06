@@ -1,7 +1,5 @@
 <definition>
 	<command name="addCP">
-		<execute macro="WebContentNavigator#gotoManageTemplates" />
-
 		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Type#clickAtType" locator1="TextInput#NAME" value1="${templateName}" />
@@ -13,7 +11,9 @@
 		<if>
 			<isset var="templateDescription" />
 			<then>
-				<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${templateDescription}" />
+				<execute macro="PortletEntry#inputDescription">
+					<var name="description" value="${templateDescription}" />
+				</execute>
 			</then>
 		</if>
 
@@ -153,7 +153,9 @@
 		<if>
 			<isset var="templateName" />
 			<then>
-				<execute function="Type" locator1="TextInput#NAME" value1="${templateName}" />
+				<execute macro="PortletEntry#inputName">
+					<var name="name" value="${templateName}" />
+				</execute>
 			</then>
 		</if>
 
@@ -277,7 +279,9 @@
 			</then>
 		</while>
 
-		<execute macro="Portlet#viewEmptyMessage" />
+		<execute macro="Portlet#viewEmptyMessage">
+			<var name="message" value="There are no results." />
+		</execute>
 	</command>
 
 	<command name="viewCP">
@@ -359,5 +363,12 @@
 				</if>
 			</then>
 		</if>
+	</command>
+
+	<command name="viewTableEntryCP">
+		<var name="key_ddlTemplateName" value="${templateName}" />
+
+		<execute function="AssertTextEquals" locator1="DDMSelectTemplate#TEMPLATE_TABLE_NAME" value1="${templateName}" />
+		<execute function="AssertTextEquals" locator1="DDMSelectTemplate#TEMPLATE_TABLE_DESCRIPTION" value1="${templateDescription}" />
 	</command>
 </definition>

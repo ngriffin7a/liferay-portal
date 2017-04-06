@@ -165,7 +165,7 @@ public class DefaultLDAPToPortalConverter implements LDAPToPortalConverter {
 
 		LDAPUser ldapUser = new LDAPUser();
 
-		ldapUser.setAutoPassword(password.equals(StringPool.BLANK));
+		ldapUser.setAutoPassword(password == null);
 		ldapUser.setAutoScreenName(autoScreenName);
 
 		Contact contact = _contactPersistence.create(0);
@@ -242,16 +242,23 @@ public class DefaultLDAPToPortalConverter implements LDAPToPortalConverter {
 		ldapUser.setOrganizationIds(null);
 		ldapUser.setPasswordReset(false);
 
-		Object portrait = LDAPUtil.getAttributeObject(
-			attributes, userMappings.getProperty(UserConverterKeys.PORTRAIT));
+		String portrait = userMappings.getProperty(UserConverterKeys.PORTRAIT);
 
-		if (portrait != null) {
-			byte[] portraitBytes = (byte[])portrait;
+		if (Validator.isNotNull(portrait)) {
+			Object portraitObject = LDAPUtil.getAttributeObject(
+				attributes, portrait);
 
-			if (portraitBytes.length > 0) {
-				ldapUser.setPortraitBytes((byte[])portrait);
+			if (portraitObject != null) {
+				byte[] portraitBytes = (byte[])portraitObject;
+
+				if (portraitBytes.length > 0) {
+					ldapUser.setPortraitBytes((byte[])portraitObject);
+				}
+
+				ldapUser.setUpdatePortrait(true);
 			}
-
+		}
+		else {
 			ldapUser.setUpdatePortrait(true);
 		}
 
@@ -267,7 +274,7 @@ public class DefaultLDAPToPortalConverter implements LDAPToPortalConverter {
 
 		ldapUser.setServiceContext(serviceContext);
 
-		ldapUser.setUpdatePassword(!password.equals(StringPool.BLANK));
+		ldapUser.setUpdatePassword(password != null);
 
 		User user = _userPersistence.create(0);
 

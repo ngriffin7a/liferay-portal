@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
@@ -71,80 +70,9 @@ public class AuthenticatedSessionManagerImpl
 			String authType)
 		throws PortalException {
 
-		long userId = GetterUtil.getLong(login);
+		User user = _getAuthenticatedUser(request, login, password, authType);
 
-		Company company = PortalUtil.getCompany(request);
-
-		String requestURI = request.getRequestURI();
-
-		String contextPath = PortalUtil.getPathContext();
-
-		if (requestURI.startsWith(contextPath.concat("/api/liferay"))) {
-			throw new AuthException();
-		}
-		else {
-			Map<String, String[]> headerMap = new HashMap<>();
-
-			Enumeration<String> enu1 = request.getHeaderNames();
-
-			while (enu1.hasMoreElements()) {
-				String name = enu1.nextElement();
-
-				Enumeration<String> enu2 = request.getHeaders(name);
-
-				List<String> headers = new ArrayList<>();
-
-				while (enu2.hasMoreElements()) {
-					String value = enu2.nextElement();
-
-					headers.add(value);
-				}
-
-				headerMap.put(
-					name, headers.toArray(new String[headers.size()]));
-			}
-
-			Map<String, String[]> parameterMap = request.getParameterMap();
-			Map<String, Object> resultsMap = new HashMap<>();
-
-			if (Validator.isNull(authType)) {
-				authType = company.getAuthType();
-			}
-
-			int authResult = Authenticator.FAILURE;
-
-			if (authType.equals(CompanyConstants.AUTH_TYPE_EA)) {
-				authResult = UserLocalServiceUtil.authenticateByEmailAddress(
-					company.getCompanyId(), login, password, headerMap,
-					parameterMap, resultsMap);
-
-				userId = MapUtil.getLong(resultsMap, "userId", userId);
-			}
-			else if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
-				authResult = UserLocalServiceUtil.authenticateByScreenName(
-					company.getCompanyId(), login, password, headerMap,
-					parameterMap, resultsMap);
-
-				userId = MapUtil.getLong(resultsMap, "userId", userId);
-			}
-			else if (authType.equals(CompanyConstants.AUTH_TYPE_ID)) {
-				authResult = UserLocalServiceUtil.authenticateByUserId(
-					company.getCompanyId(), userId, password, headerMap,
-					parameterMap, resultsMap);
-			}
-
-			if (authResult != Authenticator.SUCCESS) {
-				User user = UserLocalServiceUtil.fetchUser(userId);
-
-				if (user != null) {
-					UserLocalServiceUtil.checkLockout(user);
-				}
-
-				throw new AuthException();
-			}
-		}
-
-		return userId;
+		return user.getUserId();
 	}
 
 	@Override
@@ -161,11 +89,10 @@ public class AuthenticatedSessionManagerImpl
 
 		Company company = PortalUtil.getCompany(request);
 
-		long userId = getAuthenticatedUserId(
-			request, login, password, authType);
+		User user = _getAuthenticatedUser(request, login, password, authType);
 
 		if (!PropsValues.AUTH_SIMULTANEOUS_LOGINS) {
-			signOutSimultaneousLogins(userId);
+			signOutSimultaneousLogins(user.getUserId());
 		}
 
 		if (PropsValues.SESSION_ENABLE_PHISHING_PROTECTION) {
@@ -176,9 +103,11 @@ public class AuthenticatedSessionManagerImpl
 
 		String domain = CookieKeys.getDomain(request);
 
-		User user = UserLocalServiceUtil.getUserById(userId);
+		if (Validator.isNull(domain)) {
+			domain = null;
+		}
 
-		String userIdString = String.valueOf(userId);
+		String userIdString = String.valueOf(user.getUserId());
 
 		session.setAttribute("j_username", userIdString);
 
@@ -198,7 +127,7 @@ public class AuthenticatedSessionManagerImpl
 		Cookie companyIdCookie = new Cookie(
 			CookieKeys.COMPANY_ID, String.valueOf(company.getCompanyId()));
 
-		if (Validator.isNotNull(domain)) {
+		if (domain != null) {
 			companyIdCookie.setDomain(domain);
 		}
 
@@ -208,43 +137,13 @@ public class AuthenticatedSessionManagerImpl
 			CookieKeys.ID,
 			Encryptor.encrypt(company.getKeyObj(), userIdString));
 
-		if (Validator.isNotNull(domain)) {
+		if (domain != null) {
 			idCookie.setDomain(domain);
 		}
 
 		idCookie.setPath(StringPool.SLASH);
 
-		Cookie passwordCookie = new Cookie(
-			CookieKeys.PASSWORD,
-			Encryptor.encrypt(company.getKeyObj(), password));
-
-		if (Validator.isNotNull(domain)) {
-			passwordCookie.setDomain(domain);
-		}
-
-		passwordCookie.setPath(StringPool.SLASH);
-
-		Cookie rememberMeCookie = new Cookie(
-			CookieKeys.REMEMBER_ME, Boolean.TRUE.toString());
-
-		if (Validator.isNotNull(domain)) {
-			rememberMeCookie.setDomain(domain);
-		}
-
-		rememberMeCookie.setPath(StringPool.SLASH);
-
 		int loginMaxAge = PropsValues.COMPANY_SECURITY_AUTO_LOGIN_MAX_AGE;
-
-		String userUUID = userIdString.concat(StringPool.PERIOD).concat(
-			String.valueOf(System.nanoTime()));
-
-		Cookie userUUIDCookie = new Cookie(
-			CookieKeys.USER_UUID,
-			Encryptor.encrypt(company.getKeyObj(), userUUID));
-
-		userUUIDCookie.setPath(StringPool.SLASH);
-
-		session.setAttribute(WebKeys.USER_UUID, userUUID);
 
 		if (PropsValues.SESSION_DISABLED) {
 			rememberMe = true;
@@ -253,9 +152,6 @@ public class AuthenticatedSessionManagerImpl
 		if (rememberMe) {
 			companyIdCookie.setMaxAge(loginMaxAge);
 			idCookie.setMaxAge(loginMaxAge);
-			passwordCookie.setMaxAge(loginMaxAge);
-			rememberMeCookie.setMaxAge(loginMaxAge);
-			userUUIDCookie.setMaxAge(loginMaxAge);
 		}
 		else {
 
@@ -267,30 +163,7 @@ public class AuthenticatedSessionManagerImpl
 
 			companyIdCookie.setMaxAge(-1);
 			idCookie.setMaxAge(-1);
-			passwordCookie.setMaxAge(-1);
-			rememberMeCookie.setMaxAge(0);
-			userUUIDCookie.setMaxAge(-1);
 		}
-
-		Cookie loginCookie = new Cookie(CookieKeys.LOGIN, login);
-
-		if (Validator.isNotNull(domain)) {
-			loginCookie.setDomain(domain);
-		}
-
-		loginCookie.setMaxAge(loginMaxAge);
-		loginCookie.setPath(StringPool.SLASH);
-
-		Cookie screenNameCookie = new Cookie(
-			CookieKeys.SCREEN_NAME,
-			Encryptor.encrypt(company.getKeyObj(), user.getScreenName()));
-
-		if (Validator.isNotNull(domain)) {
-			screenNameCookie.setDomain(domain);
-		}
-
-		screenNameCookie.setMaxAge(loginMaxAge);
-		screenNameCookie.setPath(StringPool.SLASH);
 
 		boolean secure = request.isSecure();
 
@@ -308,16 +181,81 @@ public class AuthenticatedSessionManagerImpl
 
 		CookieKeys.addCookie(request, response, companyIdCookie, secure);
 		CookieKeys.addCookie(request, response, idCookie, secure);
-		CookieKeys.addCookie(request, response, userUUIDCookie, secure);
 
 		if (rememberMe) {
+			Cookie loginCookie = new Cookie(CookieKeys.LOGIN, login);
+
+			if (domain != null) {
+				loginCookie.setDomain(domain);
+			}
+
+			loginCookie.setMaxAge(loginMaxAge);
+			loginCookie.setPath(StringPool.SLASH);
+
 			CookieKeys.addCookie(request, response, loginCookie, secure);
+
+			Cookie passwordCookie = new Cookie(
+				CookieKeys.PASSWORD,
+				Encryptor.encrypt(company.getKeyObj(), password));
+
+			if (domain != null) {
+				passwordCookie.setDomain(domain);
+			}
+
+			passwordCookie.setMaxAge(loginMaxAge);
+			passwordCookie.setPath(StringPool.SLASH);
+
 			CookieKeys.addCookie(request, response, passwordCookie, secure);
+
+			Cookie rememberMeCookie = new Cookie(
+				CookieKeys.REMEMBER_ME, Boolean.TRUE.toString());
+
+			if (domain != null) {
+				rememberMeCookie.setDomain(domain);
+			}
+
+			rememberMeCookie.setMaxAge(loginMaxAge);
+			rememberMeCookie.setPath(StringPool.SLASH);
+
 			CookieKeys.addCookie(request, response, rememberMeCookie, secure);
+
+			Cookie screenNameCookie = new Cookie(
+				CookieKeys.SCREEN_NAME,
+				Encryptor.encrypt(company.getKeyObj(), user.getScreenName()));
+
+			if (domain != null) {
+				screenNameCookie.setDomain(domain);
+			}
+
+			screenNameCookie.setMaxAge(loginMaxAge);
+			screenNameCookie.setPath(StringPool.SLASH);
+
 			CookieKeys.addCookie(request, response, screenNameCookie, secure);
 		}
 
-		AuthenticatedUserUUIDStoreUtil.register(userUUID);
+		if (PropsValues.AUTH_USER_UUID_STORE_ENABLED) {
+			String userUUID = userIdString.concat(StringPool.PERIOD).concat(
+				String.valueOf(System.nanoTime()));
+
+			Cookie userUUIDCookie = new Cookie(
+				CookieKeys.USER_UUID,
+				Encryptor.encrypt(company.getKeyObj(), userUUID));
+
+			userUUIDCookie.setPath(StringPool.SLASH);
+
+			session.setAttribute(WebKeys.USER_UUID, userUUID);
+
+			if (rememberMe) {
+				userUUIDCookie.setMaxAge(loginMaxAge);
+			}
+			else {
+				userUUIDCookie.setMaxAge(-1);
+			}
+
+			CookieKeys.addCookie(request, response, userUUIDCookie, secure);
+
+			AuthenticatedUserUUIDStoreUtil.register(userUUID);
+		}
 	}
 
 	@Override
@@ -332,19 +270,22 @@ public class AuthenticatedSessionManagerImpl
 
 		String domain = CookieKeys.getDomain(request);
 
-		deleteCookie(request, response, CookieKeys.COMPANY_ID, domain);
-		deleteCookie(request, response, CookieKeys.GUEST_LANGUAGE_ID, domain);
-		deleteCookie(request, response, CookieKeys.ID, domain);
-		deleteCookie(request, response, CookieKeys.PASSWORD, domain);
-
-		boolean rememberMe = GetterUtil.getBoolean(
-			CookieKeys.getCookie(request, CookieKeys.REMEMBER_ME));
-
-		if (!rememberMe) {
-			deleteCookie(request, response, CookieKeys.LOGIN, domain);
+		if (Validator.isNull(domain)) {
+			domain = null;
 		}
 
-		deleteCookie(request, response, CookieKeys.REMEMBER_ME, domain);
+		boolean rememberMe = GetterUtil.getBoolean(
+			CookieKeys.getCookie(request, CookieKeys.REMEMBER_ME, false));
+
+		CookieKeys.deleteCookies(
+			request, response, domain, CookieKeys.COMPANY_ID,
+			CookieKeys.GUEST_LANGUAGE_ID, CookieKeys.ID, CookieKeys.PASSWORD,
+			CookieKeys.REMEMBER_ME);
+
+		if (!rememberMe) {
+			CookieKeys.deleteCookies(
+				request, response, domain, CookieKeys.LOGIN);
+		}
 
 		try {
 			session.invalidate();
@@ -432,20 +373,85 @@ public class AuthenticatedSessionManagerImpl
 		}
 	}
 
-	protected void deleteCookie(
-		HttpServletRequest request, HttpServletResponse response,
-		String cookieName, String domain) {
+	private User _getAuthenticatedUser(
+			HttpServletRequest request, String login, String password,
+			String authType)
+		throws PortalException {
 
-		Cookie cookie = new Cookie(cookieName, StringPool.BLANK);
+		long userId = GetterUtil.getLong(login);
 
-		if (Validator.isNotNull(domain)) {
-			cookie.setDomain(domain);
+		Company company = PortalUtil.getCompany(request);
+
+		String requestURI = request.getRequestURI();
+
+		String contextPath = PortalUtil.getPathContext();
+
+		if (requestURI.startsWith(contextPath.concat("/api/liferay"))) {
+			throw new AuthException();
 		}
+		else {
+			Map<String, String[]> headerMap = new HashMap<>();
 
-		cookie.setMaxAge(0);
-		cookie.setPath(StringPool.SLASH);
+			Enumeration<String> enu1 = request.getHeaderNames();
 
-		CookieKeys.addCookie(request, response, cookie);
+			while (enu1.hasMoreElements()) {
+				String name = enu1.nextElement();
+
+				Enumeration<String> enu2 = request.getHeaders(name);
+
+				List<String> headers = new ArrayList<>();
+
+				while (enu2.hasMoreElements()) {
+					String value = enu2.nextElement();
+
+					headers.add(value);
+				}
+
+				headerMap.put(
+					name, headers.toArray(new String[headers.size()]));
+			}
+
+			Map<String, String[]> parameterMap = request.getParameterMap();
+			Map<String, Object> resultsMap = new HashMap<>();
+
+			if (Validator.isNull(authType)) {
+				authType = company.getAuthType();
+			}
+
+			int authResult = Authenticator.FAILURE;
+
+			if (authType.equals(CompanyConstants.AUTH_TYPE_EA)) {
+				authResult = UserLocalServiceUtil.authenticateByEmailAddress(
+					company.getCompanyId(), login, password, headerMap,
+					parameterMap, resultsMap);
+			}
+			else if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
+				authResult = UserLocalServiceUtil.authenticateByScreenName(
+					company.getCompanyId(), login, password, headerMap,
+					parameterMap, resultsMap);
+			}
+			else if (authType.equals(CompanyConstants.AUTH_TYPE_ID)) {
+				authResult = UserLocalServiceUtil.authenticateByUserId(
+					company.getCompanyId(), userId, password, headerMap,
+					parameterMap, resultsMap);
+			}
+
+			User user = (User)resultsMap.get("user");
+
+			if (authResult != Authenticator.SUCCESS) {
+				if (user != null) {
+					user = UserLocalServiceUtil.fetchUser(user.getUserId());
+				}
+
+				if (user != null) {
+					UserLocalServiceUtil.checkLockout(user);
+				}
+
+				throw new AuthException();
+			}
+
+			return user;
+		}
 	}
 
 }

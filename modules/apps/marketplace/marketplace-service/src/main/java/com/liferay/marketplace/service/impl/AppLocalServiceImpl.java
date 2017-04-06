@@ -287,7 +287,7 @@ public class AppLocalServiceImpl extends AppLocalServiceBaseImpl {
 					GetterUtil.getString(headers.get("Web-ContextPath")));
 
 				moduleLocalService.addModule(
-					app.getUserId(), app.getAppId(), bundle.getSymbolicName(),
+					app.getAppId(), bundle.getSymbolicName(),
 					String.valueOf(bundle.getVersion()), contextName);
 			}
 		}
@@ -368,7 +368,7 @@ public class AppLocalServiceImpl extends AppLocalServiceBaseImpl {
 
 		// App
 
-		User user = userLocalService.getUser(userId);
+		User user = userLocalService.fetchUser(userId);
 		Date now = new Date();
 
 		validate(title, version);

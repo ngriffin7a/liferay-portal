@@ -108,12 +108,35 @@ public class ProjectTemplateFilesTest {
 			Path projectTemplateDirPath, String gitIgnoreTemplate)
 		throws IOException {
 
+		String projectTemplateDirName = String.valueOf(
+			projectTemplateDirPath.getFileName());
+
 		Path archetypeMetadataXmlPath = projectTemplateDirPath.resolve(
 			"src/main/resources/META-INF/maven/archetype-metadata.xml");
 
 		Assert.assertTrue(
 			"Missing " + archetypeMetadataXmlPath,
 			Files.exists(archetypeMetadataXmlPath));
+
+		String archetypeDescriptorName = projectTemplateDirName.substring(
+			FileTestUtil.PROJECT_TEMPLATE_DIR_PREFIX.length());
+
+		if (archetypeDescriptorName.equals(WorkspaceUtil.WORKSPACE)) {
+			archetypeDescriptorName = "liferay-" + archetypeDescriptorName;
+		}
+		else {
+			archetypeDescriptorName =
+				"liferay-module-" + archetypeDescriptorName;
+		}
+
+		String archetypeMetadataXml = FileUtil.read(archetypeMetadataXmlPath);
+
+		Assert.assertTrue(
+			"Incorrect archetype descriptor name in " +
+				archetypeMetadataXmlPath,
+			archetypeMetadataXml.startsWith(
+				"<?xml version=\"1.0\"?>\n\n<archetype-descriptor name=\"" +
+					archetypeDescriptorName + "\">"));
 
 		Path archetypeResourcesDirPath = projectTemplateDirPath.resolve(
 			"src/main/resources/archetype-resources");
@@ -139,10 +162,6 @@ public class ProjectTemplateFilesTest {
 		Assert.assertTrue(
 			"Missing " + gitIgnorePath, Files.exists(gitIgnorePath));
 
-		Path projectTemplateDirNamePath = projectTemplateDirPath.getFileName();
-
-		String projectTemplateDirName = projectTemplateDirNamePath.toString();
-
 		if (!projectTemplateDirName.equals(
 				FileTestUtil.PROJECT_TEMPLATE_DIR_PREFIX +
 					WorkspaceUtil.WORKSPACE)) {
@@ -153,8 +172,12 @@ public class ProjectTemplateFilesTest {
 		}
 
 		Assert.assertFalse(
-			"Forbidden Gradle wrapper in " + archetypeResourcesDirPath,
+			"Forbidden Gradle Wrapper in " + archetypeResourcesDirPath,
 			Files.exists(archetypeResourcesDirPath.resolve("gradlew")));
+
+		Assert.assertFalse(
+			"Forbidden Maven Wrapper in " + archetypeResourcesDirPath,
+			Files.exists(archetypeResourcesDirPath.resolve("mvnw")));
 
 		Path pomXmlPath = archetypeResourcesDirPath.resolve("pom.xml");
 
@@ -190,9 +213,7 @@ public class ProjectTemplateFilesTest {
 						Path path, BasicFileAttributes basicFileAttributes)
 					throws IOException {
 
-					Path fileNamePath = path.getFileName();
-
-					String fileName = fileNamePath.toString();
+					String fileName = String.valueOf(path.getFileName());
 
 					String extension = FileTestUtil.getExtension(fileName);
 
@@ -219,13 +240,11 @@ public class ProjectTemplateFilesTest {
 
 		boolean trailingEmptyLine = false;
 
-		if ((text.length() > 0) && text.charAt(text.length() - 1) == '\n') {
+		if ((text.length() > 0) && (text.charAt(text.length() - 1) == '\n')) {
 			trailingEmptyLine = true;
 		}
 
 		Assert.assertFalse("Trailing empty line in " + path, trailingEmptyLine);
-
-		boolean firstEmptyLine = false;
 
 		try (BufferedReader bufferedReader = new BufferedReader(
 				new StringReader(text))) {
@@ -233,20 +252,10 @@ public class ProjectTemplateFilesTest {
 			String line = null;
 
 			while ((line = bufferedReader.readLine()) != null) {
-				if (line.isEmpty()) {
-					Assert.assertFalse(
-						"Forbidden empty line in " + path,
-						firstEmptyLine && extension.equals("xml") &&
-							!fileName.equals("service.xml"));
-
-					firstEmptyLine = true;
-
-					continue;
-				}
-
 				Assert.assertFalse(
 					"Forbidden whitespace trailing character in " + path,
-					Character.isWhitespace(line.charAt(line.length() - 1)));
+					!line.isEmpty() &&
+						Character.isWhitespace(line.charAt(line.length() - 1)));
 			}
 		}
 
@@ -260,7 +269,10 @@ public class ProjectTemplateFilesTest {
 				"#if (" + condition.trim() + ")", matcher.group());
 		}
 
-		if (extension.equals("xml") && Validator.isNotNull(text)) {
+		if (extension.equals("xml") &&
+			!fileName.equals("liferay-layout-templates.xml") &&
+			Validator.isNotNull(text)) {
+
 			String xmlDeclaration = _XML_DECLARATION;
 
 			if (fileName.equals("service.xml")) {

@@ -80,7 +80,7 @@ public class JCRFactoryWrapper {
 			new JCRSessionInvocationHandler(jcrSession);
 
 		Object sessionProxy = ProxyUtil.newProxyInstance(
-			ClassLoaderUtil.getClassLoader(this.getClass()),
+			ClassLoaderUtil.getClassLoader(getClass()),
 			new Class<?>[] {Map.class, Session.class},
 			jcrSessionInvocationHandler);
 
@@ -118,9 +118,8 @@ public class JCRFactoryWrapper {
 	}
 
 	private static final ThreadLocal<Map<String, Session>> _sessions =
-		new AutoResetThreadLocal<Map<String, Session>>(
-			JCRFactoryWrapper.class + "._sessions",
-			new HashMap<String, Session>());
+		new AutoResetThreadLocal<>(
+			JCRFactoryWrapper.class + "._sessions", HashMap::new);
 
 	private final JCRFactory _jcrFactory;
 	private final JCRStoreConfiguration _jcrStoreConfiguration;

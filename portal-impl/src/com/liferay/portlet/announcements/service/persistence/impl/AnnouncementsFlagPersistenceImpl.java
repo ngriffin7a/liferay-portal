@@ -923,7 +923,8 @@ public class AnnouncementsFlagPersistenceImpl extends BasePersistenceImpl<Announ
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
-		clearUniqueFindersCache((AnnouncementsFlagModelImpl)announcementsFlag);
+		clearUniqueFindersCache((AnnouncementsFlagModelImpl)announcementsFlag,
+			true);
 	}
 
 	@Override
@@ -935,42 +936,12 @@ public class AnnouncementsFlagPersistenceImpl extends BasePersistenceImpl<Announ
 			entityCache.removeResult(AnnouncementsFlagModelImpl.ENTITY_CACHE_ENABLED,
 				AnnouncementsFlagImpl.class, announcementsFlag.getPrimaryKey());
 
-			clearUniqueFindersCache((AnnouncementsFlagModelImpl)announcementsFlag);
+			clearUniqueFindersCache((AnnouncementsFlagModelImpl)announcementsFlag,
+				true);
 		}
 	}
 
 	protected void cacheUniqueFindersCache(
-		AnnouncementsFlagModelImpl announcementsFlagModelImpl, boolean isNew) {
-		if (isNew) {
-			Object[] args = new Object[] {
-					announcementsFlagModelImpl.getUserId(),
-					announcementsFlagModelImpl.getEntryId(),
-					announcementsFlagModelImpl.getValue()
-				};
-
-			finderCache.putResult(FINDER_PATH_COUNT_BY_U_E_V, args,
-				Long.valueOf(1));
-			finderCache.putResult(FINDER_PATH_FETCH_BY_U_E_V, args,
-				announcementsFlagModelImpl);
-		}
-		else {
-			if ((announcementsFlagModelImpl.getColumnBitmask() &
-					FINDER_PATH_FETCH_BY_U_E_V.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						announcementsFlagModelImpl.getUserId(),
-						announcementsFlagModelImpl.getEntryId(),
-						announcementsFlagModelImpl.getValue()
-					};
-
-				finderCache.putResult(FINDER_PATH_COUNT_BY_U_E_V, args,
-					Long.valueOf(1));
-				finderCache.putResult(FINDER_PATH_FETCH_BY_U_E_V, args,
-					announcementsFlagModelImpl);
-			}
-		}
-	}
-
-	protected void clearUniqueFindersCache(
 		AnnouncementsFlagModelImpl announcementsFlagModelImpl) {
 		Object[] args = new Object[] {
 				announcementsFlagModelImpl.getUserId(),
@@ -978,12 +949,29 @@ public class AnnouncementsFlagPersistenceImpl extends BasePersistenceImpl<Announ
 				announcementsFlagModelImpl.getValue()
 			};
 
-		finderCache.removeResult(FINDER_PATH_COUNT_BY_U_E_V, args);
-		finderCache.removeResult(FINDER_PATH_FETCH_BY_U_E_V, args);
+		finderCache.putResult(FINDER_PATH_COUNT_BY_U_E_V, args,
+			Long.valueOf(1), false);
+		finderCache.putResult(FINDER_PATH_FETCH_BY_U_E_V, args,
+			announcementsFlagModelImpl, false);
+	}
+
+	protected void clearUniqueFindersCache(
+		AnnouncementsFlagModelImpl announcementsFlagModelImpl,
+		boolean clearCurrent) {
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+					announcementsFlagModelImpl.getUserId(),
+					announcementsFlagModelImpl.getEntryId(),
+					announcementsFlagModelImpl.getValue()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_U_E_V, args);
+			finderCache.removeResult(FINDER_PATH_FETCH_BY_U_E_V, args);
+		}
 
 		if ((announcementsFlagModelImpl.getColumnBitmask() &
 				FINDER_PATH_FETCH_BY_U_E_V.getColumnBitmask()) != 0) {
-			args = new Object[] {
+			Object[] args = new Object[] {
 					announcementsFlagModelImpl.getOriginalUserId(),
 					announcementsFlagModelImpl.getOriginalEntryId(),
 					announcementsFlagModelImpl.getOriginalValue()
@@ -1127,8 +1115,20 @@ public class AnnouncementsFlagPersistenceImpl extends BasePersistenceImpl<Announ
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !AnnouncementsFlagModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!AnnouncementsFlagModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { announcementsFlagModelImpl.getEntryId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_ENTRYID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_ENTRYID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1154,8 +1154,8 @@ public class AnnouncementsFlagPersistenceImpl extends BasePersistenceImpl<Announ
 			AnnouncementsFlagImpl.class, announcementsFlag.getPrimaryKey(),
 			announcementsFlag, false);
 
-		clearUniqueFindersCache(announcementsFlagModelImpl);
-		cacheUniqueFindersCache(announcementsFlagModelImpl, isNew);
+		clearUniqueFindersCache(announcementsFlagModelImpl, false);
+		cacheUniqueFindersCache(announcementsFlagModelImpl);
 
 		announcementsFlag.resetOriginalValues();
 
@@ -1332,7 +1332,7 @@ public class AnnouncementsFlagPersistenceImpl extends BasePersistenceImpl<Announ
 		query.append(_SQL_SELECT_ANNOUNCEMENTSFLAG_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
 			query.append(StringPool.COMMA);
 		}

@@ -20,11 +20,6 @@
 </tr>
 <!--EDIT_TABS-->
 <tr>
-	<td>IDENTIFICATION</td>
-	<td>//li[contains(@class,'tab')]/a[contains(.,'Identification')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>MISCELLANEOUS</td>
 	<td>//li[contains(@class,'tab')]/a[contains(.,'Miscellaneous')]</td>
 	<td></td>
@@ -37,6 +32,11 @@
 <tr>
 	<td>USER_INFORMATION</td>
 	<td>//li[contains(@class,'tab')]/a[contains(.,'User Information')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ORGANIZATION_COUNTRY_NAME</td>
+	<td>//select[contains(@id,'countryId') and contains(.,'${key_countryName}')]</td>
 	<td></td>
 </tr>
 <tr>

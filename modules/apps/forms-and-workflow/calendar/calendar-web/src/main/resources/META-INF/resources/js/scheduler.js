@@ -54,6 +54,9 @@ AUI.add(
 						value: null
 					},
 
+					eventsPerPage: {
+					},
+
 					filterCalendarBookings: {
 						validator: isFunction
 					},
@@ -62,6 +65,9 @@ AUI.add(
 						valueFn: function() {
 							return A.Node.create(TPL_ICON_ADD_EVENT_NODE);
 						}
+					},
+
+					maxDaysDisplayed: {
 					},
 
 					portletNamespace: {
@@ -222,12 +228,6 @@ AUI.add(
 						Liferay.Store('com.liferay.calendar.web_defaultView', event.newVal.get('name'));
 
 						instance.load();
-					},
-
-					_afterAddEventModalLoad: function(event) {
-						var instance = this;
-
-						event.target.node.getDOMNode().contentWindow.focus();
 					},
 
 					_afterDateChange: function(event) {
@@ -396,17 +396,11 @@ AUI.add(
 											instance.load();
 										}
 									},
-									destroyOnHide: false,
+									destroyOnHide: true,
 									modal: true
 								},
 								title: Liferay.Language.get('new-calendar-booking'),
 								uri: Lang.sub(editCalendarBookingURL, data)
-							},
-							function(modal) {
-								modal.iframe.on(
-									'load',
-									A.bind(instance._afterAddEventModalLoad, instance)
-								);
 							}
 						);
 					},
@@ -437,8 +431,19 @@ AUI.add(
 								}
 							);
 						}
-						else if (schedulerEvent.isMasterBooking() && confirm(Liferay.Language.get('deleting-this-event-will-cancel-the-meeting-with-your-guests-would-you-like-to-delete'))) {
-							remoteServices.deleteEvent(schedulerEvent, success);
+						else if (schedulerEvent.isMasterBooking()) {
+							var confirmationMessage;
+
+							if (schedulerEvent.get('hasChildCalendarBookings')) {
+								confirmationMessage = Liferay.Language.get('deleting-this-event-will-cancel-the-meeting-with-your-guests-would-you-like-to-delete');
+							}
+							else {
+								confirmationMessage = Liferay.Language.get('would-you-like-to-delete-this-event');
+							}
+
+							if (confirm(confirmationMessage)) {
+								remoteServices.deleteEvent(schedulerEvent, success);
+							}
 						}
 
 						event.preventDefault();
@@ -516,7 +521,34 @@ AUI.add(
 
 		Liferay.Scheduler = Scheduler;
 
-		Liferay.SchedulerDayView = A.SchedulerDayView;
+		var SchedulerDayView = A.Component.create(
+			{
+				EXTENDS: A.SchedulerDayView,
+
+				NAME: 'scheduler-day-view',
+
+				ATTRS: {
+					navigationDateFormatter: {
+						value: function(date) {
+							var instance = this;
+
+							var scheduler = instance.get('scheduler');
+
+							return A.DataType.Date.format(
+								date,
+								{
+									format: Liferay.Language.get('a-b-d-y'),
+									locale: scheduler.get('locale')
+								}
+							);
+						},
+						validator: isFunction
+					}
+				}
+			}
+		);
+
+		Liferay.SchedulerDayView = SchedulerDayView;
 
 		Liferay.SchedulerWeekView = A.SchedulerWeekView;
 
