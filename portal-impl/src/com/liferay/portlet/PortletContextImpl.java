@@ -70,8 +70,28 @@ public class PortletContextImpl implements LiferayPortletContext {
 	}
 
 	@Override
+	public ClassLoader getClassLoader() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public Enumeration<String> getContainerRuntimeOptions() {
 		return Collections.enumeration(_supportedRuntimeOptions);
+	}
+
+	@Override
+	public String getContextPath() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public int getEffectiveMajorVersion() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public int getEffectiveMinorVersion() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override

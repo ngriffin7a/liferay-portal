@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletMode;
+import javax.portlet.WindowState;
 
 import javax.xml.namespace.QName;
 
@@ -112,6 +114,11 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 	}
 
 	@Override
+	public Enumeration<PortletMode> getPortletModes(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public String getPortletName() {
 		return _portletName;
 	}
@@ -120,6 +127,11 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 	public Enumeration<QName> getProcessingEventQNames() {
 		return Collections.enumeration(
 			toJavaxQNames(_portlet.getProcessingEvents()));
+	}
+
+	@Override
+	public Map<String, QName> getPublicRenderParameterDefinitions() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
@@ -203,6 +215,11 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 		}
 
 		return Collections.enumeration(supportedLocales);
+	}
+
+	@Override
+	public Enumeration<WindowState> getWindowStates(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override

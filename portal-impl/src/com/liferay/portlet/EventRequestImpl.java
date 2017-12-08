@@ -17,6 +17,7 @@ package com.liferay.portlet;
 import javax.portlet.Event;
 import javax.portlet.EventRequest;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderParameters;
 
 /**
  * @author Brian Wing Shun Chan
@@ -32,6 +33,16 @@ public class EventRequestImpl
 	@Override
 	public String getLifecycle() {
 		return PortletRequest.EVENT_PHASE;
+	}
+
+	@Override
+	public RenderParameters getRenderParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public String getUserAgent() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	public void setEvent(Event event) {

@@ -23,9 +23,10 @@ import com.liferay.portlet.configuration.kernel.util.PortletConfigurationUtil;
 
 import java.util.Collection;
 
-import javax.portlet.PortletMode;
+import javax.portlet.ActionURL;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderURL;
 
 /**
  * @author Brian Wing Shun Chan
@@ -35,8 +36,33 @@ public class RenderResponseImpl
 	extends MimeResponseImpl implements LiferayRenderResponse {
 
 	@Override
+	public ActionURL createActionURL(Copy copy) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public RenderURL createRenderURL(Copy copy) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public String getLifecycle() {
 		return PortletRequest.RENDER_PHASE;
+	}
+
+	@Override
+	public String getProperty(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyNames() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyValues(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	public String getResourceName() {
@@ -52,8 +78,7 @@ public class RenderResponseImpl
 	}
 
 	@Override
-	public void setNextPossiblePortletModes(
-		Collection<PortletMode> portletModes) {
+	public void setNextPossiblePortletModes(Collection portletModes) {
 	}
 
 	@Override

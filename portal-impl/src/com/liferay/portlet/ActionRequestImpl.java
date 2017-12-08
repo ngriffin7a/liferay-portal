@@ -14,8 +14,17 @@
 
 package com.liferay.portlet;
 
+import java.io.IOException;
+
+import java.util.Collection;
+
+import javax.portlet.ActionParameters;
 import javax.portlet.ActionRequest;
+import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderParameters;
+
+import javax.servlet.http.Part;
 
 /**
  * @author Brian Wing Shun Chan
@@ -24,8 +33,38 @@ public class ActionRequestImpl
 	extends ClientDataRequestImpl implements ActionRequest {
 
 	@Override
+	public ActionParameters getActionParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public long getContentLengthLong() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public String getLifecycle() {
 		return PortletRequest.ACTION_PHASE;
+	}
+
+	@Override
+	public Part getPart(String string) throws IOException, PortletException {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<Part> getParts() throws IOException, PortletException {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public RenderParameters getRenderParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public String getUserAgent() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 }

@@ -16,8 +16,13 @@ package com.liferay.portlet;
 
 import java.io.IOException;
 
+import java.util.Collection;
+
 import javax.portlet.ActionResponse;
+import javax.portlet.MimeResponse;
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderURL;
 
 /**
  * @author Brian Wing Shun Chan
@@ -26,8 +31,35 @@ public class ActionResponseImpl
 	extends StateAwareResponseImpl implements ActionResponse {
 
 	@Override
+	public RenderURL createRedirectURL(MimeResponse.Copy copy)
+		throws IllegalStateException {
+
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public String getLifecycle() {
 		return PortletRequest.ACTION_PHASE;
+	}
+
+	@Override
+	public String getProperty(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyNames() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyValues(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public MutableRenderParameters getRenderParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
