@@ -17,8 +17,11 @@ package com.liferay.portlet;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
 
+import java.util.Collection;
+
 import javax.portlet.EventRequest;
 import javax.portlet.EventResponse;
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletModeException;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowStateException;
@@ -34,6 +37,26 @@ public class EventResponseImpl
 	@Override
 	public String getLifecycle() {
 		return PortletRequest.EVENT_PHASE;
+	}
+
+	@Override
+	public String getProperty(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyNames() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyValues(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public MutableRenderParameters getRenderParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override

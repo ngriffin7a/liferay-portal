@@ -17,10 +17,13 @@ package com.liferay.portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.util.GetterUtil;
 
+import java.util.Collection;
 import java.util.Locale;
 
+import javax.portlet.ActionURL;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+import javax.portlet.RenderURL;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
@@ -62,6 +65,11 @@ public class ResourceResponseImpl
 	}
 
 	@Override
+	public ActionURL createActionURL(Copy copy) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public LiferayPortletURL createLiferayPortletURL(
 		String portletName, String lifecycle) {
 
@@ -91,6 +99,11 @@ public class ResourceResponseImpl
 	}
 
 	@Override
+	public RenderURL createRenderURL(Copy copy) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public ResourceURL createResourceURL() {
 		return super.createResourceURL();
 	}
@@ -101,6 +114,26 @@ public class ResourceResponseImpl
 	}
 
 	@Override
+	public String getProperty(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyNames() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<String> getPropertyValues(String string) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public int getStatus() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public void setCharacterEncoding(String charset) {
 		response.setCharacterEncoding(charset);
 	}
@@ -108,6 +141,11 @@ public class ResourceResponseImpl
 	@Override
 	public void setContentLength(int length) {
 		response.setContentLength(length);
+	}
+
+	@Override
+	public void setContentLengthLong(long l) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override
@@ -135,6 +173,11 @@ public class ResourceResponseImpl
 	@Override
 	public void setLocale(Locale locale) {
 		response.setLocale(locale);
+	}
+
+	@Override
+	public void setStatus(int i) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 }

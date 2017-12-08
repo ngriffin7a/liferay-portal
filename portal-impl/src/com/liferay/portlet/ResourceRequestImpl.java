@@ -21,17 +21,27 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.io.IOException;
+
+import java.util.Collection;
 import java.util.Map;
 
+import javax.portlet.PortletAsyncContext;
 import javax.portlet.PortletContext;
+import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderParameters;
+import javax.portlet.ResourceParameters;
 import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
 import javax.portlet.WindowState;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 /**
  * @author Brian Wing Shun Chan
@@ -45,6 +55,16 @@ public class ResourceRequestImpl
 	}
 
 	@Override
+	public long getContentLengthLong() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public DispatcherType getDispatcherType() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public String getETag() {
 		return null;
 	}
@@ -55,13 +75,68 @@ public class ResourceRequestImpl
 	}
 
 	@Override
+	public Part getPart(String string) throws IOException, PortletException {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Collection<Part> getParts() throws IOException, PortletException {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public PortletAsyncContext getPortletAsyncContext() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public Map<String, String[]> getPrivateRenderParameterMap() {
 		return null;
 	}
 
 	@Override
+	public RenderParameters getRenderParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
 	public String getResourceID() {
 		return _resourceID;
+	}
+
+	@Override
+	public ResourceParameters getResourceParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public String getUserAgent() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public boolean isAsyncStarted() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public boolean isAsyncSupported() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public PortletAsyncContext startPortletAsync()
+		throws IllegalStateException {
+
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public PortletAsyncContext startPortletAsync(
+			ResourceRequest rr, ResourceResponse rr1)
+		throws IllegalStateException {
+
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 	@Override

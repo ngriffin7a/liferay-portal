@@ -15,6 +15,7 @@
 package com.liferay.portlet;
 
 import javax.portlet.PortletRequest;
+import javax.portlet.RenderParameters;
 import javax.portlet.RenderRequest;
 
 /**
@@ -31,6 +32,16 @@ public class RenderRequestImpl
 	@Override
 	public String getLifecycle() {
 		return PortletRequest.RENDER_PHASE;
+	}
+
+	@Override
+	public RenderParameters getRenderParameters() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public String getUserAgent() {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 
 }
