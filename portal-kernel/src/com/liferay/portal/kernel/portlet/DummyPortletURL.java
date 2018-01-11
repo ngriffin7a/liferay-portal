@@ -14,24 +14,40 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.util.StringPool;
 
+import java.io.IOException;
 import java.io.Writer;
 
 import java.util.Collections;
 import java.util.Map;
 
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
+import javax.portlet.annotations.PortletSerializable;
 
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public class DummyPortletURL implements PortletURL {
 
 	public static DummyPortletURL getInstance() {
 		return _instance;
+	}
+
+	@Override
+	public Appendable append(Appendable appendable) throws IOException {
+		return null;
+	}
+
+	@Override
+	public Appendable append(Appendable appendable, boolean escapeXML)
+		throws IOException {
+		return null;
 	}
 
 	@Override
@@ -49,12 +65,21 @@ public class DummyPortletURL implements PortletURL {
 	}
 
 	@Override
+	public MutableRenderParameters getRenderParameters() {
+		return null;
+	}
+
+	@Override
 	public WindowState getWindowState() {
 		return WindowState.NORMAL;
 	}
 
 	@Override
 	public void removePublicRenderParameter(String name) {
+	}
+
+	@Override
+	public void setBeanParameter(PortletSerializable portletSerializable) {
 	}
 
 	@Override

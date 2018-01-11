@@ -79,6 +79,7 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.QName;
@@ -2224,8 +2225,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		//supportedLocales.add(
 		//	LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
 
-		for (Element supportedLocaleElement :
-				portletElement.elements("supported-locale")) {
+		for (Element supportedLocaleElement : portletElement.elements(
+				"supported-locale")) {
 
 			String supportedLocale = supportedLocaleElement.getText();
 
@@ -2433,6 +2434,21 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		portletApp.addServletURLPatterns(servletURLPatterns);
 		portletApp.setServletContext(servletContext);
 
+		Map<String, String[]> containerRuntimeOptions =
+			portletApp.getContainerRuntimeOptions();
+
+		Attribute rootVersionAttribute = rootElement.attribute("version");
+
+		if (rootVersionAttribute != null) {
+			String[] portletSpecVersion = StringUtil.split(
+				rootVersionAttribute.getValue(), CharPool.PERIOD);
+
+			if (portletSpecVersion.length > 0) {
+				containerRuntimeOptions.put(
+					"com.liferay.portlet.spec.version", portletSpecVersion);
+			}
+		}
+
 		Set<String> userAttributes = portletApp.getUserAttributes();
 
 		for (Element userAttributeElement :
@@ -2505,9 +2521,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 				values.add(valueElement.getTextTrim());
 			}
-
-			Map<String, String[]> containerRuntimeOptions =
-				portletApp.getContainerRuntimeOptions();
 
 			containerRuntimeOptions.put(
 				name, values.toArray(new String[values.size()]));

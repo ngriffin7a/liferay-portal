@@ -14,6 +14,7 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -64,6 +65,7 @@ import com.liferay.portal.kernel.util.comparator.PortletConfigurationIconCompara
 import com.liferay.portal.kernel.webdav.WebDAVStorage;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.theme.PortletDisplayFactory;
+import com.liferay.portlet.internal.PortletAppUtil;
 import com.liferay.util.SerializableUtil;
 
 import java.io.Serializable;
@@ -96,6 +98,7 @@ import javax.servlet.http.HttpSession;
  * @author Shuyang Zhou
  * @author Raymond Augé
  */
+@ProviderType
 public class PortletContainerImpl implements PortletContainer {
 
 	@Override
@@ -171,7 +174,21 @@ public class PortletContainerImpl implements PortletContainer {
 		throws PortletContainerException {
 
 		try {
-			_render(request, response, portlet);
+			_render(request, response, portlet, false);
+		}
+		catch (Exception e) {
+			throw new PortletContainerException(e);
+		}
+	}
+
+	@Override
+	public void renderHeaders(
+			HttpServletRequest request, HttpServletResponse response,
+			Portlet portlet)
+		throws PortletContainerException {
+
+		try {
+			_render(request, response, portlet, true);
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
@@ -615,7 +632,7 @@ public class PortletContainerImpl implements PortletContainer {
 
 	private void _render(
 			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
+			Portlet portlet, boolean headerPhase)
 		throws Exception {
 
 		if ((portlet != null) && portlet.isInstanceable() &&
@@ -683,6 +700,7 @@ public class PortletContainerImpl implements PortletContainer {
 		String lifecycle = (String)request.getAttribute(
 			PortletRequest.LIFECYCLE_PHASE);
 
+		request.setAttribute(WebKeys.RENDER_HEADERS, headerPhase);
 		request.setAttribute(WebKeys.RENDER_PORTLET, portlet);
 
 		String path = (String)request.getAttribute(WebKeys.RENDER_PATH);
@@ -778,8 +796,21 @@ public class PortletContainerImpl implements PortletContainer {
 		WindowState windowState = (WindowState)request.getAttribute(
 			WebKeys.WINDOW_STATE);
 
+		int portletSpecMajorVersion = PortletAppUtil.getPortletSpecMajorVersion(
+			portlet.getPortletApp());
+
+		if (portletSpecMajorVersion >= 3) {
+			WindowState requestWindowState = WindowStateFactory.getWindowState(
+				ParamUtil.getString(request, "p_p_state"),
+				portletSpecMajorVersion);
+
+			if (WindowState.UNDEFINED.equals(requestWindowState)) {
+				windowState = requestWindowState;
+			}
+		}
+
 		PortletMode portletMode = PortletModeFactory.getPortletMode(
-			ParamUtil.getString(request, "p_p_mode"));
+			ParamUtil.getString(request, "p_p_mode"), portletSpecMajorVersion);
 
 		PortletPreferencesIds portletPreferencesIds =
 			PortletPreferencesFactoryUtil.getPortletPreferencesIds(

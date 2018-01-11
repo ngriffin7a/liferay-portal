@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
 public class PortalResiliencyPortletContainerWrapper
 	implements PortletContainer {
@@ -170,32 +171,20 @@ public class PortalResiliencyPortletContainerWrapper
 			Portlet portlet)
 		throws PortletContainerException {
 
-		SPIAgent spiAgent = getSPIAgentForPortlet(portlet);
+		render(
+			request, response, portlet,
+			() -> _portletContainer.render(request, response, portlet));
+	}
 
-		if (spiAgent == null) {
-			_portletContainer.render(request, response, portlet);
+	@Override
+	public void renderHeaders(
+			HttpServletRequest request, HttpServletResponse response,
+			Portlet portlet)
+		throws PortletContainerException {
 
-			return;
-		}
-
-		Object[] requestAttributeValues = captureRequestAttibutes(
-			request, _RENDER_REQUEST_ATTRIBUTE_NAMES);
-
-		request.setAttribute(
-			WebKeys.SPI_AGENT_LIFECYCLE, SPIAgent.Lifecycle.RENDER);
-		request.setAttribute(WebKeys.SPI_AGENT_PORTLET, portlet);
-
-		try {
-			spiAgent.service(request, response);
-		}
-		catch (PortalResiliencyException pre) {
-			_log.error(pre, pre);
-		}
-		finally {
-			restoreRequestAttibutes(
-				request, _RENDER_REQUEST_ATTRIBUTE_NAMES,
-				requestAttributeValues);
-		}
+		render(
+			request, response, portlet,
+			() -> _portletContainer.renderHeaders(request, response, portlet));
 	}
 
 	@Override
@@ -232,6 +221,13 @@ public class PortalResiliencyPortletContainerWrapper
 		}
 	}
 
+	@FunctionalInterface
+	public interface Renderable {
+
+		public void render() throws PortletContainerException;
+
+	}
+
 	protected Object[] captureRequestAttibutes(
 		HttpServletRequest request, String... names) {
 
@@ -265,6 +261,39 @@ public class PortalResiliencyPortletContainerWrapper
 		}
 		catch (Exception e) {
 			throw new PortletContainerException(e);
+		}
+	}
+
+	protected void render(
+			HttpServletRequest request, HttpServletResponse response,
+			Portlet portlet, Renderable renderable)
+		throws PortletContainerException {
+
+		SPIAgent spiAgent = getSPIAgentForPortlet(portlet);
+
+		if (spiAgent == null) {
+			renderable.render();
+
+			return;
+		}
+
+		Object[] requestAttributeValues = captureRequestAttibutes(
+			request, _RENDER_REQUEST_ATTRIBUTE_NAMES);
+
+		request.setAttribute(
+			WebKeys.SPI_AGENT_LIFECYCLE, SPIAgent.Lifecycle.RENDER);
+		request.setAttribute(WebKeys.SPI_AGENT_PORTLET, portlet);
+
+		try {
+			spiAgent.service(request, response);
+		}
+		catch (PortalResiliencyException pre) {
+			_log.error(pre, pre);
+		}
+		finally {
+			restoreRequestAttibutes(
+				request, _RENDER_REQUEST_ATTRIBUTE_NAMES,
+				requestAttributeValues);
 		}
 	}
 

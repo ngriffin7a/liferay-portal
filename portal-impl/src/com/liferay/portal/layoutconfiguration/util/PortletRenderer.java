@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
 public class PortletRenderer {
 
@@ -59,7 +61,14 @@ public class PortletRenderer {
 	public Callable<StringBundler> getCallable(
 		HttpServletRequest request, HttpServletResponse response) {
 
-		return new PortletRendererCallable(request, response);
+		return getCallable(request, response, null);
+	}
+
+	public Callable<StringBundler> getCallable(
+		HttpServletRequest request, HttpServletResponse response,
+		Map<String, Object> headerRequestMap) {
+
+		return new PortletRendererCallable(request, response, headerRequestMap);
 	}
 
 	public Portlet getPortlet() {
@@ -70,8 +79,18 @@ public class PortletRenderer {
 			HttpServletRequest request, HttpServletResponse response)
 		throws PortletContainerException {
 
+		return render(request, response, null);
+	}
+
+	public StringBundler render(
+			HttpServletRequest request, HttpServletResponse response,
+			Map<String, Object> headerRequestMap)
+		throws PortletContainerException {
+
 		request = PortletContainerUtil.setupOptionalRenderParameters(
 			request, null, _columnId, _columnPos, _columnCount);
+
+		_copyHeaderRequestAttributes(headerRequestMap, request);
 
 		return _render(request, response);
 	}
@@ -108,6 +127,41 @@ public class PortletRenderer {
 		}
 	}
 
+	public HeaderPhaseResults renderHeaders(
+			HttpServletRequest request, HttpServletResponse response)
+		throws PortletContainerException {
+
+		request = PortletContainerUtil.setupOptionalRenderParameters(
+			request, null, _columnId, _columnPos, _columnCount);
+
+		StringBundler contents = _renderHeaders(request, response);
+
+		Map<String, Object> headerRequestMap = new HashMap<>();
+
+		Enumeration<String> attributeNames = request.getAttributeNames();
+
+		while (attributeNames.hasMoreElements()) {
+			String attriubteName = attributeNames.nextElement();
+
+			headerRequestMap.put(
+				attriubteName, request.getAttribute(attriubteName));
+		}
+
+		return new HeaderPhaseResults(headerRequestMap, contents);
+	}
+
+	private static void _copyHeaderRequestAttributes(
+		Map<String, Object> headerRequestMap, HttpServletRequest request) {
+
+		if (headerRequestMap != null) {
+			for (Map.Entry<String, Object> entry :
+					headerRequestMap.entrySet()) {
+
+				request.setAttribute(entry.getKey(), entry.getValue());
+			}
+		}
+	}
+
 	private StringBundler _render(
 			HttpServletRequest request, HttpServletResponse response)
 		throws PortletContainerException {
@@ -138,6 +192,24 @@ public class PortletRenderer {
 			request.setAttribute(WebKeys.PARALLEL_RENDERING_MERGE_LOCK, lock);
 			request.setAttribute(
 				WebKeys.PORTLET_PARALLEL_RENDER, portletParallelRender);
+		}
+	}
+
+	private StringBundler _renderHeaders(
+			HttpServletRequest request, HttpServletResponse response)
+		throws PortletContainerException {
+
+		BufferCacheServletResponse bufferCacheServletResponse =
+			new BufferCacheServletResponse(response);
+
+		try {
+			PortletContainerUtil.renderHeaders(
+				request, bufferCacheServletResponse, _portlet);
+
+			return bufferCacheServletResponse.getStringBundler();
+		}
+		catch (IOException ioe) {
+			throw new PortletContainerException(ioe);
 		}
 	}
 
@@ -221,7 +293,8 @@ public class PortletRenderer {
 		extends CopyThreadLocalCallable<StringBundler> {
 
 		public PortletRendererCallable(
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest request, HttpServletResponse response,
+			Map<String, Object> headerRequestMap) {
 
 			super(
 				ParallelRenderThreadLocalBinderUtil.getThreadLocalBinder(),
@@ -229,6 +302,7 @@ public class PortletRenderer {
 
 			_request = request;
 			_response = response;
+			_headerRequestMap = headerRequestMap;
 		}
 
 		@Override
@@ -236,6 +310,8 @@ public class PortletRenderer {
 			HttpServletRequest request =
 				PortletContainerUtil.setupOptionalRenderParameters(
 					_request, null, _columnId, _columnPos, _columnCount);
+
+			_copyHeaderRequestAttributes(_headerRequestMap, request);
 
 			_restrictPortletServletRequest =
 				(RestrictPortletServletRequest)request;
@@ -286,6 +362,7 @@ public class PortletRenderer {
 			}
 		}
 
+		private final Map<String, Object> _headerRequestMap;
 		private final HttpServletRequest _request;
 		private final HttpServletResponse _response;
 

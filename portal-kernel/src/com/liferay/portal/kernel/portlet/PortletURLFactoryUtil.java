@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,11 +65,11 @@ public class PortletURLFactoryUtil {
 	}
 
 	public static LiferayPortletURL create(
-		PortletRequest portletRequest, Portlet porltet, Layout layout,
+		PortletRequest portletRequest, Portlet portlet, Layout layout,
 		String lifecycle) {
 
 		return getPortletURLFactory().create(
-			portletRequest, porltet, layout, lifecycle);
+			portletRequest, portlet, layout, lifecycle);
 	}
 
 	public static LiferayPortletURL create(
@@ -77,6 +78,14 @@ public class PortletURLFactoryUtil {
 
 		return getPortletURLFactory().create(
 			portletRequest, portlet, plid, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, long plid,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return getPortletURLFactory().create(
+			portletRequest, portlet, plid, lifecycle, copy);
 	}
 
 	public static LiferayPortletURL create(
@@ -93,6 +102,14 @@ public class PortletURLFactoryUtil {
 
 		return getPortletURLFactory().create(
 			portletRequest, portletId, plid, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		PortletRequest portletRequest, String portletId, long plid,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return getPortletURLFactory().create(
+			portletRequest, portletId, plid, lifecycle, copy);
 	}
 
 	public static LiferayPortletURL create(

@@ -212,6 +212,7 @@ import com.liferay.portal.struts.StrutsUtil;
 import com.liferay.portal.upload.UploadPortletRequestImpl;
 import com.liferay.portal.upload.UploadServletRequestImpl;
 import com.liferay.portal.webserver.WebServerServlet;
+import com.liferay.portlet.internal.HeaderResponseImpl;
 import com.liferay.portlet.PortletPreferencesImpl;
 import com.liferay.portlet.PortletPreferencesWrapper;
 import com.liferay.portlet.PortletRequestImpl;
@@ -4523,7 +4524,12 @@ public class PortalImpl implements Portal {
 		PortletResponseImpl portletResponseImpl =
 			PortletResponseImpl.getPortletResponseImpl(portletResponse);
 
-		return ((RenderResponseImpl)portletResponseImpl).getTitle();
+		if (portletResponseImpl instanceof HeaderResponseImpl) {
+			return ((HeaderResponseImpl)portletResponseImpl).getTitle();
+		}
+		else {
+			return ((RenderResponseImpl)portletResponseImpl).getTitle();
+		}
 	}
 
 	@Override

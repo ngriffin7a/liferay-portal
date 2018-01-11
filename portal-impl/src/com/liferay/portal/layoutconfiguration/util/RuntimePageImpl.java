@@ -426,6 +426,9 @@ public class RuntimePageImpl implements RuntimePage {
 		Map<Integer, List<PortletRenderer>> portletRenderersMap =
 			processor.getPortletRenderers();
 
+		Map<String, Map<String, Object>> portletHeaderRequestMap =
+			new HashMap<>();
+
 		for (Map.Entry<Integer, List<PortletRenderer>> entry :
 				portletRenderersMap.entrySet()) {
 
@@ -439,6 +442,41 @@ public class RuntimePageImpl implements RuntimePage {
 			StopWatch stopWatch = new StopWatch();
 
 			stopWatch.start();
+
+			if (_log.isDebugEnabled()) {
+				_log.debug("Start serial header phase");
+			}
+
+			for (PortletRenderer portletRenderer : portletRenderers) {
+				Portlet portlet = portletRenderer.getPortlet();
+
+				HeaderPhaseResults headerPhaseResults =
+					portletRenderer.renderHeaders(request, response);
+				String rendererPortletId = portlet.getPortletId();
+
+				contentsMap.put(
+					rendererPortletId, headerPhaseResults.getContents());
+
+				portletHeaderRequestMap.put(
+					rendererPortletId, headerPhaseResults.getRequestMap());
+
+				if (_log.isDebugEnabled()) {
+					StringBundler sb = new StringBundler();
+
+					sb.append("Serially rendered headers for portlet ");
+					sb.append(rendererPortletId);
+					sb.append(" in ");
+					sb.append(stopWatch.getTime());
+					sb.append(" ms");
+					_log.debug(sb.toString());
+				}
+			}
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Finished serial header phase in " + stopWatch.getTime() +
+						" ms");
+			}
 
 			if (portletParallelRender && (portletRenderers.size() > 1)) {
 				if (_log.isDebugEnabled()) {
@@ -458,7 +496,7 @@ public class RuntimePageImpl implements RuntimePage {
 				try {
 					parallelyRenderPortlets(
 						objectValuePair.getKey(), response, processor,
-						contentsMap, portletRenderers);
+						contentsMap, portletHeaderRequestMap, portletRenderers);
 				}
 				finally {
 					Closeable closeable = objectValuePair.getValue();
@@ -482,16 +520,20 @@ public class RuntimePageImpl implements RuntimePage {
 				for (PortletRenderer portletRenderer : portletRenderers) {
 					Portlet portlet = portletRenderer.getPortlet();
 
+					String rendererPortletId = portlet.getPortletId();
+
 					contentsMap.put(
-						portlet.getPortletId(),
-						portletRenderer.render(request, response));
+						rendererPortletId,
+						portletRenderer.render(
+							request, response,
+							portletHeaderRequestMap.get(rendererPortletId)));
 
 					if (_log.isDebugEnabled()) {
 						_log.debug(
 							StringBundler.concat(
-								"Serially rendered portlet ",
-								portlet.getPortletId(), " in ",
-								String.valueOf(stopWatch.getTime()), " ms"));
+								"Serially rendered portlet ", rendererPortletId,
+								" in ", String.valueOf(stopWatch.getTime()),
+								" ms"));
 					}
 				}
 
@@ -557,6 +599,7 @@ public class RuntimePageImpl implements RuntimePage {
 	protected void parallelyRenderPortlets(
 			HttpServletRequest request, HttpServletResponse response,
 			TemplateProcessor processor, Map<String, StringBundler> contentsMap,
+			Map<String, Map<String, Object>> portletHeaderRequestMap,
 			List<PortletRenderer> portletRenderers)
 		throws Exception {
 
@@ -568,16 +611,20 @@ public class RuntimePageImpl implements RuntimePage {
 			portletRenderers.size());
 
 		for (PortletRenderer portletRenderer : portletRenderers) {
-			if (_log.isDebugEnabled()) {
-				Portlet portlet = portletRenderer.getPortlet();
+			Portlet portlet = portletRenderer.getPortlet();
 
+			String rendererPortletId = portlet.getPortletId();
+
+			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Submit portlet " + portlet.getPortletId() +
+					"Submit portlet " + rendererPortletId +
 						" for parallel rendering");
 			}
 
 			Callable<StringBundler> renderCallable =
-				portletRenderer.getCallable(request, response);
+				portletRenderer.getCallable(
+					request, response,
+					portletHeaderRequestMap.get(rendererPortletId));
 
 			Future<StringBundler> future = null;
 

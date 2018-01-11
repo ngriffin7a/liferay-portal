@@ -126,10 +126,10 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	}
 
 	public BaseDeployer() {
-		ServiceLoader<DeploymentExtension> serviceLoader = ServiceLoader.load(
-			DeploymentExtension.class, BaseDeployer.class.getClassLoader());
+		for (DeploymentExtension deploymentExtension : ServiceLoader.load(
+				DeploymentExtension.class,
+				BaseDeployer.class.getClassLoader())) {
 
-		for (DeploymentExtension deploymentExtension : serviceLoader) {
 			_deploymentExtensions.add(deploymentExtension);
 		}
 	}
@@ -1234,6 +1234,13 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			sb.append("<taglib>");
 			sb.append("<taglib-uri>http://java.sun.com/portlet_2_0");
 			sb.append("</taglib-uri>");
+			sb.append("<taglib-location>");
+			sb.append("/WEB-INF/tld/liferay-portlet.tld");
+			sb.append("</taglib-location>");
+			sb.append("</taglib>");
+			sb.append("<taglib>");
+			sb.append(
+				"<taglib-uri>http://xmlns.jcp.org/portlet_3_0</taglib-uri>");
 			sb.append("<taglib-location>");
 			sb.append("/WEB-INF/tld/liferay-portlet.tld");
 			sb.append("</taglib-location>");

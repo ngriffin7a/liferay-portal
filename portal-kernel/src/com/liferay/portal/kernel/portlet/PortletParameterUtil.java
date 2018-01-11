@@ -15,11 +15,17 @@
 package com.liferay.portal.kernel.portlet;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
 public class PortletParameterUtil {
 
@@ -43,6 +49,21 @@ public class PortletParameterUtil {
 		}
 
 		return sb.toString();
+	}
+
+	public static Set<String> getPublicRenderParameterNames(Portlet portlet) {
+		Set<String> publicRenderParameterNames = new HashSet<>();
+		Set<PublicRenderParameter> publicRenderParameters =
+			portlet.getPublicRenderParameters();
+
+		for (PublicRenderParameter publicRenderParameter :
+				publicRenderParameters) {
+
+			publicRenderParameterNames.add(
+				publicRenderParameter.getIdentifier());
+		}
+
+		return publicRenderParameterNames;
 	}
 
 }

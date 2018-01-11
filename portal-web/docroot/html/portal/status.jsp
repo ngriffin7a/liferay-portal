@@ -125,7 +125,10 @@ if (Validator.isNotNull(exception)) {
 			if (value instanceof Exception) {
 				Exception e = (Exception)value;
 
-				_log.error(e.getMessage());
+				// TODO - portlet3: This was just a temporary fix to help find an error.
+				// _log.error(e.getMessage());
+
+				_log.error(e, e);
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(e, e);

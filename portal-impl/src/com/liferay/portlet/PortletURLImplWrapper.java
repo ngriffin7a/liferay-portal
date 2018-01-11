@@ -14,9 +14,12 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public class PortletURLImplWrapper extends PortletURLImpl {
 
 	public PortletURLImplWrapper(
