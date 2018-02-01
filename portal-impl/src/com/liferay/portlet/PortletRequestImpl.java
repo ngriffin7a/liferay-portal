@@ -173,12 +173,28 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			}
 		}
 
-		return _request.getAttribute(name);
+		Object object = null;
+
+		if (_actionScopedRequestAttributes != null) {
+			object = _actionScopedRequestAttributes.get(name);
+		}
+
+		if (object == null) {
+			object = _request.getAttribute(name);
+		}
+
+		return object;
 	}
 
 	@Override
 	public Enumeration<String> getAttributeNames() {
 		Set<String> names = new HashSet<>();
+
+		if (_actionScopedRequestAttributes != null) {
+			Set<String> keySet = _actionScopedRequestAttributes.keySet();
+
+			_copyAttributeNames(names, Collections.enumeration(keySet));
+		}
 
 		Enumeration<String> enu = _request.getAttributeNames();
 
@@ -669,7 +685,14 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			throw new IllegalArgumentException();
 		}
 
-		_request.removeAttribute(name);
+		if (_actionScopedRequestAttributes != null) {
+			if (_isNameOK(name)) {
+				_actionScopedRequestAttributes.remove(name);
+			}
+		}
+		else {
+			_request.removeAttribute(name);
+		}
 	}
 
 	public void removePortletRequestAttributes() {
@@ -708,10 +731,24 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 		}
 
 		if (obj == null) {
-			_request.removeAttribute(name);
+			if (_actionScopedRequestAttributes != null) {
+				if (_isNameOK(name)) {
+					_actionScopedRequestAttributes.remove(name);
+				}
+			}
+			else {
+				_request.removeAttribute(name);
+			}
 		}
 		else {
-			_request.setAttribute(name, obj);
+			if (_actionScopedRequestAttributes != null) {
+				if (_isNameOK(name)) {
+					_actionScopedRequestAttributes.put(name, obj);
+				}
+			}
+			else {
+				_request.setAttribute(name, obj);
+			}
 		}
 	}
 
@@ -1041,6 +1078,16 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 		}
 
 		return false;
+	}
+
+	private boolean _isNameOK(String name) {
+		if (name.startsWith("javax.portlet.") ||
+			name.startsWith("javax.servlet.")) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private void _mergePublicRenderParameters(
