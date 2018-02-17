@@ -176,6 +176,24 @@ public class BundlePortletApp implements PortletApp {
 		return _portletApp.getServletURLPatterns();
 	}
 
+	// Not until depending on com.liferay.portal.kernel-default.jar @Override
+
+	public int getSpecMajorVersion() {
+		return 2;
+
+		// return _portletApp.getSpecMajorVersion();
+
+	}
+
+	// Not until depending on com.liferay.portal.kernel-default.jar @Override
+
+	public int getSpecMinorVersion() {
+		return 0;
+
+		// return _portletApp.getSpecMinorVersion();
+
+	}
+
 	@Override
 	public SpriteImage getSpriteImage(String fileName) {
 		return _portletApp.getSpriteImage(fileName);
@@ -204,6 +222,22 @@ public class BundlePortletApp implements PortletApp {
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		throw new UnsupportedOperationException();
+	}
+
+	// Not until depending on com.liferay.portal.kernel-default.jar @Override
+
+	public void setSpecMajorVersion(int specMajorVersion) {
+
+		// _portletApp.setSpecMajorVersion(specMajorVersion);
+
+	}
+
+	// Not until depending on com.liferay.portal.kernel-default.jar @Override
+
+	public void setSpecMinorVersion(int specMinorVersion) {
+
+		// _portletApp.setSpecMinorVersion(specMinorVersion);
+
 	}
 
 	@Override

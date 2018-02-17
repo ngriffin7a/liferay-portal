@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -21,19 +23,34 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.portlet.CacheControl;
 import javax.portlet.MimeResponse;
+import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
 
 /**
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
+@ProviderType
 public abstract class MimeResponseImpl
 	extends PortletResponseImpl implements MimeResponse {
+
+	@Override
+	public PortletURL createActionURL() {
+		return super.createActionURL();
+	}
+
+	@Override
+	public PortletURL createRenderURL() {
+		return super.createRenderURL();
+	}
 
 	@Override
 	public void flushBuffer() throws IOException {
@@ -167,6 +184,10 @@ public abstract class MimeResponseImpl
 		_contentType = contentType;
 
 		response.setContentType(contentType);
+	}
+
+	public void setNextPossiblePortletModes(
+		Collection<PortletMode> portletModes) {
 	}
 
 	private boolean _calledFlushBuffer;

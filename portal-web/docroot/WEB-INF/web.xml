@@ -832,6 +832,10 @@
 			<taglib-location>/WEB-INF/tld/liferay-portlet.tld</taglib-location>
 		</taglib>
 		<taglib>
+			<taglib-uri>http://xmlns.jcp.org/portlet_3_0</taglib-uri>
+			<taglib-location>/WEB-INF/tld/liferay-portlet_3_0.tld</taglib-location>
+		</taglib>
+		<taglib>
 			<taglib-uri>http://liferay.com/tld/aui</taglib-uri>
 			<taglib-location>/WEB-INF/tld/liferay-aui.tld</taglib-location>
 		</taglib>

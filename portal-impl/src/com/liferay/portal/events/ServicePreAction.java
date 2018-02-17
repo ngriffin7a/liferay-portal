@@ -732,6 +732,8 @@ public class ServicePreAction extends Action {
 			widget = widgetObj.booleanValue();
 		}
 
+		String hub = ParamUtil.getString(request, "p_p_hub", StringPool.BLANK);
+
 		// Theme display
 
 		ThemeDisplay themeDisplay = ThemeDisplayFactory.create();
@@ -761,6 +763,8 @@ public class ServicePreAction extends Action {
 		themeDisplay.setDoAsGroupId(doAsGroupId);
 		themeDisplay.setDoAsUserId(doAsUserId);
 		themeDisplay.setDoAsUserLanguageId(doAsUserLanguageId);
+		themeDisplay.setHubAction(hub.equals("0"));
+		themeDisplay.setHubPartialAction(hub.equals("1"));
 		themeDisplay.setI18nLanguageId(i18nLanguageId);
 		themeDisplay.setI18nPath(i18nPath);
 		themeDisplay.setIsolated(isolated);

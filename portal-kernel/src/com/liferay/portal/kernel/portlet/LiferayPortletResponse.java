@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.model.Portlet;
 
 import java.util.Map;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public interface LiferayPortletResponse extends PortletResponse {
 
 	public void addDateHeader(String name, long date);

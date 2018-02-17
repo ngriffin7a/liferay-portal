@@ -18,7 +18,16 @@
 	<c:when test="<%= Validator.isNull(tilesPortletContent) %>">
 
 		<%
-		pageContext.getOut().print(renderRequest.getAttribute(WebKeys.PORTLET_CONTENT));
+		if (PortletRequest.HEADER_PHASE.equals(lifecycle)) {
+			HeaderRequest defineObjectsHeaderRequest = (HeaderRequest)pageContext.getAttribute("headerRequest");
+
+			pageContext.getOut().print(defineObjectsHeaderRequest.getAttribute(WebKeys.PORTLET_CONTENT));
+		}
+		else {
+			RenderRequest defineObjectsRenderRequest = (RenderRequest)pageContext.getAttribute("renderRequest");
+
+			pageContext.getOut().print(defineObjectsRenderRequest.getAttribute(WebKeys.PORTLET_CONTENT));
+		}
 		%>
 
 	</c:when>

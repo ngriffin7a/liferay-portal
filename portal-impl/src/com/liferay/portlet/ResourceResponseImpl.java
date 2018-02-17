@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
@@ -23,8 +25,10 @@ import com.liferay.portlet.extra.config.ExtraPortletAppConfigRegistry;
 
 import java.util.Locale;
 
+import javax.portlet.ActionURL;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+import javax.portlet.RenderURL;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
@@ -34,7 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
+@ProviderType
 public class ResourceResponseImpl
 	extends MimeResponseImpl implements ResourceResponse {
 
@@ -63,6 +69,16 @@ public class ResourceResponseImpl
 	@Override
 	public PortletURL createActionURL() {
 		return super.createActionURL();
+	}
+
+	@Override
+	public ActionURL createActionURL(Copy copy) {
+
+		// TODO: portlet3 - If we keep LiferayPortletResponse3 then this will
+		// need to be implemented. Don't bother for now since TCK hasn't tested
+		// for it yet.
+
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -97,13 +113,23 @@ public class ResourceResponseImpl
 	}
 
 	@Override
-	public ResourceURL createResourceURL() {
-		return super.createResourceURL();
+	public RenderURL createRenderURL(Copy copy) {
+
+		// TODO: portlet3 - If we keep LiferayPortletResponse3 then this will
+		// need to be implemented. Don't bother for now since TCK hasn't tested
+		// for it yet.
+
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public String getLifecycle() {
 		return PortletRequest.RESOURCE_PHASE;
+	}
+
+	@Override
+	public int getStatus() {
+		return response.getStatus();
 	}
 
 	@Override
@@ -116,6 +142,17 @@ public class ResourceResponseImpl
 	@Override
 	public void setContentLength(int length) {
 		response.setContentLength(length);
+	}
+
+	@Override
+	public void setContentLengthLong(long length) {
+
+		// TODO: portlet3 - This method can't be implemented until
+		// https://issues.liferay.com/browse/LPS-73874 is merged. Waiting to
+		// hear back from Minhchau in the JIRA issue.
+		// response.setContentLengthLong(length)
+
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -166,6 +203,11 @@ public class ResourceResponseImpl
 				_canSetLocaleEncoding = true;
 			}
 		}
+	}
+
+	@Override
+	public void setStatus(int statusCode) {
+		response.setStatus(statusCode);
 	}
 
 	private boolean _canSetLocaleEncoding = true;

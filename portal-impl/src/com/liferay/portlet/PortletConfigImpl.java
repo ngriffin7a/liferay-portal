@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletConstants;
@@ -26,6 +28,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portlet.internal.PortletAppUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +43,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletContext;
+import javax.portlet.PortletMode;
+import javax.portlet.WindowState;
 
 import javax.xml.namespace.QName;
 
@@ -48,6 +53,7 @@ import javax.xml.namespace.QName;
  * @author Eduardo Lundgren
  * @author Shuyang Zhou
  */
+@ProviderType
 public class PortletConfigImpl implements LiferayPortletConfig {
 
 	public PortletConfigImpl(Portlet portlet, PortletContext portletContext) {
@@ -90,7 +96,11 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 
 			String name = portletAppContainerRuntimeOption.getKey();
 
-			if (!name.startsWith(className)) {
+			if (!name.startsWith(className) &&
+				(!PortletAppUtil.isPortletSpec3(_portletApp) ||
+				 (PortletAppUtil.isPortletSpec3(_portletApp) &&
+				  !"javax.portlet.renderHeaders".equals(name)))) {
+
 				containerRuntimeOptions.put(
 					name, portletAppContainerRuntimeOption.getValue());
 			}
@@ -161,6 +171,14 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 	}
 
 	@Override
+	public Enumeration<PortletMode> getPortletModes(String mimeType) {
+
+		// TODO: portlet3
+
+		return null;
+	}
+
+	@Override
 	public String getPortletName() {
 		return _portletName;
 	}
@@ -169,6 +187,14 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 	public Enumeration<QName> getProcessingEventQNames() {
 		return Collections.enumeration(
 			toJavaxQNames(_portlet.getProcessingEvents()));
+	}
+
+	@Override
+	public Map<String, QName> getPublicRenderParameterDefinitions() {
+
+		// TODO: portlet3
+
+		return null;
 	}
 
 	@Override
@@ -252,6 +278,14 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 		}
 
 		return Collections.enumeration(supportedLocales);
+	}
+
+	@Override
+	public Enumeration<WindowState> getWindowStates(String mimeType) {
+
+		// TODO: portlet3
+
+		return null;
 	}
 
 	@Override

@@ -1148,6 +1148,14 @@ public class ThemeDisplay
 		return _freeformLayout;
 	}
 
+	public boolean isHubAction() {
+		return _hubAction;
+	}
+
+	public boolean isHubPartialAction() {
+		return _hubPartialAction;
+	}
+
 	public boolean isI18n() {
 		return _i18n;
 	}
@@ -1403,6 +1411,14 @@ public class ThemeDisplay
 
 	public void setFreeformLayout(boolean freeformLayout) {
 		_freeformLayout = freeformLayout;
+	}
+
+	public void setHubAction(boolean hubAction) {
+		_hubAction = hubAction;
+	}
+
+	public void setHubPartialAction(boolean partialAction) {
+		_hubPartialAction = partialAction;
 	}
 
 	public void setI18nLanguageId(String i18nLanguageId) {
@@ -2019,6 +2035,8 @@ public class ThemeDisplay
 	private String _facebookCanvasPageURL;
 
 	private boolean _freeformLayout;
+	private boolean _hubAction;
+	private boolean _hubPartialAction;
 	private boolean _i18n;
 	private String _i18nLanguageId;
 	private String _i18nPath;

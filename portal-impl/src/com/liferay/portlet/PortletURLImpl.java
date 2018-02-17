@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.petra.encryptor.Encryptor;
 import com.liferay.petra.encryptor.EncryptorException;
 import com.liferay.petra.string.CharPool;
@@ -53,6 +55,11 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.security.lang.DoPrivilegedUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.internal.LiferayMutablePortletParameters;
+import com.liferay.portlet.internal.LiferayRenderParameters;
+import com.liferay.portlet.internal.MutableActionParametersImpl;
+import com.liferay.portlet.internal.MutableRenderParametersImpl;
+import com.liferay.portlet.internal.MutableResourceParametersImpl;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -61,6 +68,7 @@ import java.io.Writer;
 import java.security.Key;
 import java.security.PrivilegedAction;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -69,6 +77,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import javax.portlet.MimeResponse;
+import javax.portlet.MutableActionParameters;
+import javax.portlet.MutableRenderParameters;
+import javax.portlet.MutableResourceParameters;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletModeException;
@@ -76,10 +88,12 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletSecurityException;
 import javax.portlet.PortletURL;
 import javax.portlet.PortletURLGenerationListener;
+import javax.portlet.RenderParameters;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceURL;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
+import javax.portlet.annotations.PortletSerializable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -88,7 +102,9 @@ import javax.servlet.http.HttpSession;
  * @author Brian Wing Shun Chan
  * @author Jorge Ferrer
  * @author Connor McKay
+ * @author Neil Griffin
  */
+@ProviderType
 public class PortletURLImpl
 	implements LiferayPortletURL, PortletURL, ResourceURL, Serializable {
 
@@ -96,16 +112,30 @@ public class PortletURLImpl
 		HttpServletRequest request, Portlet portlet, Layout layout,
 		String lifecycle) {
 
-		this(request, portlet, null, layout, lifecycle);
+		this(request, portlet, null, layout, lifecycle, null);
+	}
+
+	public PortletURLImpl(
+		HttpServletRequest request, Portlet portlet, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		this(request, portlet, null, layout, lifecycle, copy);
 	}
 
 	public PortletURLImpl(
 		PortletRequest portletRequest, Portlet portlet, Layout layout,
 		String lifecycle) {
 
+		this(portletRequest, portlet, layout, lifecycle, null);
+	}
+
+	public PortletURLImpl(
+		PortletRequest portletRequest, Portlet portlet, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
+
 		this(
 			PortalUtil.getHttpServletRequest(portletRequest), portlet,
-			portletRequest, layout, lifecycle);
+			portletRequest, layout, lifecycle, copy);
 	}
 
 	@Override
@@ -122,6 +152,28 @@ public class PortletURLImpl
 		if (key == null) {
 			throw new IllegalArgumentException();
 		}
+	}
+
+	@Override
+	public Appendable append(Appendable appendable) throws IOException {
+		return append(appendable, true);
+	}
+
+	@Override
+	public Appendable append(Appendable appendable, boolean escapeXml)
+		throws IOException {
+
+		String toString = toString();
+
+		if (escapeXml && !_escapeXml) {
+			toString = HtmlUtil.escape(toString);
+		}
+
+		return appendable.append(toString);
+	}
+
+	public MutableActionParameters getActionParameters() {
+		return _mutableActionParameters;
 	}
 
 	@Override
@@ -175,7 +227,9 @@ public class PortletURLImpl
 
 	@Override
 	public String getParameter(String name) {
-		String[] values = _params.get(name);
+		Map<String, String[]> parameterMap = getParameterMap();
+
+		String[] values = parameterMap.get(name);
 
 		if (ArrayUtil.isNotEmpty(values)) {
 			return values[0];
@@ -187,7 +241,7 @@ public class PortletURLImpl
 
 	@Override
 	public Map<String, String[]> getParameterMap() {
-		return _params;
+		return _portletURLParameterMap;
 	}
 
 	@Override
@@ -250,8 +304,18 @@ public class PortletURLImpl
 	}
 
 	@Override
+	public MutableRenderParameters getRenderParameters() {
+		return _mutableRenderParameters;
+	}
+
+	@Override
 	public String getResourceID() {
 		return _resourceID;
+	}
+
+	@Override
+	public MutableResourceParameters getResourceParameters() {
+		return _mutableResourceParameters;
 	}
 
 	@Override
@@ -330,6 +394,13 @@ public class PortletURLImpl
 		_anchor = anchor;
 
 		clearCache();
+	}
+
+	@Override
+	public void setBeanParameter(PortletSerializable portletSerializable) {
+
+		// TODO: portlet3
+
 	}
 
 	@Override
@@ -438,13 +509,10 @@ public class PortletURLImpl
 			throw new IllegalArgumentException();
 		}
 
-		if (value == null) {
-			removeParameter(name);
+		LiferayMutablePortletParameters liferayMutablePortletParameters =
+			_getMutablePortletParameters();
 
-			return;
-		}
-
-		setParameter(name, new String[] {value}, append);
+		liferayMutablePortletParameters.setValue(name, value, append);
 	}
 
 	@Override
@@ -464,23 +532,10 @@ public class PortletURLImpl
 			}
 		}
 
-		if (!append) {
-			_params.put(name, values);
-		}
-		else {
-			String[] oldValues = _params.get(name);
+		LiferayMutablePortletParameters liferayMutablePortletParameters =
+			_getMutablePortletParameters();
 
-			if (oldValues == null) {
-				_params.put(name, values);
-			}
-			else {
-				String[] newValues = ArrayUtil.append(oldValues, values);
-
-				_params.put(name, newValues);
-			}
-		}
-
-		clearCache();
+		liferayMutablePortletParameters.setValues(name, values, append);
 	}
 
 	@Override
@@ -510,7 +565,19 @@ public class PortletURLImpl
 				}
 			}
 
-			_params = newParams;
+			_mutableRenderParameters.clear();
+
+			if (_mutableActionParameters != null) {
+				_mutableActionParameters.clear();
+			}
+
+			if (_mutableResourceParameters != null) {
+				_mutableResourceParameters.clear();
+			}
+
+			for (Map.Entry<String, String[]> entry : newParams.entrySet()) {
+				setParameter(entry.getKey(), entry.getValue());
+			}
 		}
 
 		clearCache();
@@ -626,7 +693,21 @@ public class PortletURLImpl
 
 	@Override
 	public String toString() {
-		if (_toString != null) {
+		LiferayMutablePortletParameters mutableRenderParameters =
+			(LiferayMutablePortletParameters)_mutableRenderParameters;
+
+		LiferayMutablePortletParameters mutableActionParameters =
+			(LiferayMutablePortletParameters)_mutableActionParameters;
+
+		LiferayMutablePortletParameters mutableResourceParameters =
+			(LiferayMutablePortletParameters)_mutableResourceParameters;
+
+		if (!mutableRenderParameters.isChanged() &&
+			(mutableActionParameters != null) &&
+			!mutableActionParameters.isChanged() &&
+			(mutableResourceParameters != null) &&
+			!mutableResourceParameters.isChanged() && (_toString != null)) {
+
 			return _toString;
 		}
 
@@ -864,16 +945,75 @@ public class PortletURLImpl
 			}
 		}
 
-		Map<String, String[]> renderParams = _params;
+		Map<String, String[]> portletURLParams = new LinkedHashMap<>();
+		Set<String> actionParameterNames = Collections.emptySet();
+
+		if (_mutableActionParameters != null) {
+			actionParameterNames = _mutableActionParameters.getNames();
+
+			for (String parameterName : actionParameterNames) {
+				portletURLParams.put(
+					_ACTION_PARAMETER_PREFIX + parameterName,
+					_mutableActionParameters.getValues(parameterName));
+			}
+		}
+
+		Set<String> resourceParameterNames = Collections.emptySet();
+
+		if (_mutableResourceParameters != null) {
+			resourceParameterNames = _mutableResourceParameters.getNames();
+
+			for (String parameterName : resourceParameterNames) {
+				portletURLParams.put(
+					_RESOURCE_PARAMETER_PREFIX + parameterName,
+					_mutableResourceParameters.getValues(parameterName));
+			}
+		}
+
+		// The MutableRenderParameters object is a Portlet 3.0 feature that
+		// provides the developer with the ability to access and/or mutate
+		// render parameters prior to the toString() method being called.
+
+		if (!_lifecycle.equals(PortletRequest.RESOURCE_PHASE) ||
+			(_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
+			 !_cacheability.equals(ResourceURL.FULL))) {
+
+			Set<String> renderParameterNames =
+				_mutableRenderParameters.getNames();
+
+			for (String renderParameterName : renderParameterNames) {
+				if (!resourceParameterNames.contains(renderParameterName)) {
+					String[] renderParameterValues =
+						_mutableRenderParameters.getValues(renderParameterName);
+
+					if ((_lifecycle.equals(PortletRequest.ACTION_PHASE) ||
+						 _lifecycle.equals(PortletRequest.RESOURCE_PHASE)) &&
+						!_mutableRenderParameters.isPublic(
+							renderParameterName)) {
+
+						renderParameterName =
+							PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE +
+								renderParameterName;
+					}
+
+					portletURLParams.put(
+						renderParameterName, renderParameterValues);
+				}
+			}
+		}
+
+		// The copyCurrentRenderParameters attribute is a Portlet 2.0 legacy
+		// feature for portlet:actionURL and portlet:renderURL JSP tags that
+		// only affects the toString() method.
 
 		if (_copyCurrentRenderParameters &&
 			!(_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
-			 _cacheability.equals(ResourceURL.FULL))) {
+			  _cacheability.equals(ResourceURL.FULL))) {
 
-			renderParams = _mergeWithRenderParameters(renderParams);
+			portletURLParams = _mergeWithRenderParameters(portletURLParams);
 		}
 
-		for (Map.Entry<String, String[]> entry : renderParams.entrySet()) {
+		for (Map.Entry<String, String[]> entry : portletURLParams.entrySet()) {
 			String name = entry.getKey();
 			String[] values = entry.getValue();
 
@@ -890,11 +1030,25 @@ public class PortletURLImpl
 				}
 			}
 
+			if (name.startsWith(_ACTION_PARAMETER_PREFIX)) {
+				name = name.substring(_ACTION_PARAMETER_PREFIX.length());
+			}
+			else if (name.startsWith(_RESOURCE_PARAMETER_PREFIX)) {
+				name = name.substring(_RESOURCE_PARAMETER_PREFIX.length());
+			}
+
 			for (String value : values) {
 				_appendNamespaceAndEncode(sb, name);
 
 				sb.append(StringPool.EQUAL);
-				sb.append(processValue(key, value));
+
+				// TODO: portlet3 - null values are OK in Portlet 3. Need to see
+				// if this should be an opt-in.
+
+				if (value != null) {
+					sb.append(processValue(key, value));
+				}
+
 				sb.append(StringPool.AMPERSAND);
 			}
 		}
@@ -997,14 +1151,15 @@ public class PortletURLImpl
 	}
 
 	protected void removeParameter(String name) {
-		if (_params.containsKey(name)) {
-			_params.remove(name);
-		}
+		Map<String, String[]> parameterMap = getParameterMap();
+
+		parameterMap.remove(name);
 	}
 
 	private PortletURLImpl(
 		HttpServletRequest request, Portlet portlet,
-		PortletRequest portletRequest, Layout layout, String lifecycle) {
+		PortletRequest portletRequest, Layout layout, String lifecycle,
+		MimeResponse.Copy copy) {
 
 		if (portlet == null) {
 			throw new NullPointerException("Portlet is null");
@@ -1016,13 +1171,51 @@ public class PortletURLImpl
 		_layout = layout;
 		_lifecycle = lifecycle;
 		_parametersIncludedInPath = Collections.emptySet();
-		_params = new LinkedHashMap<>();
 		_removePublicRenderParameters = new LinkedHashSet<>();
 		_secure = PortalUtil.isSecure(request);
 
-		if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
-			_copyCurrentRenderParameters = true;
+		Set<String> publicRenderParameterNames = Collections.emptySet();
+		Map<String, String[]> mutableRenderParameterMap = new LinkedHashMap<>();
+
+		if (portletRequest != null) {
+			LiferayRenderParameters renderParameters =
+				(LiferayRenderParameters)portletRequest.getRenderParameters();
+
+			publicRenderParameterNames =
+				renderParameters.getPublicRenderParameterNames();
+
+			boolean copyAllRenderParameters = MimeResponse.Copy.ALL.equals(
+				copy);
+			boolean copyPublicRenderParameters =
+				MimeResponse.Copy.PUBLIC.equals(copy);
+
+			if (copyAllRenderParameters || copyPublicRenderParameters) {
+				Set<String> renderParameterNames = renderParameters.getNames();
+
+				for (String renderParameterName : renderParameterNames) {
+					if (copyAllRenderParameters ||
+						renderParameters.isPublic(renderParameterName)) {
+
+						mutableRenderParameterMap.put(
+							renderParameterName,
+							renderParameters.getValues(renderParameterName));
+					}
+				}
+			}
 		}
+
+		_mutableRenderParameters = new MutableRenderParametersImpl(
+			mutableRenderParameterMap, publicRenderParameterNames);
+
+		if (PortletRequest.ACTION_PHASE.equals(lifecycle)) {
+			_mutableActionParameters = new MutableActionParametersImpl();
+		}
+		else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+			_copyCurrentRenderParameters = true;
+			_mutableResourceParameters = new MutableResourceParametersImpl();
+		}
+
+		_portletURLParameterMap = new PortletURLParameterMap();
 
 		if (!portlet.isUndeployedPortlet()) {
 			Set<String> autopropagatedParameters =
@@ -1061,7 +1254,7 @@ public class PortletURLImpl
 			request,
 			PortletLocalServiceUtil.getPortletById(
 				PortalUtil.getCompanyId(request), portletId),
-			portletRequest, layout, lifecycle);
+			portletRequest, layout, lifecycle, null);
 	}
 
 	private void _appendNamespaceAndEncode(StringBundler sb, String name) {
@@ -1122,27 +1315,50 @@ public class PortletURLImpl
 		return null;
 	}
 
+	private LiferayMutablePortletParameters _getMutablePortletParameters() {
+		if (_lifecycle.equals(PortletRequest.ACTION_PHASE)) {
+			return (LiferayMutablePortletParameters)_mutableActionParameters;
+		}
+		else if (_lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+			return (LiferayMutablePortletParameters)_mutableResourceParameters;
+		}
+
+		return (LiferayMutablePortletParameters)_mutableRenderParameters;
+	}
+
 	private Map<String, String[]> _mergeWithRenderParameters(
 		Map<String, String[]> portletURLParams) {
 
-		String namespace = getNamespace();
+		Map<String, String[]> privateRenderParameters = new LinkedHashMap<>();
 
-		Map<String, String[]> renderParameters = RenderParametersPool.get(
-			_request, _plid, _portlet.getPortletId());
+		PortletRequest portletRequest = getPortletRequest();
 
-		if (renderParameters == null) {
+		if (portletRequest != null) {
+			RenderParameters renderParameters =
+				portletRequest.getRenderParameters();
+
+			Set<String> allRenderParameterNames = renderParameters.getNames();
+
+			for (String renderParameterName : allRenderParameterNames) {
+				if (!renderParameters.isPublic(renderParameterName)) {
+					privateRenderParameters.put(
+						renderParameterName,
+						renderParameters.getValues(renderParameterName));
+				}
+			}
+		}
+
+		if (privateRenderParameters.isEmpty()) {
 			return portletURLParams;
 		}
 
 		Map<String, String[]> mergedRenderParams = new LinkedHashMap<>(
 			portletURLParams);
 
-		for (Map.Entry<String, String[]> entry : renderParameters.entrySet()) {
-			String name = entry.getKey();
+		for (Map.Entry<String, String[]> entry :
+				privateRenderParameters.entrySet()) {
 
-			if (name.contains(namespace)) {
-				name = name.substring(namespace.length());
-			}
+			String name = entry.getKey();
 
 			if (!_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
 				(_removedParameterNames != null) &&
@@ -1152,23 +1368,41 @@ public class PortletURLImpl
 			}
 
 			String[] oldValues = entry.getValue();
-			String[] newValues = _params.get(name);
+
+			String mergedRenderParamName = name;
+
+			if (mergedRenderParams.containsKey(
+					_ACTION_PARAMETER_PREFIX + name)) {
+
+				mergedRenderParamName = _ACTION_PARAMETER_PREFIX + name;
+			}
+			else if (mergedRenderParams.containsKey(
+						_RESOURCE_PARAMETER_PREFIX + name)) {
+
+				mergedRenderParamName = _RESOURCE_PARAMETER_PREFIX + name;
+			}
+
+			String[] newValues = _portletURLParameterMap.get(name);
 
 			if (newValues == null) {
-				mergedRenderParams.put(name, oldValues);
+				mergedRenderParams.put(mergedRenderParamName, oldValues);
 			}
 			else if (isBlankValue(newValues)) {
-				mergedRenderParams.remove(name);
+				mergedRenderParams.remove(mergedRenderParamName);
 			}
 			else {
 				newValues = ArrayUtil.append(newValues, oldValues);
 
-				mergedRenderParams.put(name, newValues);
+				mergedRenderParams.put(mergedRenderParamName, newValues);
 			}
 		}
 
 		return mergedRenderParams;
 	}
+
+	private static final String _ACTION_PARAMETER_PREFIX = "p_action_p_";
+
+	private static final String _RESOURCE_PARAMETER_PREFIX = "p_resource_p_";
 
 	private static final Log _log = LogFactoryUtil.getLog(PortletURLImpl.class);
 
@@ -1192,13 +1426,16 @@ public class PortletURLImpl
 	private Layout _layout;
 	private String _layoutFriendlyURL;
 	private String _lifecycle;
+	private MutableActionParameters _mutableActionParameters;
+	private MutableRenderParameters _mutableRenderParameters;
+	private MutableResourceParameters _mutableResourceParameters;
 	private String _namespace;
 	private Set<String> _parametersIncludedInPath;
-	private Map<String, String[]> _params;
 	private long _plid;
 	private Portlet _portlet;
 	private String _portletModeString;
 	private final PortletRequest _portletRequest;
+	private PortletURLParameterMap _portletURLParameterMap;
 	private long _refererGroupId;
 	private long _refererPlid;
 	private Set<String> _removedParameterNames;
@@ -1209,6 +1446,101 @@ public class PortletURLImpl
 	private String _toString;
 	private boolean _windowStateRestoreCurrentView;
 	private String _windowStateString;
+
+	private class PortletURLParameterMap extends AbstractMap<String, String[]> {
+
+		@Override
+		public Set<Entry<String, String[]>> entrySet() {
+			LiferayMutablePortletParameters mutableRenderParameters =
+				(LiferayMutablePortletParameters)_mutableRenderParameters;
+			LiferayMutablePortletParameters mutableActionParameters =
+				(LiferayMutablePortletParameters)_mutableActionParameters;
+			LiferayMutablePortletParameters mutableResourceParameters =
+				(LiferayMutablePortletParameters)_mutableResourceParameters;
+
+			if ((_entrySet == null) ||
+				((mutableRenderParameters != null) &&
+				 mutableRenderParameters.isChanged()) ||
+				((mutableActionParameters != null) &&
+				 mutableActionParameters.isChanged()) ||
+				((mutableResourceParameters != null) &&
+				 mutableResourceParameters.isChanged())) {
+
+				_entrySet = new LinkedHashSet<>();
+
+				if (mutableResourceParameters != null) {
+					Set<String> resourceParameterNames =
+						mutableResourceParameters.getNames();
+
+					for (String parameterName : resourceParameterNames) {
+						_entrySet.add(
+							new SimpleImmutableEntry<>(
+								parameterName,
+								mutableResourceParameters.getValues(
+									parameterName)));
+					}
+				}
+
+				if (mutableActionParameters != null) {
+					Set<String> actionParameterNames =
+						mutableActionParameters.getNames();
+
+					for (String parameterName : actionParameterNames) {
+						_entrySet.add(
+							new SimpleImmutableEntry<>(
+								parameterName,
+								mutableActionParameters.getValues(
+									parameterName)));
+					}
+				}
+
+				if ((mutableRenderParameters != null) &&
+					!_lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+
+					Set<String> renderParameterNames =
+						mutableRenderParameters.getNames();
+
+					for (String parameterName : renderParameterNames) {
+						_entrySet.add(
+							new SimpleImmutableEntry<>(
+								parameterName,
+								mutableRenderParameters.getValues(
+									parameterName)));
+					}
+				}
+			}
+
+			return _entrySet;
+		}
+
+		@Override
+		public String[] put(String key, String[] value) {
+			String[] oldValues = null;
+
+			Set<Map.Entry<String, String[]>> entrySet = entrySet();
+
+			if (containsKey(key)) {
+				for (Map.Entry<String, String[]> mapEntry : entrySet) {
+					String entryKey = mapEntry.getKey();
+
+					if (entryKey.equals(key)) {
+						oldValues = mapEntry.getValue();
+						mapEntry.setValue(value);
+
+						break;
+					}
+				}
+			}
+			else {
+				entrySet.add(new SimpleImmutableEntry<>(key, value));
+			}
+
+			return oldValues;
+		}
+
+		private Set<Map.Entry<String, String[]>> _entrySet;
+
+	}
 
 	private class ToStringPrivilegedAction implements PrivilegedAction<String> {
 

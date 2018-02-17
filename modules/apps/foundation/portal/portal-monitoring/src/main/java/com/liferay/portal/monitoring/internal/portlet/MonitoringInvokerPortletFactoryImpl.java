@@ -32,6 +32,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Shuyang Zhou
  * @author Philip Jones
+ * @author Neil Griffin
  */
 @Component(
 	enabled = false, immediate = true,
@@ -55,6 +56,25 @@ public class MonitoringInvokerPortletFactoryImpl
 			portletModel, portlet, portletConfig, portletContext,
 			invokerFilterContainer, checkAuthToken, facesPortlet, strutsPortlet,
 			strutsBridgePortlet);
+
+		return new MonitoringInvokerPortlet(
+			invokerPortlet, _dataSampleFactory, _portletMonitoringControl);
+	}
+
+	@Override
+	public InvokerPortlet create(
+			com.liferay.portal.kernel.model.Portlet portletModel,
+			Portlet portlet, PortletConfig portletConfig,
+			PortletContext portletContext,
+			InvokerFilterContainer invokerFilterContainer,
+			boolean checkAuthToken, boolean facesPortlet, boolean headerPortlet,
+			boolean strutsPortlet, boolean strutsBridgePortlet)
+		throws PortletException {
+
+		InvokerPortlet invokerPortlet = _invokerPortletFactory.create(
+			portletModel, portlet, portletConfig, portletContext,
+			invokerFilterContainer, checkAuthToken, facesPortlet, headerPortlet,
+			strutsPortlet, strutsBridgePortlet);
 
 		return new MonitoringInvokerPortlet(
 			invokerPortlet, _dataSampleFactory, _portletMonitoringControl);

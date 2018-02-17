@@ -14,21 +14,27 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import java.io.IOException;
 import java.io.Writer;
 
 import java.util.Map;
 
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletModeException;
 import javax.portlet.PortletSecurityException;
 import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
+import javax.portlet.annotations.PortletSerializable;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
+@ProviderType
 public class PortletURLWrapper implements PortletURL {
 
 	public PortletURLWrapper(PortletURL portletURL) {
@@ -38,6 +44,18 @@ public class PortletURLWrapper implements PortletURL {
 	@Override
 	public void addProperty(String key, String value) {
 		_portletURL.addProperty(key, value);
+	}
+
+	@Override
+	public Appendable append(Appendable appendable) throws IOException {
+		return _portletURL.append(appendable);
+	}
+
+	@Override
+	public Appendable append(Appendable appendable, boolean escapeXML)
+		throws IOException {
+
+		return _portletURL.append(appendable, escapeXML);
 	}
 
 	@Override
@@ -51,13 +69,27 @@ public class PortletURLWrapper implements PortletURL {
 	}
 
 	@Override
+	public MutableRenderParameters getRenderParameters() {
+		return _portletURL.getRenderParameters();
+	}
+
+	@Override
 	public WindowState getWindowState() {
 		return _portletURL.getWindowState();
+	}
+
+	public PortletURL getWrapped() {
+		return _portletURL;
 	}
 
 	@Override
 	public void removePublicRenderParameter(String name) {
 		_portletURL.removePublicRenderParameter(name);
+	}
+
+	@Override
+	public void setBeanParameter(PortletSerializable portletSerializable) {
+		_portletURL.setBeanParameter(portletSerializable);
 	}
 
 	@Override

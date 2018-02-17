@@ -219,6 +219,7 @@ import com.liferay.portlet.RenderRequestImpl;
 import com.liferay.portlet.RenderResponseImpl;
 import com.liferay.portlet.StateAwareResponseImpl;
 import com.liferay.portlet.admin.util.OmniadminUtil;
+import com.liferay.portlet.internal.HeaderResponseImpl;
 import com.liferay.portlet.social.util.FacebookUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -500,6 +501,7 @@ public class PortalImpl implements Portal {
 		_reservedParams.add("p_p_decorate");
 		_reservedParams.add("p_p_static");
 		_reservedParams.add("p_p_isolated");
+		_reservedParams.add("p_p_hub");
 
 		// Portal theme
 
@@ -4573,7 +4575,12 @@ public class PortalImpl implements Portal {
 		PortletResponseImpl portletResponseImpl =
 			PortletResponseImpl.getPortletResponseImpl(portletResponse);
 
-		return ((RenderResponseImpl)portletResponseImpl).getTitle();
+		if (portletResponseImpl instanceof HeaderResponseImpl) {
+			return ((HeaderResponseImpl)portletResponseImpl).getTitle();
+		}
+		else {
+			return ((RenderResponseImpl)portletResponseImpl).getTitle();
+		}
 	}
 
 	@Override

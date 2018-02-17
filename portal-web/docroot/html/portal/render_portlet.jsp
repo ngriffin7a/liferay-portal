@@ -149,26 +149,48 @@ catch (RuntimeException re) {
 	re.printStackTrace();
 }
 
-RenderRequestImpl renderRequestImpl = RenderRequestFactory.create(request, portlet, invokerPortlet, portletCtx, windowState, portletMode, portletPreferences, plid);
-
+HeaderRequestImpl headerRequestImpl = null;
+HeaderResponseImpl headerResponseImpl = null;
+PortletRequest portletRequest = null;
+RenderRequestImpl renderRequestImpl = null;
+RenderResponseImpl renderResponseImpl = null;
+MimeResponse mimeResponse = null;
 BufferCacheServletResponse bufferCacheServletResponse = new BufferCacheServletResponse(response);
+String responseContentType = null;
 
-RenderResponseImpl renderResponseImpl = RenderResponseFactory.create(renderRequestImpl, bufferCacheServletResponse);
+boolean renderHeaders = (Boolean)request.getAttribute(WebKeys.RENDER_HEADERS);
 
-if (stateMin) {
-	renderResponseImpl.setUseDefaultTemplate(true);
+if (renderHeaders) {
+	headerRequestImpl = HeaderRequestFactory.create(request, portlet, invokerPortlet, portletCtx, windowState, portletMode, portletPreferences, plid);
+	portletRequest = headerRequestImpl;
+	headerResponseImpl = HeaderResponseFactory.create(headerRequestImpl, bufferCacheServletResponse);
+	mimeResponse = headerResponseImpl;
+	headerRequestImpl.defineObjects(portletConfig, headerResponseImpl);
+	responseContentType = headerRequestImpl.getResponseContentType();
+
+	if (stateMin) {
+		headerResponseImpl.setUseDefaultTemplate(true);
+	}
 }
+else {
+	renderRequestImpl = RenderRequestFactory.create(request, portlet, invokerPortlet, portletCtx, windowState, portletMode, portletPreferences, plid);
+	portletRequest = renderRequestImpl;
+	renderResponseImpl = RenderResponseFactory.create(renderRequestImpl, bufferCacheServletResponse);
+	mimeResponse = renderResponseImpl;
+	renderRequestImpl.defineObjects(portletConfig, renderResponseImpl);
+	responseContentType = renderRequestImpl.getResponseContentType();
 
-renderRequestImpl.defineObjects(portletConfig, renderResponseImpl);
-
-String responseContentType = renderRequestImpl.getResponseContentType();
+	if (stateMin) {
+		renderResponseImpl.setUseDefaultTemplate(true);
+	}
+}
 
 String currentURL = PortalUtil.getCurrentURL(request);
 
 String portletResource = ParamUtil.getString(request, "portletResource");
 
 if (Validator.isNull(portletResource)) {
-	portletResource = ParamUtil.getString(renderRequestImpl, "portletResource");
+	portletResource = ParamUtil.getString(portletRequest, "portletResource");
 }
 
 Portlet portletResourcePortlet = null;
@@ -366,7 +388,7 @@ portletDisplay.setModePrint(modePrint);
 portletDisplay.setModeView(portletMode.equals(PortletMode.VIEW));
 portletDisplay.setNamespace(PortalUtil.getPortletNamespace(portletId));
 portletDisplay.setPortletDecorate(portletDecorate);
-portletDisplay.setPortletDisplayName(PortalUtil.getPortletTitle(renderRequestImpl));
+portletDisplay.setPortletDisplayName(PortalUtil.getPortletTitle(portletRequest));
 portletDisplay.setPortletName(portletConfig.getPortletName());
 portletDisplay.setPortletResource(portletResource);
 portletDisplay.setResourcePK(portletPrimaryKey);
@@ -665,6 +687,8 @@ urlMax.setEscapeXml(false);
 if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
 	String portletNamespace = portletDisplay.getNamespace();
 
+	MutableRenderParameters urlMaxRenderParameters = urlMax.getRenderParameters();
+
 	Set<String> publicRenderParameterNames = SetUtil.fromEnumeration(portletConfig.getPublicRenderParameterNames());
 
 	Map<String, String[]> renderParameters = RenderParametersPool.get(request, plid, portletDisplay.getId());
@@ -680,7 +704,7 @@ if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
 
 				String[] values = entry.getValue();
 
-				urlMax.setParameter(key, values);
+				urlMaxRenderParameters.setValues(key, values);
 			}
 		}
 	}
@@ -799,7 +823,7 @@ else if (portletDisplay.isStateMax()) {
 		urlBack = portletDisplay.getURLBack();
 	}
 	else {
-		urlBack = ParamUtil.getString(renderRequestImpl, "returnToFullPageURL");
+		urlBack = ParamUtil.getString(portletRequest, "returnToFullPageURL");
 		urlBack = PortalUtil.escapeRedirect(urlBack);
 	}
 
@@ -847,16 +871,31 @@ Boolean portletVisibility = null;
 if (portlet.isActive() && portlet.isReady() && supportsMimeType && (invokerPortlet != null)) {
 	try {
 		if (!PortalUtil.isSkipPortletContentProcesssing(group, request, layoutTypePortlet, portletDisplay, portletDisplay.getPortletName())) {
-			invokerPortlet.render(renderRequestImpl, renderResponseImpl);
+			if (renderHeaders) {
+				if (invokerPortlet.isHeaderPortlet()) {
+					invokerPortlet.renderHeaders(headerRequestImpl, headerResponseImpl);
+					java.io.Writer writer = headerResponseImpl.getWriter();
+
+					writer.flush();
+				}
+			}
+			else {
+				invokerPortlet.render(renderRequestImpl, renderResponseImpl);
+			}
 		}
 
-		portletVisibility = (Boolean)renderRequestImpl.getAttribute(WebKeys.PORTLET_CONFIGURATOR_VISIBILITY);
+		portletVisibility = (Boolean)portletRequest.getAttribute(WebKeys.PORTLET_CONFIGURATOR_VISIBILITY);
 
 		if (portletVisibility != null) {
 			request.setAttribute(WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, portletVisibility);
 		}
 
-		renderResponseImpl.transferHeaders(bufferCacheServletResponse);
+		if (renderHeaders) {
+			headerResponseImpl.transferHeaders(bufferCacheServletResponse);
+		}
+		else {
+			renderResponseImpl.transferHeaders(bufferCacheServletResponse);
+		}
 	}
 	catch (UnavailableException ue) {
 		portletException = true;
@@ -961,7 +1000,7 @@ Boolean renderPortletBoundary = GetterUtil.getBoolean(request.getAttribute(WebKe
 	}
 	%>
 
-	<div class="<%= cssClasses %>" id="p_p_id<%= HtmlUtil.escapeAttribute(renderResponseImpl.getNamespace()) %>" <%= freeformStyles %>>
+	<div class="<%= cssClasses %>" id="p_p_id<%= HtmlUtil.escapeAttribute(mimeResponse.getNamespace()) %>" <%= freeformStyles %>>
 		<span id="p_<%= HtmlUtil.escapeAttribute(portletId) %>"></span>
 </c:if>
 
@@ -974,7 +1013,14 @@ Boolean renderPortletBoundary = GetterUtil.getBoolean(request.getAttribute(WebKe
 
 		<%
 		boolean useDefaultTemplate = portlet.isUseDefaultTemplate();
-		Boolean useDefaultTemplateObj = renderResponseImpl.getUseDefaultTemplate();
+		Boolean useDefaultTemplateObj;
+
+		if (renderHeaders) {
+			useDefaultTemplateObj = headerResponseImpl.getUseDefaultTemplate();
+		}
+		else {
+			useDefaultTemplateObj = renderResponseImpl.getUseDefaultTemplate();
+		}
 
 		if (useDefaultTemplateObj != null) {
 			useDefaultTemplate = useDefaultTemplateObj.booleanValue();
@@ -1033,7 +1079,7 @@ Boolean renderPortletBoundary = GetterUtil.getBoolean(request.getAttribute(WebKe
 			}
 			else {
 				if (useDefaultTemplate || !portlet.isActive()) {
-					renderRequestImpl.setAttribute(WebKeys.PORTLET_CONTENT, bufferCacheServletResponse.getString());
+					portletRequest.setAttribute(WebKeys.PORTLET_CONTENT, bufferCacheServletResponse.getString());
 
 					request.setAttribute(WebKeys.PORTLET_CONTENT_JSP, StringPool.BLANK);
 			%>
@@ -1048,7 +1094,7 @@ Boolean renderPortletBoundary = GetterUtil.getBoolean(request.getAttribute(WebKe
 			}
 		}
 		else {
-			renderRequestImpl.setAttribute(WebKeys.PORTLET_CONTENT, bufferCacheServletResponse.getString());
+			portletRequest.setAttribute(WebKeys.PORTLET_CONTENT, bufferCacheServletResponse.getString());
 
 			String portletContentJSP = StringPool.BLANK;
 
@@ -1072,7 +1118,7 @@ Boolean renderPortletBoundary = GetterUtil.getBoolean(request.getAttribute(WebKe
 					<liferay-util:include page='<%= StrutsUtil.TEXT_HTML_DIR + "/common/themes/portlet.jsp" %>' />
 				</c:when>
 				<c:otherwise>
-					<%= renderRequestImpl.getAttribute(WebKeys.PORTLET_CONTENT) %>
+					<%= portletRequest.getAttribute(WebKeys.PORTLET_CONTENT) %>
 				</c:otherwise>
 			</c:choose>
 
@@ -1110,7 +1156,7 @@ else {
 			canEditTitle: <%= showConfigurationIcon %>,
 			columnPos: <%= columnPos %>,
 			isStatic: '<%= staticVar %>',
-			namespacedId: 'p_p_id<%= HtmlUtil.escapeJS(renderResponseImpl.getNamespace()) %>',
+			namespacedId: 'p_p_id<%= HtmlUtil.escapeJS(mimeResponse.getNamespace()) %>',
 			portletId: '<%= HtmlUtil.escapeJS(portletDisplay.getId()) %>',
 			refreshURL: '<%= HtmlUtil.escapeJS(PortletURLUtil.getRefreshURL(request, themeDisplay, false)) %>',
 			refreshURLData: <%= JSONFactoryUtil.looseSerializeDeep(PortletURLUtil.getRefreshURLParameters(request)) %>
@@ -1126,18 +1172,18 @@ else {
 if (themeDisplay.isStatePopUp()) {
 	String refreshPortletId = null;
 
-	if ((refreshPortletId = (String)SessionMessages.get(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_REFRESH_PORTLET)) != null) {
+	if ((refreshPortletId = (String)SessionMessages.get(portletRequest, portletId + SessionMessages.KEY_SUFFIX_REFRESH_PORTLET)) != null) {
 		if (Validator.isNull(refreshPortletId) && (portletResourcePortlet != null)) {
 			refreshPortletId = portletResourcePortlet.getPortletId();
 		}
 
-		Map<String, String> refreshPortletData = (Map<String, String>)SessionMessages.get(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_REFRESH_PORTLET_DATA);
+		Map<String, String> refreshPortletData = (Map<String, String>)SessionMessages.get(portletRequest, portletId + SessionMessages.KEY_SUFFIX_REFRESH_PORTLET_DATA);
 %>
 
 		<aui:script position="inline" use="aui-base">
 			if (window.parent) {
 				var data = {
-					portletAjaxable: <%= !((portletResourcePortlet != null && !portletResourcePortlet.isAjaxable()) || SessionMessages.contains(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_PORTLET_NOT_AJAXABLE)) %>
+					portletAjaxable: <%= !((portletResourcePortlet != null && !portletResourcePortlet.isAjaxable()) || SessionMessages.contains(portletRequest, portletId + SessionMessages.KEY_SUFFIX_PORTLET_NOT_AJAXABLE)) %>
 
 					<c:if test="<%= (refreshPortletData != null) && !refreshPortletData.isEmpty() %>">
 
@@ -1164,7 +1210,7 @@ if (themeDisplay.isStatePopUp()) {
 
 	String closeRedirect = null;
 
-	if ((closeRedirect = (String)SessionMessages.get(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_CLOSE_REDIRECT)) != null) {
+	if ((closeRedirect = (String)SessionMessages.get(portletRequest, portletId + SessionMessages.KEY_SUFFIX_CLOSE_REDIRECT)) != null) {
 	%>
 
 		<aui:script use="aui-base">
@@ -1207,8 +1253,8 @@ if (themeDisplay.isStatePopUp()) {
 
 	String closeRefreshPortletId = null;
 
-	if ((closeRefreshPortletId = (String)SessionMessages.get(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_CLOSE_REFRESH_PORTLET)) != null) {
-		Map<String, String> refreshPortletData = (Map<String, String>)SessionMessages.get(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_REFRESH_PORTLET_DATA);
+	if ((closeRefreshPortletId = (String)SessionMessages.get(portletRequest, portletId + SessionMessages.KEY_SUFFIX_CLOSE_REFRESH_PORTLET)) != null) {
+		Map<String, String> refreshPortletData = (Map<String, String>)SessionMessages.get(portletRequest, portletId + SessionMessages.KEY_SUFFIX_REFRESH_PORTLET_DATA);
 	%>
 
 		<aui:script use="aui-base">
@@ -1226,7 +1272,7 @@ if (themeDisplay.isStatePopUp()) {
 
 						if (window.parent) {
 							var data = {
-								portletAjaxable: <%= !((portletResourcePortlet != null && !portletResourcePortlet.isAjaxable()) || SessionMessages.contains(renderRequestImpl, portletId + SessionMessages.KEY_SUFFIX_PORTLET_NOT_AJAXABLE)) %>
+								portletAjaxable: <%= !((portletResourcePortlet != null && !portletResourcePortlet.isAjaxable()) || SessionMessages.contains(portletRequest, portletId + SessionMessages.KEY_SUFFIX_PORTLET_NOT_AJAXABLE)) %>
 
 								<c:if test="<%= (refreshPortletData != null) && !refreshPortletData.isEmpty() %>">
 
@@ -1262,10 +1308,15 @@ if (showPortletCssIcon) {
 	themeDisplay.setIncludePortletCssJs(true);
 }
 
-SessionMessages.clear(renderRequestImpl);
-SessionErrors.clear(renderRequestImpl);
+SessionMessages.clear(portletRequest);
+SessionErrors.clear(portletRequest);
 
-renderRequestImpl.cleanUp();
+if (renderHeaders) {
+	headerRequestImpl.cleanUp();
+}
+else {
+	renderRequestImpl.cleanUp();
+}
 %>
 
 <%!

@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -24,17 +26,24 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portlet.internal.LiferayMutablePortletParameters;
+import com.liferay.portlet.internal.MutableRenderParametersImpl;
+import com.liferay.portlet.internal.PortletAppUtil;
 
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.Event;
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletModeException;
+import javax.portlet.RenderParameters;
 import javax.portlet.StateAwareResponse;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
@@ -47,6 +56,7 @@ import javax.xml.namespace.QName;
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public abstract class StateAwareResponseImpl
 	extends PortletResponseImpl implements StateAwareResponse {
 
@@ -85,6 +95,11 @@ public abstract class StateAwareResponseImpl
 		return _params;
 	}
 
+	@Override
+	public MutableRenderParameters getRenderParameters() {
+		return _mutableRenderParameters;
+	}
+
 	public User getUser() {
 		return _user;
 	}
@@ -95,7 +110,16 @@ public abstract class StateAwareResponseImpl
 	}
 
 	public boolean isCalledSetRenderParameter() {
-		return _calledSetRenderParameter;
+		LiferayMutablePortletParameters liferayMutablePortletParameters =
+			(LiferayMutablePortletParameters)_mutableRenderParameters;
+
+		if (_calledSetRenderParameter ||
+			liferayMutablePortletParameters.isChanged()) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -299,6 +323,35 @@ public abstract class StateAwareResponseImpl
 		// setPortletMode sets it to true
 
 		_calledSetRenderParameter = false;
+
+		Set<String> publicRenderParameterNames = new LinkedHashSet<>();
+		RenderParameters renderParameters =
+			portletRequestImpl.getRenderParameters();
+
+		// Since Portlet 3.0 ActionURLs can contain private render parameters,
+		// must populate the render parameter map with the render parameters
+		// found in the request.
+
+		Portlet portlet = portletRequestImpl.getPortlet();
+
+		PortletApp portletApp = portlet.getPortletApp();
+
+		if (PortletAppUtil.isPortletSpec3(portletApp)) {
+			Set<String> renderParametersNames = renderParameters.getNames();
+
+			for (String renderParameterName : renderParametersNames) {
+				if (renderParameters.isPublic(renderParameterName)) {
+					publicRenderParameterNames.add(renderParameterName);
+				}
+
+				_params.put(
+					renderParameterName,
+					renderParameters.getValues(renderParameterName));
+			}
+		}
+
+		_mutableRenderParameters = new MutableRenderParametersImpl(
+			_params, publicRenderParameterNames);
 	}
 
 	protected void reset() {
@@ -363,6 +416,7 @@ public abstract class StateAwareResponseImpl
 	private boolean _calledSetRenderParameter;
 	private final List<Event> _events = new ArrayList<>();
 	private Layout _layout;
+	private MutableRenderParameters _mutableRenderParameters;
 	private Map<String, String[]> _params = new LinkedHashMap<>();
 	private PortletMode _portletMode;
 	private Map<String, String[]> _publicRenderParameters;

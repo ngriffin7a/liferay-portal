@@ -78,6 +78,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.QName;
@@ -2444,6 +2445,26 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		portletApp.addServletURLPatterns(servletURLPatterns);
 		portletApp.setServletContext(servletContext);
+
+		portletApp.setSpecMajorVersion(2);
+		portletApp.setSpecMinorVersion(0);
+
+		Attribute rootVersionAttribute = rootElement.attribute("version");
+
+		if (rootVersionAttribute != null) {
+			String[] portletSpecVersion = StringUtil.split(
+				rootVersionAttribute.getValue(), CharPool.PERIOD);
+
+			if (portletSpecVersion.length > 0) {
+				portletApp.setSpecMajorVersion(
+					GetterUtil.getInteger(portletSpecVersion[0], 2));
+
+				if (portletSpecVersion.length > 1) {
+					portletApp.setSpecMinorVersion(
+						GetterUtil.getInteger(portletSpecVersion[1]));
+				}
+			}
+		}
 
 		Set<String> userAttributes = portletApp.getUserAttributes();
 

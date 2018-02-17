@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ccpp.PortalProfileFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -28,11 +30,13 @@ import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletSession;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.PortletParameterUtil;
 import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.ProtectedPrincipal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -50,6 +54,8 @@ import com.liferay.portal.security.lang.DoPrivilegedUtil;
 import com.liferay.portal.servlet.NamespaceServletRequest;
 import com.liferay.portal.servlet.SharedSessionServletRequest;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.internal.PortletAppUtil;
+import com.liferay.portlet.internal.RenderParametersImpl;
 import com.liferay.portlet.portletconfiguration.util.PublicRenderParameterConfiguration;
 
 import java.security.Principal;
@@ -61,6 +67,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,6 +86,7 @@ import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletSession;
+import javax.portlet.RenderParameters;
 import javax.portlet.WindowState;
 import javax.portlet.filter.PortletRequestWrapper;
 
@@ -91,7 +99,9 @@ import javax.servlet.http.HttpSession;
  * @author Brian Myunghun Kim
  * @author Sergey Ponomarev
  * @author Raymond Augé
+ * @author Neil Griffin
  */
+@ProviderType
 public abstract class PortletRequestImpl implements LiferayPortletRequest {
 
 	public static PortletRequestImpl getPortletRequestImpl(
@@ -346,7 +356,8 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 	public PortletPreferences getPreferences() {
 		String lifecycle = getLifecycle();
 
-		if (lifecycle.equals(PortletRequest.RENDER_PHASE) &&
+		if ((lifecycle.equals(PortletRequest.HEADER_PHASE) ||
+			 lifecycle.equals(PortletRequest.RENDER_PHASE)) &&
 			PropsValues.PORTLET_PREFERENCES_STRICT_STORE) {
 
 			return DoPrivilegedUtil.wrap(
@@ -499,6 +510,11 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 	}
 
 	@Override
+	public RenderParameters getRenderParameters() {
+		return _renderParameters;
+	}
+
+	@Override
 	public String getRequestedSessionId() {
 		if (_session != null) {
 			return _session.getId();
@@ -541,6 +557,11 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 	@Override
 	public int getServerPort() {
 		return _request.getServerPort();
+	}
+
+	@Override
+	public String getUserAgent() {
+		return _request.getHeader(HttpHeaders.USER_AGENT);
 	}
 
 	public LinkedHashMap<String, String> getUserInfo() {
@@ -778,6 +799,8 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 		boolean windowStateRestoreCurrentView = ParamUtil.getBoolean(
 			request, "p_p_state_rcv");
 
+		String lifecycle = getLifecycle();
+
 		if (_portletName.equals(ppid) &&
 			!(windowStateRestoreCurrentView &&
 			  portlet.isRestoreCurrentView())) {
@@ -794,7 +817,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			else if (themeDisplay.isLifecycleAction()) {
 				_triggeredByActionURL = true;
 
-				if (getLifecycle().equals(PortletRequest.ACTION_PHASE)) {
+				if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
 
 					// Request was triggered by an action URL and is being
 					// processed by com.liferay.portlet.ActionRequestImpl
@@ -804,10 +827,29 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			}
 		}
 
+		// TODO: portlet3 - See if it is still a good idea to add this
+		// method to PortletParameterUtil. Probably NOT because strictly
+		// speaking it is not really helping with building up request
+		// parameters and stuff. I don't know...
+
+		Set<String> publicRenderParameterNames =
+			PortletParameterUtil.getPublicRenderParameterNames(portlet);
+		Set<String> privateRenderParameterNamesInRequest =
+			new LinkedHashSet<>();
+		Map<String, String[]> privateRenderParametersMap =
+			RenderParametersPool.get(request, plid, _portletName);
+
+		if (privateRenderParametersMap == null) {
+			privateRenderParametersMap = Collections.emptyMap();
+		}
+
 		if (portletFocus) {
-			Map<String, String[]> renderParameters = null;
+			int namespaceLength =
+				PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE.length();
 
 			Map<String, String[]> parameters = request.getParameterMap();
+
+			Map<String, String[]> renderParameters = null;
 
 			for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
 				String name = entry.getKey();
@@ -817,6 +859,16 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 				}
 
 				String[] values = entry.getValue();
+
+				int privateRenderParameterPrefixPos = name.indexOf(
+					PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE);
+
+				if (privateRenderParameterPrefixPos >= 0) {
+					name = name.substring(
+						0,
+						privateRenderParameterPrefixPos) + name.substring(
+							privateRenderParameterPrefixPos + namespaceLength);
+				}
 
 				if (themeDisplay.isLifecycleRender()) {
 					if (renderParameters == null) {
@@ -829,6 +881,26 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 				if (values == null) {
 					continue;
 				}
+				else {
+
+					// TODO: portlet3 - possibly deserves its own LPS since this
+					// is new for Portlet 3.0.
+					// The problem is that this
+					// indirectly affects code that is found here and there
+					// that iterates through all the parameters of a
+					// PortletRequest and tries to call
+					// setParameter(name, null). You fixed the problems you
+					// know about but there could be others. Really need the
+					// opt-in.
+
+					if (PortletAppUtil.isPortletSpec3(portletApp)) {
+						for (int i = 0; i < values.length; i++) {
+							if ((values[i] != null) && values[i].isEmpty()) {
+								values[i] = null;
+							}
+						}
+					}
+				}
 
 				if ((invokerPortlet != null) &&
 					invokerPortlet.isFacesPortlet()) {
@@ -837,6 +909,13 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 						!portlet.isRequiresNamespacedParameters()) {
 
 						dynamicRequest.setParameterValues(name, values);
+
+						if (lifecycle.equals(PortletRequest.HEADER_PHASE) ||
+							lifecycle.equals(PortletRequest.RENDER_PHASE) ||
+							(privateRenderParameterPrefixPos >= 0)) {
+
+							privateRenderParameterNamesInRequest.add(name);
+						}
 					}
 				}
 				else {
@@ -847,11 +926,19 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 						!portlet.isRequiresNamespacedParameters()) {
 
 						dynamicRequest.setParameterValues(realName, values);
+
+						if (lifecycle.equals(PortletRequest.HEADER_PHASE) ||
+							lifecycle.equals(PortletRequest.RENDER_PHASE) ||
+							(privateRenderParameterPrefixPos >= 0)) {
+
+							privateRenderParameterNamesInRequest.add(realName);
+						}
 					}
 				}
 			}
 
-			if (getLifecycle().equals(PortletRequest.RENDER_PHASE) &&
+			if ((lifecycle.equals(PortletRequest.HEADER_PHASE) ||
+				 lifecycle.equals(PortletRequest.RENDER_PHASE)) &&
 				!LiferayWindowState.isExclusive(request) &&
 				!LiferayWindowState.isPopUp(request)) {
 
@@ -865,30 +952,44 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			}
 		}
 		else {
-			Map<String, String[]> renderParameters = RenderParametersPool.get(
-				request, plid, _portletName);
+			for (Map.Entry<String, String[]> entry :
+					privateRenderParametersMap.entrySet()) {
 
-			if (renderParameters != null) {
-				for (Map.Entry<String, String[]> entry :
-						renderParameters.entrySet()) {
+				String name = entry.getKey();
+				String[] values = entry.getValue();
 
-					String name = entry.getKey();
-					String[] values = entry.getValue();
+				if ((invokerPortlet == null) ||
+					!invokerPortlet.isFacesPortlet()) {
 
-					if ((invokerPortlet == null) ||
-						!invokerPortlet.isFacesPortlet()) {
+					name = removePortletNamespace(portletNamespace, name);
+				}
 
-						name = removePortletNamespace(portletNamespace, name);
+				String publicRenderParameterName =
+					PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE + name;
+
+				if (publicRenderParametersMap.containsKey(
+						publicRenderParameterName)) {
+
+					// TODO: portlet3 - Opt-in: PRIV_RP set via
+					// StateAwareResponse.setRenderParameter() with the
+					// same name as a PRP must override the PRP in the next
+					// phase.
+
+					if (PortletAppUtil.isPortletSpec3(portletApp)) {
+						publicRenderParametersMap.put(
+							publicRenderParameterName, values);
 					}
-
+				}
+				else {
 					dynamicRequest.setParameterValues(name, values);
 				}
+
+				privateRenderParameterNamesInRequest.add(name);
 			}
 		}
 
 		_mergePublicRenderParameters(
-			dynamicRequest, publicRenderParametersMap, preferences,
-			getLifecycle());
+			dynamicRequest, publicRenderParametersMap, preferences, lifecycle);
 
 		_processCheckbox(dynamicRequest);
 
@@ -940,6 +1041,102 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 
 		_locale = themeDisplay.getLocale();
 		_plid = plid;
+
+		Map<String, String[]> renderParameterMap = new LinkedHashMap<>();
+
+		if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+			if (publicRenderParameterNames != null) {
+				for (String publicRenderParameterName :
+						publicRenderParameterNames) {
+
+					String[] publicValues = dynamicRequest.getParameterValues(
+						publicRenderParameterName);
+					String[] privateValues = privateRenderParametersMap.get(
+						publicRenderParameterName);
+
+					if ((publicValues != null) && (privateValues != null)) {
+						renderParameterMap.put(
+							publicRenderParameterName,
+							ArrayUtil.append(privateValues, publicValues));
+					}
+					else if (publicValues != null) {
+						renderParameterMap.put(
+							publicRenderParameterName, publicValues);
+					}
+					else if (privateValues != null) {
+						renderParameterMap.put(
+							publicRenderParameterName, privateValues);
+					}
+				}
+			}
+
+			for (String parameterName : privateRenderParameterNamesInRequest) {
+				String[] values = privateRenderParametersMap.get(parameterName);
+
+				if ((values == null) &&
+					lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+
+					// Portlet Hub private render parameter
+
+					values = dynamicRequest.getParameterValues(parameterName);
+				}
+
+				renderParameterMap.put(parameterName, values);
+			}
+		}
+		else {
+			Map<String, String[]> parameterMap =
+				dynamicRequest.getParameterMap();
+
+			for (Map.Entry<String, String[]> mapEntry :
+					parameterMap.entrySet()) {
+
+				String name = mapEntry.getKey();
+				String[] value = mapEntry.getValue();
+
+				if ((publicRenderParameterNames != null) &&
+					publicRenderParameterNames.contains(name)) {
+
+					// The Portlet 3.0 Javadoc for the deprecated
+					// BaseURL.setParameter(String name, String value) method
+					// has new requirements for ActionURL and ResourceURL:
+					// If an action/resource parameter has the same name as a
+					// public render parameter, then both the action/resource
+					// parameter value and the public render parameter value
+					// must be available from
+					// PortletRequest.getParameterMap().get(String name).
+					// However, the new ActionParameters, ResourceParameters,
+					// and RenderParameters interfaces provide for a clear
+					// distinction between parameter types. For this reason, the
+					// RenderParameters.getValue(String name) and
+					// RenderParameters.getValues(String name) methods must not
+					// include Action/Resource parameter values.
+
+					if (PortletAppUtil.isPortletSpec3(portletApp)) {
+						String publicRenderParameterName =
+							PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE +
+								name;
+
+						String[] previousValue = publicRenderParametersMap.get(
+							publicRenderParameterName);
+
+						if (previousValue != null) {
+							value = previousValue;
+						}
+					}
+				}
+				else if (!privateRenderParameterNamesInRequest.contains(name)) {
+					value = null;
+				}
+
+				if (value != null) {
+					renderParameterMap.put(name, value);
+				}
+			}
+		}
+
+		_renderParameters = new RenderParametersImpl(
+			renderParameterMap, publicRenderParameterNames, portletNamespace);
 	}
 
 	protected String removePortletNamespace(
@@ -1109,6 +1306,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 	private Profile _profile;
 	private String _remoteUser;
 	private long _remoteUserId;
+	private RenderParameters _renderParameters;
 	private HttpServletRequest _request;
 	private PortletSessionImpl _session;
 	private boolean _strutsPortlet;

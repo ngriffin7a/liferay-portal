@@ -14,6 +14,8 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.ActionResult;
@@ -35,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Shuyang Zhou
  */
+@ProviderType
 public class RestrictPortletContainerWrapper implements PortletContainer {
 
 	public static PortletContainer createRestrictPortletContainerWrapper(
@@ -165,6 +168,53 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 			if (lock == null) {
 				restrictPortletServletRequest.mergeSharedAttributes();
 			}
+		}
+	}
+
+	@Override
+	public void renderHeaders(
+			HttpServletRequest request, HttpServletResponse response,
+			Portlet portlet)
+		throws PortletContainerException {
+
+		RestrictPortletServletRequest restrictPortletServletRequest = null;
+
+		if (request instanceof RestrictPortletServletRequest) {
+			restrictPortletServletRequest =
+				(RestrictPortletServletRequest)request;
+
+			Map<String, Object> attributes =
+				restrictPortletServletRequest.getAttributes();
+
+			if (attributes.containsKey(WebKeys.RENDER_PORTLET)) {
+				restrictPortletServletRequest =
+					new RestrictPortletServletRequest(request);
+			}
+		}
+		else {
+			restrictPortletServletRequest = new RestrictPortletServletRequest(
+				request);
+		}
+
+		try {
+			_portletContainer.renderHeaders(request, response, portlet);
+		}
+		catch (Exception e) {
+			throw new PortletContainerException(e);
+		}
+		finally {
+			restrictPortletServletRequest.removeAttribute(WebKeys.RENDER_PATH);
+			restrictPortletServletRequest.removeAttribute(
+				WebKeys.RENDER_PORTLET_COLUMN_COUNT);
+			restrictPortletServletRequest.removeAttribute(
+				WebKeys.RENDER_PORTLET_COLUMN_ID);
+			restrictPortletServletRequest.removeAttribute(
+				WebKeys.RENDER_PORTLET_COLUMN_POS);
+
+			// TODO: portlet3 the following line might need to only be done
+			// when full render is done like with FacesBridge
+
+			restrictPortletServletRequest.mergeSharedAttributes();
 		}
 	}
 

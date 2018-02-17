@@ -28,15 +28,17 @@ import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.MimeResponse;
+import javax.portlet.MutableRenderParameters;
 import javax.portlet.PortletException;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+import javax.portlet.RenderParameters;
 import javax.portlet.WindowState;
 
 import javax.servlet.http.HttpServletRequest;
@@ -129,21 +131,31 @@ public class PortletURLUtil {
 			return portletURL;
 		}
 
-		portletURL = liferayPortletResponse.createRenderURL();
+		LiferayPortletResponse3 liferayPortletResponse3 =
+			(LiferayPortletResponse3)liferayPortletResponse;
 
-		Enumeration<String> enu = liferayPortletRequest.getParameterNames();
+		portletURL = liferayPortletResponse3.createRenderURL(
+			MimeResponse.Copy.NONE);
 
-		while (enu.hasMoreElements()) {
-			String param = enu.nextElement();
+		MutableRenderParameters mutableRenderParameters =
+			portletURL.getRenderParameters();
 
-			String[] values = liferayPortletRequest.getParameterValues(param);
+		RenderParameters renderParameters =
+			liferayPortletRequest.getRenderParameters();
+
+		Set<String> renderParameterNames = renderParameters.getNames();
+
+		for (String renderParameterName : renderParameterNames) {
+			String[] values = renderParameters.getValues(renderParameterName);
 
 			boolean addParam = true;
 
-			// Don't set paramter values that are over 32 kb. See LEP-1755.
+			// Don't set parameter values that are over 32 kb. See LEP-1755.
 
-			for (int i = 0; i < values.length; i++) {
-				if (values[i].length() > _CURRENT_URL_PARAMETER_THRESHOLD) {
+			for (String value : values) {
+				if ((value != null) &&
+					(value.length() > _CURRENT_URL_PARAMETER_THRESHOLD)) {
+
 					addParam = false;
 
 					break;
@@ -151,7 +163,7 @@ public class PortletURLUtil {
 			}
 
 			if (addParam) {
-				portletURL.setParameter(param, values);
+				mutableRenderParameters.setValues(renderParameterName, values);
 			}
 		}
 

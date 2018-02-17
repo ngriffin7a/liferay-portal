@@ -162,7 +162,9 @@ public class KBSuggestionListDisplayContext {
 	public String getViewSuggestionURL(RenderResponse renderResponse)
 		throws PortalException {
 
-		return getViewSuggestionURL(renderResponse.createRenderURL());
+		PortletURL renderURL = renderResponse.createRenderURL();
+
+		return getViewSuggestionURL(renderURL);
 	}
 
 	public boolean isShowKBArticleTitle() {

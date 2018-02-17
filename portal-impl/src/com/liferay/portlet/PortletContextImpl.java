@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.security.lang.DoPrivilegedUtil;
+import com.liferay.portlet.internal.PortletAppUtil;
 
 import java.io.InputStream;
 
@@ -70,8 +71,31 @@ public class PortletContextImpl implements LiferayPortletContext {
 	}
 
 	@Override
+	public ClassLoader getClassLoader() {
+
+		// TODO: portlet3
+
+		return null;
+	}
+
+	@Override
 	public Enumeration<String> getContainerRuntimeOptions() {
 		return Collections.enumeration(_supportedRuntimeOptions);
+	}
+
+	@Override
+	public String getContextPath() {
+		return _servletContext.getContextPath();
+	}
+
+	@Override
+	public int getEffectiveMajorVersion() {
+		return PortletAppUtil.getSpecMajorVersion(_portlet.getPortletApp());
+	}
+
+	@Override
+	public int getEffectiveMinorVersion() {
+		return PortletAppUtil.getSpecMinorVersion(_portlet.getPortletApp());
 	}
 
 	@Override
@@ -237,7 +261,7 @@ public class PortletContextImpl implements LiferayPortletContext {
 		_servletContext.setAttribute(name, obj);
 	}
 
-	private static final int _MAJOR_VERSION = 2;
+	private static final int _MAJOR_VERSION = 3;
 
 	private static final int _MINOR_VERSION = 0;
 
