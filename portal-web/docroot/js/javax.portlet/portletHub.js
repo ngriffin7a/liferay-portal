@@ -285,7 +285,7 @@ var portlet = portlet || {};
    
    
    // Constants used for URL Encoding/Decoding (copied from Pluto impl code)  ----------
-   HUB_ACTION = "p_p_hub",
+   HUB = "p_p_hub",
    RESOURCE_ID = "p_p_resource_id",
    CACHE_LEVEL = "p_p_cacheability",
    WINDOW_STATE = "p_p_state",
@@ -300,8 +300,9 @@ var portlet = portlet || {};
    VALUE_ARRAY_EMPTY = "",
    TOKEN_DELIM = "&",
 
-   AJAX_ACTION = "0",       // new for portlet spec 3
-   PARTIAL_ACTION = "1",    // new for portlet spec 3
+   HUB_ACTION = "0",
+   HUB_PARTIAL_ACTION = "1",
+   HUB_RESOURCE = "2",
 
    ACTION_PARAM = "p_action_p_",
    RESOURCE_PARAM = "p_resource_p_",
@@ -402,6 +403,7 @@ var portlet = portlet || {};
          if (cache) {
             cacheability = cache;
          }
+         url += TOKEN_DELIM + HUB + VALUE_DELIM + encodeURIComponent(HUB_RESOURCE);
          url += TOKEN_DELIM + CACHE_LEVEL + VALUE_DELIM + encodeURIComponent(cacheability);
          if (resid) {
             url += TOKEN_DELIM + RESOURCE_ID + VALUE_DELIM + encodeURIComponent(resid);
@@ -412,10 +414,10 @@ var portlet = portlet || {};
          url = decodeURIComponent(pageState.encodedCurrentURL);
       } else if (type === "ACTION") {
          url = decodeURIComponent(pageState.portlets[pid].encodedActionURL);
-         url += TOKEN_DELIM + HUB_ACTION + VALUE_DELIM + encodeURIComponent(AJAX_ACTION);
+         url += TOKEN_DELIM + HUB + VALUE_DELIM + encodeURIComponent(HUB_ACTION);
       } else if (type === "PARTIAL_ACTION") {
          url = decodeURIComponent(pageState.portlets[pid].encodedActionURL);
-         url += TOKEN_DELIM + HUB_ACTION + VALUE_DELIM + encodeURIComponent(PARTIAL_ACTION);
+         url += TOKEN_DELIM + HUB + VALUE_DELIM + encodeURIComponent(HUB_PARTIAL_ACTION);
       }
       
       // Now add the state to the URL, taking into account cacheability if

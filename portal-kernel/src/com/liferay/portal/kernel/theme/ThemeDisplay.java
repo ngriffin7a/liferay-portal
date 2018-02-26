@@ -1156,6 +1156,10 @@ public class ThemeDisplay
 		return _hubPartialAction;
 	}
 
+	public boolean isHubResource() {
+		return _hubResource;
+	}
+
 	public boolean isI18n() {
 		return _i18n;
 	}
@@ -1419,6 +1423,10 @@ public class ThemeDisplay
 
 	public void setHubPartialAction(boolean partialAction) {
 		_hubPartialAction = partialAction;
+	}
+
+	public void setHubResource(boolean resource) {
+		_hubResource = resource;
 	}
 
 	public void setI18nLanguageId(String i18nLanguageId) {
@@ -2037,6 +2045,7 @@ public class ThemeDisplay
 	private boolean _freeformLayout;
 	private boolean _hubAction;
 	private boolean _hubPartialAction;
+	private boolean _hubResource;
 	private boolean _i18n;
 	private String _i18nLanguageId;
 	private String _i18nPath;
