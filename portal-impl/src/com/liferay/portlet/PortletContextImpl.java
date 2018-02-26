@@ -72,10 +72,7 @@ public class PortletContextImpl implements LiferayPortletContext {
 
 	@Override
 	public ClassLoader getClassLoader() {
-
-		// TODO: portlet3
-
-		return null;
+		return _servletContext.getClassLoader();
 	}
 
 	@Override
