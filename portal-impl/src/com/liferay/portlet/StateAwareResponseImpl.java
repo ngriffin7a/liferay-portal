@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portlet.internal.LiferayMutablePortletParameters;
+import com.liferay.portlet.internal.LiferayMutableRenderParameters;
 import com.liferay.portlet.internal.MutableRenderParametersImpl;
 import com.liferay.portlet.internal.PortletAppUtil;
 
@@ -92,7 +93,21 @@ public abstract class StateAwareResponseImpl
 
 	@Override
 	public Map<String, String[]> getRenderParameterMap() {
-		return _params;
+		Map<String, String[]> renderParameterMap = new LinkedHashMap<>();
+		Set<String> parameterNames = _mutableRenderParameters.getNames();
+
+		for (String parameterName : parameterNames) {
+			if (!_mutableRenderParameters.isPublic(parameterName) ||
+				(_mutableRenderParameters.isPublic(parameterName) &&
+				 _mutableRenderParameters.isMutated(parameterName))) {
+
+				renderParameterMap.put(
+					parameterName,
+					_mutableRenderParameters.getValues(parameterName));
+			}
+		}
+
+		return renderParameterMap;
 	}
 
 	@Override
@@ -111,10 +126,10 @@ public abstract class StateAwareResponseImpl
 
 	public boolean isCalledSetRenderParameter() {
 		LiferayMutablePortletParameters liferayMutablePortletParameters =
-			(LiferayMutablePortletParameters)_mutableRenderParameters;
+			_mutableRenderParameters;
 
 		if (_calledSetRenderParameter ||
-			liferayMutablePortletParameters.isChanged()) {
+			liferayMutablePortletParameters.isMutated()) {
 
 			return true;
 		}
@@ -229,7 +244,7 @@ public abstract class StateAwareResponseImpl
 		}
 
 		if (!setPublicRenderParameter(name, values)) {
-			_params.put(name, values);
+			_mutableRenderParameters.setValues(name, values);
 		}
 
 		_calledSetRenderParameter = true;
@@ -245,7 +260,7 @@ public abstract class StateAwareResponseImpl
 			throw new IllegalArgumentException();
 		}
 		else {
-			Map<String, String[]> newParams = new LinkedHashMap<>();
+			_mutableRenderParameters.clear();
 
 			for (Map.Entry<String, String[]> entry : params.entrySet()) {
 				String key = entry.getKey();
@@ -262,10 +277,8 @@ public abstract class StateAwareResponseImpl
 					continue;
 				}
 
-				newParams.put(key, value);
+				_mutableRenderParameters.setValues(key, value);
 			}
-
-			_params = newParams;
 		}
 
 		_calledSetRenderParameter = true;
@@ -356,7 +369,7 @@ public abstract class StateAwareResponseImpl
 
 	protected void reset() {
 		_events.clear();
-		_params.clear();
+		_mutableRenderParameters.clear();
 
 		try {
 			setPortletMode(PortletMode.VIEW);
@@ -416,8 +429,8 @@ public abstract class StateAwareResponseImpl
 	private boolean _calledSetRenderParameter;
 	private final List<Event> _events = new ArrayList<>();
 	private Layout _layout;
-	private MutableRenderParameters _mutableRenderParameters;
-	private Map<String, String[]> _params = new LinkedHashMap<>();
+	private LiferayMutableRenderParameters _mutableRenderParameters;
+	private final Map<String, String[]> _params = new LinkedHashMap<>();
 	private PortletMode _portletMode;
 	private Map<String, String[]> _publicRenderParameters;
 	private String _redirectLocation;

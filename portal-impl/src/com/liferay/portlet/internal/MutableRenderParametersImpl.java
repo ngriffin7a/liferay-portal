@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.internal;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,13 +25,14 @@ import javax.portlet.MutableRenderParameters;
  */
 public class MutableRenderParametersImpl
 	extends MutablePortletParametersBase
-	implements LiferayMutablePortletParameters, MutableRenderParameters {
+	implements LiferayMutableRenderParameters {
 
 	public MutableRenderParametersImpl(
 		Map<String, String[]> parameterMap,
 		Set<String> publicRenderParameterNames) {
 
 		super(parameterMap);
+		_originalParameterMap = deepCopyMap(parameterMap);
 		_publicRenderParameterNames = publicRenderParameterNames;
 	}
 
@@ -75,10 +77,16 @@ public class MutableRenderParametersImpl
 	}
 
 	@Override
+	public boolean isMutated(String name) {
+		return !Arrays.equals(_originalParameterMap.get(name), getValues(name));
+	}
+
+	@Override
 	public boolean isPublic(String name) {
 		return _publicRenderParameterNames.contains(name);
 	}
 
+	private final Map<String, String[]> _originalParameterMap;
 	private final Set<String> _publicRenderParameterNames;
 
 }

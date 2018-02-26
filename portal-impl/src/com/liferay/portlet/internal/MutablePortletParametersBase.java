@@ -46,7 +46,7 @@ public abstract class MutablePortletParametersBase
 			parameterMap.put(newParameterName, copiedValues);
 		}
 
-		_changed = true;
+		_mutated = true;
 
 		return oldMutablePortletParameters;
 	}
@@ -57,12 +57,12 @@ public abstract class MutablePortletParametersBase
 
 		parameterMap.clear();
 
-		_changed = true;
+		_mutated = true;
 	}
 
 	@Override
-	public boolean isChanged() {
-		return _changed;
+	public boolean isMutated() {
+		return _mutated;
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public abstract class MutablePortletParametersBase
 		if (parameterMap.containsKey(name)) {
 			parameterMap.remove(name);
 
-			_changed = true;
+			_mutated = true;
 
 			return true;
 		}
@@ -111,15 +111,10 @@ public abstract class MutablePortletParametersBase
 	}
 
 	@Override
-	public void setChanged(boolean changed) {
-		_changed = changed;
-	}
-
-	@Override
 	public String setValue(String name, String value) {
 		String[] oldValues = setValues(name, new String[] {value});
 
-		_changed = true;
+		_mutated = true;
 
 		if ((oldValues != null) && (oldValues.length > 0)) {
 			return oldValues[0];
@@ -139,7 +134,7 @@ public abstract class MutablePortletParametersBase
 			oldValues = setValues(name, new String[] {value}, append);
 		}
 
-		_changed = true;
+		_mutated = true;
 
 		if ((oldValues != null) && (oldValues.length > 0)) {
 			return oldValues[0];
@@ -158,7 +153,7 @@ public abstract class MutablePortletParametersBase
 			values = new String[0];
 		}
 
-		_changed = true;
+		_mutated = true;
 
 		Map<String, String[]> parameterMap = getParameterMap();
 
@@ -189,11 +184,11 @@ public abstract class MutablePortletParametersBase
 			}
 		}
 
-		_changed = true;
+		_mutated = true;
 
 		return oldValues;
 	}
 
-	private boolean _changed;
+	private boolean _mutated;
 
 }

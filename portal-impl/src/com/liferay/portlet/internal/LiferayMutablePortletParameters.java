@@ -25,28 +25,19 @@ public interface LiferayMutablePortletParameters
 	/**
 	 * Returns a flag indicating whether or not the state of the portlet
 	 * parameters have changed.
-	 * @return changed a value of <code>true</code> indicates that the state has
+	 *
+	 * @return A value of <code>true</code> indicates that the state has
 	 *         changed, otherwise <code>false</code> indicates that the state
 	 *         has not changed.
 	 */
-	public boolean isChanged();
+	public boolean isMutated();
 
 	/**
-	 * Sets a flag indicating whether or not the state of the portlet parameters
-	 * have changed.
+	 * Sets a parameter value.
 	 *
-	 * @param changed a value of <code>true</code> indicates that the state has
-	 *        changed, otherwise <code>false</code> indicates that the state has
-	 *        not changed.
-	 */
-	public void setChanged(boolean changed);
-
-	/**
-	 * Sets the URL parameter to the value.
-	 *
-	 * @param name the name of the URL parameter
-	 * @param value the value of the URL parameter. If <code>null</code> then
-	 *        the URL parameter is removed.
+	 * @param name the name of the parameter
+	 * @param value the value of the parameter. If <code>null</code> then
+	 *        the parameter is removed.
 	 * @param append whether the new value should be appended to any existing
 	 *        values for the parameter. If <code>append</code> is
 	 *        <code>false</code> any existing values will be overwritten with
@@ -57,16 +48,16 @@ public interface LiferayMutablePortletParameters
 	public String setValue(String name, String value, boolean append);
 
 	/**
-	 * Sets the URL parameter the values.
+	 * Sets parameter values.
 	 *
-	 * @param name the name of the URL parameter
-	 * @param values the values of the URL parameter. If <code>null</code> then
-	 *        the URL parameter is removed.
+	 * @param name the name of the parameter.
+	 * @param values the values of the parameter. If <code>null</code> then
+	 *        the parameter is removed.
 	 * @param append whether the new values should be appended to any existing
 	 *        values for the parameter. If <code>append</code> is
 	 *        <code>false</code> any existing values will be overwritten with
 	 *        the new values.
-	 * @return the value prior to setting
+	 * @return the value prior to setting.
 	 * @throws IllegalArgumentException if the name is <code>null</code>
 	 */
 	public String[] setValues(String name, String[] values, boolean append);

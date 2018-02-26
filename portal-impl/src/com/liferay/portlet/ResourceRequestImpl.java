@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,30 +89,19 @@ public class ResourceRequestImpl
 
 	@Override
 	public Map<String, String[]> getPrivateRenderParameterMap() {
-		Map<String, String[]> renderParameters = RenderParametersPool.get(
-			getOriginalHttpServletRequest(), getPlid(), getPortletName());
 
-		if ((renderParameters == null) || renderParameters.isEmpty()) {
-			return Collections.emptyMap();
-		}
-
-		Portlet portlet = getPortlet();
-
-		Set<PublicRenderParameter> publicRenderParameters =
-			portlet.getPublicRenderParameters();
-
-		if (publicRenderParameters.isEmpty()) {
-			return Collections.unmodifiableMap(renderParameters);
-		}
-
+		// TODO: portlet3 - This method used to return null but Dante and Tina
+		// implemented it for https://issues.liferay.com/browse/LPS-76916. You
+		// refactored it to use RenderParameters but it needs to be tested.
 		Map<String, String[]> privateRenderParameters = new HashMap<>();
-
-		for (Map.Entry<String, String[]> entry : renderParameters.entrySet()) {
-			if (portlet.getPublicRenderParameter(entry.getKey()) != null) {
-				continue;
+		RenderParameters renderParameters = getRenderParameters();
+		Set<String> renderParameterNames = renderParameters.getNames();
+		for (String renderParameterName: renderParameterNames) {
+			if (!renderParameters.isPublic(renderParameterName)) {
+				privateRenderParameters.put(
+					renderParameterName,
+					renderParameters.getValues(renderParameterName));
 			}
-
-			privateRenderParameters.put(entry.getKey(), entry.getValue());
 		}
 
 		if (privateRenderParameters.isEmpty()) {
@@ -210,66 +198,26 @@ public class ResourceRequestImpl
 		for (Map.Entry<String, String[]> mapEntry : parameterMap.entrySet()) {
 			String name = mapEntry.getKey();
 
+			// If the parameter name is not a public/private render parameter,
+			// then regard it as a resource parameter. Otherwise, if the
+			// parameter name is prefixed with the portlet namespace in the
+			// original request, then regard it as a resource parameter (even if
+			// it has the/ same name as a public render parameter). See: TCK
+			// V3PortletParametersTests_SPEC11_4_getNames
+
 			if (!renderParameterNames.contains(name)) {
 				resourceParameterMap.put(name, mapEntry.getValue());
 			}
 			else {
-
-				// If the parameter name is not a public/private render
-				// parameter, then it is an resource parameter. Also, if the
-				// parameter name is prefixed with the portlet namespace in the
-				// original request, then it is to be regarded as an resource
-				// parameter (even if it has the/ same name as a public render
-				// parameter).
-				// See: TCK V3PortletParametersTests_SPEC11_4_getNames
-
 				String namespacedParameter = portletNamespace + name;
 
 				if (renderParameterNames.contains(name) &&
 					servletRequestParameterMap.containsKey(
 						namespacedParameter)) {
 
-					String[] resourceParameterArray =
-						servletRequestParameterMap.get(namespacedParameter);
-
-					if (resourceParameterArray == null) {
-						resourceParameterArray = new String[0];
-					}
-
-					String[] renderParameterArray = renderParameters.getValues(
-						name);
-
-					if (renderParameterArray == null) {
-						renderParameterArray = new String[0];
-					}
-
-					if (!Arrays.equals(
-							resourceParameterArray, renderParameterArray)) {
-
-						List<String> renderParameterValues = Arrays.asList(
-							renderParameterArray);
-						List<String> resourceParameterValues =
-							new ArrayList<>();
-
-						for (String resourceParameterValue :
-								resourceParameterArray) {
-
-							if (!renderParameterValues.contains(
-									resourceParameterValue)) {
-
-								resourceParameterValues.add(
-									resourceParameterValue);
-							}
-						}
-
-						resourceParameterMap.put(
-							name,
-							resourceParameterValues.toArray(new String[0]));
-					}
-					else {
-						System.err.println(
-							"!@#$ NOT COUNTING AS RESOURCE PARAM name=" + name);
-					}
+					resourceParameterMap.put(
+						name,
+						servletRequestParameterMap.get(namespacedParameter));
 				}
 			}
 		}
