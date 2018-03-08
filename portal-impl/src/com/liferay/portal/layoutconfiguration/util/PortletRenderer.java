@@ -59,12 +59,6 @@ public class PortletRenderer {
 	}
 
 	public Callable<StringBundler> getCallable(
-		HttpServletRequest request, HttpServletResponse response) {
-
-		return getCallable(request, response, null);
-	}
-
-	public Callable<StringBundler> getCallable(
 		HttpServletRequest request, HttpServletResponse response,
 		Map<String, Object> headerRequestMap) {
 
@@ -73,13 +67,6 @@ public class PortletRenderer {
 
 	public Portlet getPortlet() {
 		return _portlet;
-	}
-
-	public StringBundler render(
-			HttpServletRequest request, HttpServletResponse response)
-		throws PortletContainerException {
-
-		return render(request, response, null);
 	}
 
 	public StringBundler render(
@@ -141,16 +128,16 @@ public class PortletRenderer {
 		Enumeration<String> attributeNames = request.getAttributeNames();
 
 		while (attributeNames.hasMoreElements()) {
-			String attriubteName = attributeNames.nextElement();
+			String attributeName = attributeNames.nextElement();
 
 			headerRequestMap.put(
-				attriubteName, request.getAttribute(attriubteName));
+				attributeName, request.getAttribute(attributeName));
 		}
 
 		return headerRequestMap;
 	}
 
-	private static void _copyHeaderRequestAttributes(
+	private void _copyHeaderRequestAttributes(
 		Map<String, Object> headerRequestMap, HttpServletRequest request) {
 
 		if (headerRequestMap != null) {

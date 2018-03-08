@@ -132,6 +132,14 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 	public LiferayPortletURL create(
 		HttpServletRequest request, String portletId, String lifecycle) {
 
+		return create(request, portletId, lifecycle, null);
+	}
+
+	@Override
+	public LiferayPortletURL create(
+		HttpServletRequest request, String portletId, String lifecycle,
+		MimeResponse.Copy copy) {
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -143,7 +151,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 				themeDisplay.getPlid());
 		}
 
-		return create(request, portletId, layout, lifecycle);
+		return create(request, portletId, layout, lifecycle, copy);
 	}
 
 	@Override
@@ -211,6 +219,18 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 
 	@Override
 	public LiferayPortletURL create(
+		PortletRequest portletRequest, String portletId, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return create(
+			portletRequest,
+			PortletLocalServiceUtil.getPortletById(
+				PortalUtil.getCompanyId(portletRequest), portletId),
+			layout, lifecycle, copy);
+	}
+
+	@Override
+	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, long plid,
 		String lifecycle) {
 
@@ -226,12 +246,20 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 			portletRequest, portletId,
 			_getLayout(
 				(Layout)portletRequest.getAttribute(WebKeys.LAYOUT), plid),
-			lifecycle);
+			lifecycle, copy);
 	}
 
 	@Override
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, String lifecycle) {
+
+		return create(portletRequest, portletId, lifecycle, null);
+	}
+
+	@Override
+	public LiferayPortletURL create(
+		PortletRequest portletRequest, String portletId, String lifecycle,
+		MimeResponse.Copy copy) {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -244,7 +272,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 				themeDisplay.getPlid());
 		}
 
-		return create(portletRequest, portletId, layout, lifecycle);
+		return create(portletRequest, portletId, layout, lifecycle, copy);
 	}
 
 	private Layout _getLayout(Layout layout, long plid) {

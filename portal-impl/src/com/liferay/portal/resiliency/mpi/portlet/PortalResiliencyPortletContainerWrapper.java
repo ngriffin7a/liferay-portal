@@ -221,13 +221,6 @@ public class PortalResiliencyPortletContainerWrapper
 		}
 	}
 
-	@FunctionalInterface
-	public interface Renderable {
-
-		public void render() throws PortletContainerException;
-
-	}
-
 	protected Object[] captureRequestAttibutes(
 		HttpServletRequest request, String... names) {
 
@@ -331,5 +324,12 @@ public class PortalResiliencyPortletContainerWrapper
 		PortalResiliencyPortletContainerWrapper.class);
 
 	private final PortletContainer _portletContainer;
+
+	@FunctionalInterface
+	private interface Renderable {
+
+		public void render() throws PortletContainerException;
+
+	}
 
 }

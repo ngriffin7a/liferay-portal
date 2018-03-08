@@ -211,9 +211,6 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 			restrictPortletServletRequest.removeAttribute(
 				WebKeys.RENDER_PORTLET_COLUMN_POS);
 
-			// TODO: portlet3 the following line might need to only be done
-			// when full render is done like with FacesBridge
-
 			restrictPortletServletRequest.mergeSharedAttributes();
 		}
 	}

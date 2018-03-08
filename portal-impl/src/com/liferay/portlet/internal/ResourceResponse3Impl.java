@@ -101,24 +101,22 @@ public class ResourceResponse3Impl
 
 	@Override
 	public int getStatus() {
-
-		// TODO: portlet3
-
-		return 0;
+		return response.getStatus();
 	}
 
 	@Override
 	public void setContentLengthLong(long length) {
 
-		// TODO: portlet3
-
+		// TODO: portlet3 - This method can't be implemented until
+		// https://issues.liferay.com/browse/LPS-73874 is merged. Waiting to
+		// hear back from Minhchau in the JIRA issue.
+		// response.setContentLengthLong(length)
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void setStatus(int statusCode) {
-
-		// TODO: portlet3
-
+		response.setStatus(statusCode);
 	}
 
 	private final Map<String, Constructor<? extends PortletURLImpl>>

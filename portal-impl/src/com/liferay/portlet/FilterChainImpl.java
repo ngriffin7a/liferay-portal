@@ -107,21 +107,6 @@ public class FilterChainImpl implements FilterChain, HeaderFilterChain {
 				_pos++);
 
 			headerFilter.doFilter(headerRequest, headerResponse, this);
-
-			// TODO: portlet3 might no longer be needed now that
-			// PortletRequest.HEADER_PHASE is the official lifecycle
-			// TODO and that InvokerPortletImpl.invokeHeader calls
-			// _invokerFilterContainer.getHeaderFilters()now.
-
-			/*PortletFilter portletFilter = _portletFilters.get(_pos++);
-
-			if (portletFilter instanceof HeaderFilter) {
-				HeaderFilter headerFilter = (HeaderFilter)portletFilter;
-
-				headerFilter.doFilter(headerRequest, headerResponse, this);
-			}
-
-			*/
 		}
 		else {
 			HeaderPortlet headerPortlet = (HeaderPortlet)_portlet;

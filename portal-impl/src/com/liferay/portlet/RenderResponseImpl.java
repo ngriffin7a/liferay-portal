@@ -41,9 +41,8 @@ public class RenderResponseImpl
 	@Override
 	public ActionURL createActionURL(Copy copy) {
 
-		// TODO: portlet3 - If we keep LiferayPortletResponse3 then this will
-		// need to be implemented. Don't bother for now since TCK hasn't tested
-		// for it yet.
+		// See RenderResponse3Impl.createActionURL(Copy) and
+		// ResourceResponse3Impl.createActionURL(Copy)
 
 		throw new UnsupportedOperationException();
 	}
@@ -51,9 +50,8 @@ public class RenderResponseImpl
 	@Override
 	public RenderURL createRenderURL(Copy copy) {
 
-		// TODO: portlet3 - If we keep LiferayPortletResponse3 then this will
-		// need to be implemented. Don't bother for now since TCK hasn't tested
-		// for it yet.
+		// See RenderResponse3Impl.createRenderURL(Copy) and
+		// ResourceResponse3Impl.createRenderURL(Copy)
 
 		throw new UnsupportedOperationException();
 	}

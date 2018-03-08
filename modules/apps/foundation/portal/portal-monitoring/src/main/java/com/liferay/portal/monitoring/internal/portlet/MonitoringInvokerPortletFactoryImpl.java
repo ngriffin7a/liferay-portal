@@ -52,13 +52,10 @@ public class MonitoringInvokerPortletFactoryImpl
 			boolean strutsBridgePortlet)
 		throws PortletException {
 
-		InvokerPortlet invokerPortlet = _invokerPortletFactory.create(
+		return create(
 			portletModel, portlet, portletConfig, portletContext,
-			invokerFilterContainer, checkAuthToken, facesPortlet, strutsPortlet,
-			strutsBridgePortlet);
-
-		return new MonitoringInvokerPortlet(
-			invokerPortlet, _dataSampleFactory, _portletMonitoringControl);
+			invokerFilterContainer, checkAuthToken, facesPortlet, false,
+			strutsPortlet, strutsBridgePortlet);
 	}
 
 	@Override

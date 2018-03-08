@@ -100,6 +100,7 @@ import javax.servlet.http.HttpSession;
 /**
  * @author Shuyang Zhou
  * @author Raymond Augé
+ * @author Neil Griffin
  */
 @ProviderType
 public class PortletContainerImpl implements PortletContainer {

@@ -304,8 +304,18 @@ public class HeaderResponseImpl
 			String name, String scope, String version, String markup)
 		throws IllegalArgumentException {
 
-		if (Validator.isNull(markup)) {
+		markup = StringUtil.trim(markup);
+
+		if (Validator.isBlank(markup)) {
 			return;
+		}
+
+		String xmlMarkup = markup;
+
+		if ((xmlMarkup.startsWith("<link") || xmlMarkup.startsWith("<LINK")) &&
+			!(xmlMarkup.endsWith("</link>") || xmlMarkup.endsWith("</LINK>"))) {
+
+			xmlMarkup += "</link>";
 		}
 
 		XMLStreamReader xmlStreamReader = null;
@@ -315,7 +325,7 @@ public class HeaderResponseImpl
 				StAXReaderUtil.getXMLInputFactory();
 
 			xmlStreamReader = xmlInputFactory.createXMLStreamReader(
-				new UnsyncStringReader(markup));
+				new UnsyncStringReader(xmlMarkup));
 
 			while (xmlStreamReader.hasNext()) {
 				int event = xmlStreamReader.next();
@@ -554,6 +564,7 @@ public class HeaderResponseImpl
 
 		public HeaderPrintWriter(StringWriter stringWriter) {
 			super(stringWriter);
+
 			_stringWriter = stringWriter;
 		}
 

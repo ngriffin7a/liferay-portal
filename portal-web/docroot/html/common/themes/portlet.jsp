@@ -37,49 +37,7 @@ String lifecycle = (String)request.getAttribute(PortletRequest.LIFECYCLE_PHASE);
 
 String responseTitle = null;
 
-if (PortletRequest.HEADER_PHASE.equals(lifecycle)) {
-
-	// System.err.println("!@#$ portlet.jsp: HEADER_PHASE!");
-	// TODO portlet3: It PROBABLY makes no sense to get the portlet title here
-	// at this point, because we are not really rendering the portlet to the
-	// aggregated response in the HEADER_PHASE. Need to keep the following
-	// code commented-out because what happens is that the headerResponse
-	// can be equal to HeaderRequestBridgeLiferayImpl when the FacesBridge
-	// dispatches to a JSP in the HEADER_PHASE because the Liferay Portal
-	// PortletRequestDispatcherImpl.dispatch(PortletRequest,PortletResponse)
-	// sets the "javax.portlet.request" attribute on the underlying
-	// RestrictPortletRequest which carries all the way through to here.
-	// Just doesn't make sense to try and unwrap it in order to get the
-	// title. You think it was null anyway. Whatever, check the final
-	// rendered page to see if the title is right in the RENDER_PHASE.
-
-	/*
-	try {
-		Object hr = pageContext.getAttribute("headerResponse");
-		System.err.println("!@#$ hr=" + hr);
-		HeaderResponseImpl defineObjectsHeaderResponse =
-			(HeaderResponseImpl)pageContext.getAttribute("headerResponse");
-
-		responseTitle = defineObjectsHeaderResponse.getTitle();
-		System.err.println("!@#$ portlet.jsp HeaderResponse title=" + responseTitle);
-	}
-	catch (Exception e) {
-		e.printStackTrace();
-		throw e;
-	}
-
-	*/
-
-	responseTitle = HtmlUtil.escape(PortalUtil.getPortletTitle((HeaderResponse)pageContext.getAttribute("headerResponse")));
-
-	// System.err.println("!@#$ portlet.jsp HEADER_PHASE responseTitle=" + responseTitle);
-
-}
-else {
-	/* TODO: portlet3 - after you figure out why "jsp" keeps showing up in the rendered html, then have the code below look more like the headerResponse
-	code above except with RenderResponse instead. Note that you would need to import the RenderResponse class at the top of this JSP, just like you
-	do for HeaderResponse now.
-	 */
+if (PortletRequest.RENDER_PHASE.equals(lifecycle)) {
 	RenderResponseImpl defineObjectsRenderResponse = (RenderResponseImpl)pageContext.getAttribute("renderResponse");
 
 	responseTitle = defineObjectsRenderResponse.getTitle();

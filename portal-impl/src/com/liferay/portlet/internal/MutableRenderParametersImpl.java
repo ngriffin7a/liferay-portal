@@ -52,9 +52,6 @@ public class MutableRenderParametersImpl
 	@Override
 	public void clearPublic() {
 
-		// TODO: portlet3 - need to look at PortletRequestImpl.setParameter
-		// because it does something with PublicRenderParameterPool.
-
 		Map<String, String[]> parameterMap = getParameterMap();
 
 		Set<String> parameterNames = parameterMap.keySet();

@@ -17,8 +17,6 @@ package com.liferay.portlet;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -306,11 +304,6 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 	@Override
 	public LiferayPortletURL createResourceURL(String portletName) {
-
-		// TODO: portlet3 - Might need to have a Portlet 2.0 compatibility mode
-		// if/then check that passes MimeResponse.Copy.NONE. Need to try a Pluto
-		// 2.0 test portlet.
-
 		return _createLiferayPortletURL(
 			_plid, portletName, PortletRequest.RESOURCE_PHASE, true,
 			MimeResponse.Copy.ALL, true);

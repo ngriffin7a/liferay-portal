@@ -559,18 +559,6 @@ public class InvokerPortletImpl
 			}
 			else if ((response.getTime() < now) && (_expCache.intValue() > 0)) {
 				invokeHeader(headerRequest, headerResponse);
-
-				// TODO: portlet3
-				// This might be the place to set things on the response
-				// because the render version of this method sets a title
-				// on the InvokerPortletResponse
-
-				// TODO: portlet3
-				// The following line sets content on the InvokerPortletResponse
-				// but need to make sure it is only ever placed into the
-				// <head>...<head> section of the
-				// page, not in the body of the document itself.
-
 				response.setContent(bufferCacheServletResponse.getString());
 				response.setTime(now + Time.SECOND * _expCache.intValue());
 			}

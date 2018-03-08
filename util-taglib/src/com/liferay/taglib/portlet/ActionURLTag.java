@@ -46,6 +46,7 @@ import javax.servlet.jsp.JspWriter;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
@@ -65,7 +66,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		}
 
 		LiferayPortletURL liferayPortletURL = _getLiferayPortletURL(
-			request, plid, portletName, lifecycle);
+			request, plid, portletName, lifecycle, copyCurrentRenderParameters);
 
 		if (liferayPortletURL == null) {
 			_log.error(
@@ -309,7 +310,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 	private static LiferayPortletURL _getLiferayPortletURL(
 		HttpServletRequest request, long plid, String portletName,
-		String lifecycle) {
+		String lifecycle, Boolean copyCurrentRenderParameters) {
 
 		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
@@ -325,7 +326,10 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 			(LiferayPortletResponse3)PortalUtil.getLiferayPortletResponse(
 				portletResponse);
 
-		if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+		if (((copyCurrentRenderParameters != null) &&
+			 copyCurrentRenderParameters) ||
+			lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+
 			return liferayPortletResponse3.createLiferayPortletURL(
 				plid, portletName, lifecycle, MimeResponse.Copy.ALL);
 		}

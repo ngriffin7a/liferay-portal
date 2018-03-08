@@ -35,7 +35,7 @@ public interface LiferayMutablePortletParameters
 	/**
 	 * Sets a parameter value.
 	 *
-	 * @param name the name of the parameter
+	 * @param name the name of the parameter.
 	 * @param value the value of the parameter. If <code>null</code> then
 	 *        the parameter is removed.
 	 * @param append whether the new value should be appended to any existing

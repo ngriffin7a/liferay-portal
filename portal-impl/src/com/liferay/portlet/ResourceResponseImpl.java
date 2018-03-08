@@ -74,9 +74,7 @@ public class ResourceResponseImpl
 	@Override
 	public ActionURL createActionURL(Copy copy) {
 
-		// TODO: portlet3 - If we keep LiferayPortletResponse3 then this will
-		// need to be implemented. Don't bother for now since TCK hasn't tested
-		// for it yet.
+		// See ResourceResponse3Impl.createActionURL(Copy)
 
 		throw new UnsupportedOperationException();
 	}
@@ -115,9 +113,7 @@ public class ResourceResponseImpl
 	@Override
 	public RenderURL createRenderURL(Copy copy) {
 
-		// TODO: portlet3 - If we keep LiferayPortletResponse3 then this will
-		// need to be implemented. Don't bother for now since TCK hasn't tested
-		// for it yet.
+		// See ResourceResponse3Impl.createRenderURL(Copy)
 
 		throw new UnsupportedOperationException();
 	}
@@ -129,7 +125,10 @@ public class ResourceResponseImpl
 
 	@Override
 	public int getStatus() {
-		return response.getStatus();
+
+		// See ResourceResponse3Impl.getStatus()
+
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -147,10 +146,7 @@ public class ResourceResponseImpl
 	@Override
 	public void setContentLengthLong(long length) {
 
-		// TODO: portlet3 - This method can't be implemented until
-		// https://issues.liferay.com/browse/LPS-73874 is merged. Waiting to
-		// hear back from Minhchau in the JIRA issue.
-		// response.setContentLengthLong(length)
+		// See ResourceResponse3Impl.setContentLengthLong(length)
 
 		throw new UnsupportedOperationException();
 	}
@@ -207,7 +203,10 @@ public class ResourceResponseImpl
 
 	@Override
 	public void setStatus(int statusCode) {
-		response.setStatus(statusCode);
+
+		// See ResourceResponse3Impl.setStatus(int)
+
+		throw new UnsupportedOperationException();
 	}
 
 	private boolean _canSetLocaleEncoding = true;

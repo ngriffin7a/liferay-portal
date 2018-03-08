@@ -213,7 +213,6 @@ page import="java.util.TimeZone" %><%@
 page import="java.util.TreeSet" %>
 
 <%@ page import="javax.portlet.HeaderRequest" %><%@
-page import="javax.portlet.HeaderResponse" %><%@
 page import="javax.portlet.MimeResponse" %><%@
 page import="javax.portlet.MutableRenderParameters" %><%@
 page import="javax.portlet.PortletConfig" %><%@

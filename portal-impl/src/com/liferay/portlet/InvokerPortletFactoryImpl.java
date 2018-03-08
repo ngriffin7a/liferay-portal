@@ -41,15 +41,10 @@ public class InvokerPortletFactoryImpl implements InvokerPortletFactory {
 			boolean strutsBridgePortlet)
 		throws PortletException {
 
-		try {
-			return new InvokerPortletImpl(
-				portletModel, portlet, portletConfig, portletContext,
-				invokerFilterContainer, checkAuthToken, facesPortlet, false,
-				strutsPortlet, strutsBridgePortlet);
-		}
-		catch (Exception e) {
-			throw new PortletException(e);
-		}
+		return create(
+			portletModel, portlet, portletConfig, portletContext,
+			invokerFilterContainer, checkAuthToken, facesPortlet, false,
+			strutsPortlet, strutsBridgePortlet);
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.petra.string.StringPool;
 
+import java.io.IOException;
 import java.io.Writer;
 
 import java.util.Collections;

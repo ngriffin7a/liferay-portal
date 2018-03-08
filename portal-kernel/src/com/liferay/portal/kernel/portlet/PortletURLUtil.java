@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author Brian Wing Shun Chan
  * @author Miguel Pastor
+ * @author Neil Griffin
  */
 public class PortletURLUtil {
 

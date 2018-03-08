@@ -68,6 +68,7 @@ import org.apache.struts.action.ActionMapping;
 /**
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
 public class LayoutAction extends Action {
 

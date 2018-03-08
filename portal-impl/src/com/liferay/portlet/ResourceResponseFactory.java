@@ -26,9 +26,6 @@ public class ResourceResponseFactory {
 	public static ResourceResponseImpl create(
 		ResourceRequestImpl resourceRequestImpl, HttpServletResponse response) {
 
-		// TODO: Portlet 3.0 -- maybe return new ResourceResponseImpl() for
-		// Portlet 2.0.
-
 		ResourceResponseImpl resourceResponseImpl = new ResourceResponse3Impl();
 
 		resourceResponseImpl.init(resourceRequestImpl, response);

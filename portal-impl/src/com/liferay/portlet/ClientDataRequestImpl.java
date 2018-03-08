@@ -63,9 +63,11 @@ public abstract class ClientDataRequestImpl
 	@Override
 	public long getContentLengthLong() {
 
-		// TODO: portlet3
+		// TODO: portlet3 - Waiting for Minhchau's Servlet 3.1 upgrade
+		// https://issues.liferay.com/browse/LPS-73874
+		// return getHttpServletRequest().getContentLengthLong();
 
-		return 0;
+		return getContentLength();
 	}
 
 	@Override
@@ -92,11 +94,11 @@ public abstract class ClientDataRequestImpl
 
 		FileItem[] fileItems = multipartParameterMap.get(name);
 
-		if ((fileItems != null) && (fileItems.length > 0)) {
-			return new PartImpl(fileItems[0]);
+		if ((fileItems == null) || (fileItems.length == 0)) {
+			return null;
 		}
 
-		return null;
+		return new PartImpl(fileItems[0]);
 	}
 
 	@Override

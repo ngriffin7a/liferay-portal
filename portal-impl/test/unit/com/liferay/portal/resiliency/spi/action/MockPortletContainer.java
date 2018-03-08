@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.ActionResult;
 import com.liferay.portal.kernel.portlet.PortletContainer;
-import com.liferay.portal.kernel.portlet.PortletContainerException;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
@@ -106,9 +105,8 @@ public class MockPortletContainer implements PortletContainer {
 
 	@Override
 	public void renderHeaders(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
-		throws PortletContainerException {
+		HttpServletRequest request, HttpServletResponse response,
+		Portlet portlet) {
 
 		this.request = request;
 		this.response = response;

@@ -25,6 +25,7 @@ import javax.portlet.RenderURL;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 @ProviderType
 public class ActionResponseImpl
@@ -34,7 +35,9 @@ public class ActionResponseImpl
 	public RenderURL createRedirectURL(MimeResponse.Copy copy)
 		throws IllegalStateException {
 
-		throw new UnsupportedOperationException();
+		// See ActionResponse3Impl.createRedirectURL(MimeResponse.Copy)
+
+		return null;
 	}
 
 	@Override

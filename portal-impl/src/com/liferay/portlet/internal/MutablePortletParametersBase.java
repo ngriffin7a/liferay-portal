@@ -96,6 +96,8 @@ public abstract class MutablePortletParametersBase
 		for (String oldParameterName : oldParameterNames) {
 			if (!newParameterNames.contains(oldParameterName)) {
 				parameterMap.remove(oldParameterName);
+
+				_mutated = true;
 			}
 		}
 
@@ -105,6 +107,8 @@ public abstract class MutablePortletParametersBase
 			String[] copiedValues = values.clone();
 
 			parameterMap.put(newParameterName, copiedValues);
+
+			_mutated = true;
 		}
 
 		return oldMutablePortletParameters;

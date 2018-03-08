@@ -32,9 +32,6 @@ public class ActionResponseFactory {
 			User user, Layout layout)
 		throws PortletException {
 
-		// TODO: Portlet 3.0 -- maybe return new ActionResponseImpl() for
-		// Portlet 2.0.
-
 		ActionResponseImpl actionResponseImpl = new ActionResponse3Impl();
 
 		actionResponseImpl.init(

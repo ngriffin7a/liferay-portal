@@ -26,9 +26,6 @@ public class RenderResponseFactory {
 	public static RenderResponseImpl create(
 		RenderRequestImpl renderRequestImpl, HttpServletResponse response) {
 
-		// TODO: Portlet 3.0 -- maybe return new RenderResponseImpl() for
-		// Portlet 2.0.
-
 		RenderResponseImpl renderResponseImpl = new RenderResponse3Impl();
 
 		renderResponseImpl.init(renderRequestImpl, response);

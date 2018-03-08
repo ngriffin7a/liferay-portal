@@ -66,32 +66,29 @@ public class ActionRequestImpl
 			portletMode, preferences, plid);
 
 		Map<String, String[]> actionParameterMap = new LinkedHashMap<>();
-		RenderParameters renderParameters = getRenderParameters();
-
-		Set<String> renderParameterNames = renderParameters.getNames();
-
 		Map<String, String[]> parameterMap = getParameterMap();
 		String portletNamespace = PortalUtil.getPortletNamespace(
 			getPortletName());
 		Map<String, String[]> servletRequestParameterMap =
 			request.getParameterMap();
+		RenderParameters renderParameters = getRenderParameters();
+
+		Set<String> renderParameterNames = renderParameters.getNames();
 
 		for (Map.Entry<String, String[]> mapEntry : parameterMap.entrySet()) {
 			String name = mapEntry.getKey();
+
+			// If the parameter name is not a public/private render parameter,
+			// then it is an action parameter. Also, if the parameter name is
+			// prefixed with the portlet namespace in the original request, then
+			// it is to be regarded as an action parameter (even if it has the
+			// same name as a public render parameter). See: TCK
+			// V3PortletParametersTests_SPEC11_3_getNames
 
 			if (!renderParameterNames.contains(name)) {
 				actionParameterMap.put(name, mapEntry.getValue());
 			}
 			else {
-
-				// If the parameter name is not a public/private render
-				// parameter, then it is an action parameter. Also, if the
-				// parameter name is prefixed with the portlet namespace in the
-				// original request, then it is to be regarded as an action
-				// parameter (even if it has the same name as a public render
-				// parameter).
-				// See: TCK V3PortletParametersTests_SPEC11_3_getNames
-
 				String namespacedParameter = portletNamespace + name;
 
 				if (renderParameterNames.contains(name) &&

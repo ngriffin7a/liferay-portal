@@ -49,17 +49,6 @@ public class ActionResponse3Impl
 	}
 
 	@Override
-	public LiferayPortletURL createActionURL(String portletName) {
-
-		// TODO: portlet3 - Might need to have a Portlet 2.0 compatibility mode
-		// if/then check that passes MimeResponse.Copy.NONE. Need to try a
-		// Pluto 2.0 test portlet.
-
-		return createLiferayPortletURL(
-			portletName, PortletRequest.ACTION_PHASE, MimeResponse.Copy.PUBLIC);
-	}
-
-	@Override
 	public LiferayPortletURL createActionURL(
 		String portletName, MimeResponse.Copy copy) {
 
@@ -86,10 +75,6 @@ public class ActionResponse3Impl
 
 		Layout layout = PortletResponseUtil.getLayout(
 			portletRequestImpl, themeDisplay);
-
-		// LOH -- Almost done it seems. There is this method for sure, but there
-		// is at least one more that needs to be overridden from the parent
-		// class in order to handle the MimeResponse.Copy parameter overloads
 
 		if (_portletSetup == null) {
 			_portletSetup = PortletResponseUtil.getPortletSetup(
@@ -123,9 +108,7 @@ public class ActionResponse3Impl
 	public RenderURL createRedirectURL(MimeResponse.Copy copy)
 		throws IllegalStateException {
 
-		// TODO: portlet3
-
-		return null;
+		return createRenderURL(copy);
 	}
 
 	@Override
@@ -136,33 +119,11 @@ public class ActionResponse3Impl
 	}
 
 	@Override
-	public LiferayPortletURL createRenderURL(String portletName) {
-
-		// TODO: portlet3 - Might need to have a Portlet 2.0 compatibility mode
-		// if/then check that passes MimeResponse.Copy.NONE. Need to try a
-		// Pluto 2.0 test portlet.
-
-		return createLiferayPortletURL(
-			portletName, PortletRequest.RENDER_PHASE, MimeResponse.Copy.PUBLIC);
-	}
-
-	@Override
 	public LiferayPortletURL createRenderURL(
 		String portletName, MimeResponse.Copy copy) {
 
 		return createLiferayPortletURL(
 			portletName, PortletRequest.RENDER_PHASE, copy);
-	}
-
-	@Override
-	public LiferayPortletURL createResourceURL(String portletName) {
-
-		// TODO: portlet3 - Might need to have a Portlet 2.0 compatibility mode
-		// if/then check that passes MimeResponse.Copy.NONE. Need to try a
-		// Pluto 2.0 test portlet.
-
-		return createLiferayPortletURL(
-			portletName, PortletRequest.RESOURCE_PHASE, MimeResponse.Copy.ALL);
 	}
 
 	private final Map<String, Constructor<? extends PortletURLImpl>>

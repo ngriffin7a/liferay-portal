@@ -61,6 +61,7 @@ import com.liferay.portlet.internal.LiferayRenderParameters;
 import com.liferay.portlet.internal.MutableActionParametersImpl;
 import com.liferay.portlet.internal.MutableRenderParametersImpl;
 import com.liferay.portlet.internal.MutableResourceParametersImpl;
+import com.liferay.portlet.internal.PortletAppUtil;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -70,6 +71,7 @@ import java.security.Key;
 import java.security.PrivilegedAction;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -401,6 +403,7 @@ public class PortletURLImpl
 
 		// TODO: portlet3
 
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -505,12 +508,19 @@ public class PortletURLImpl
 
 	@Override
 	public void setParameter(String name, String value, boolean append) {
-		if (name == null) {
+		if ((name == null) ||
+			((value == null) &&
+			 PortletAppUtil.isPortletSpec2(_portlet.getPortletApp()))) {
+
 			throw new IllegalArgumentException();
 		}
 
 		LiferayMutablePortletParameters liferayMutablePortletParameters =
 			_getMutablePortletParameters(name);
+
+		if (value == null) {
+			liferayMutablePortletParameters.removeParameter(name);
+		}
 
 		liferayMutablePortletParameters.setValue(name, value, append);
 	}
@@ -693,16 +703,13 @@ public class PortletURLImpl
 
 	@Override
 	public String toString() {
-		LiferayMutablePortletParameters mutableRenderParameters =
-			(LiferayMutablePortletParameters)_mutableRenderParameters;
-
 		LiferayMutablePortletParameters mutableActionParameters =
 			(LiferayMutablePortletParameters)_mutableActionParameters;
 
 		LiferayMutablePortletParameters mutableResourceParameters =
 			(LiferayMutablePortletParameters)_mutableResourceParameters;
 
-		if (!mutableRenderParameters.isMutated() &&
+		if (!_mutableRenderParameters.isMutated() &&
 			(mutableActionParameters != null) &&
 			!mutableActionParameters.isMutated() &&
 			(mutableResourceParameters != null) &&
@@ -947,15 +954,19 @@ public class PortletURLImpl
 
 		Map<String, String[]> portletURLParams = new LinkedHashMap<>();
 
+		Set<String> actionParameterNames;
+
 		if (_mutableActionParameters != null) {
-			Set<String> actionParameterNames =
-				_mutableActionParameters.getNames();
+			actionParameterNames = _mutableActionParameters.getNames();
 
 			for (String parameterName : actionParameterNames) {
 				portletURLParams.put(
-					_ACTION_PARAMETER_PREFIX + parameterName,
+					_ACTION_PARAMETER_NAMESPACE + parameterName,
 					_mutableActionParameters.getValues(parameterName));
 			}
+		}
+		else {
+			actionParameterNames = Collections.emptySet();
 		}
 
 		Set<String> resourceParameterNames = Collections.emptySet();
@@ -965,14 +976,10 @@ public class PortletURLImpl
 
 			for (String parameterName : resourceParameterNames) {
 				portletURLParams.put(
-					_RESOURCE_PARAMETER_PREFIX + parameterName,
+					_RESOURCE_PARAMETER_NAMESPACE + parameterName,
 					_mutableResourceParameters.getValues(parameterName));
 			}
 		}
-
-		// The MutableRenderParameters object is a Portlet 3.0 feature that
-		// provides the developer with the ability to access and/or mutate
-		// render parameters prior to the toString() method being called.
 
 		if (!_lifecycle.equals(PortletRequest.RESOURCE_PHASE) ||
 			(_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
@@ -1010,9 +1017,50 @@ public class PortletURLImpl
 							continue;
 						}
 
-						if (_lifecycle.equals(PortletRequest.ACTION_PHASE) ||
-							_lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+						if (_lifecycle.equals(PortletRequest.ACTION_PHASE) &&
+							actionParameterNames.contains(
+								renderParameterName)) {
 
+							String[] actionParameterValues =
+								_mutableActionParameters.getValues(
+									renderParameterName);
+
+							if (actionParameterValues != null) {
+								renderParameterValues = ArrayUtil.append(
+									actionParameterValues,
+									renderParameterValues);
+							}
+
+							renderParameterName =
+								_ACTION_PARAMETER_NAMESPACE +
+									renderParameterName;
+						}
+						else if (_lifecycle.equals(
+									PortletRequest.RENDER_PHASE)) {
+
+							PortletRequest portletRequest = getPortletRequest();
+
+							if (portletRequest != null) {
+								LiferayRenderParameters renderParameters =
+									(LiferayRenderParameters)
+										portletRequest.getRenderParameters();
+
+								String[] requestRenderParameterValues =
+									renderParameters.getValues(
+										renderParameterName);
+
+								if ((requestRenderParameterValues != null) &&
+									!Arrays.equals(
+										requestRenderParameterValues,
+										renderParameterValues)) {
+
+									renderParameterValues = ArrayUtil.append(
+										renderParameterValues,
+										requestRenderParameterValues);
+								}
+							}
+						}
+						else {
 							renderParameterName =
 								PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE +
 									renderParameterName;
@@ -1038,11 +1086,11 @@ public class PortletURLImpl
 				}
 			}
 
-			if (name.startsWith(_ACTION_PARAMETER_PREFIX)) {
-				name = name.substring(_ACTION_PARAMETER_PREFIX.length());
+			if (name.startsWith(_ACTION_PARAMETER_NAMESPACE)) {
+				name = name.substring(_ACTION_PARAMETER_NAMESPACE.length());
 			}
-			else if (name.startsWith(_RESOURCE_PARAMETER_PREFIX)) {
-				name = name.substring(_RESOURCE_PARAMETER_PREFIX.length());
+			else if (name.startsWith(_RESOURCE_PARAMETER_NAMESPACE)) {
+				name = name.substring(_RESOURCE_PARAMETER_NAMESPACE.length());
 			}
 
 			if (isParameterIncludedInPath(name)) {
@@ -1053,9 +1101,6 @@ public class PortletURLImpl
 				_appendNamespaceAndEncode(sb, name);
 
 				sb.append(StringPool.EQUAL);
-
-				// TODO: portlet3 - null values are OK in Portlet 3. Need to see
-				// if this should be an opt-in.
 
 				if (value != null) {
 					sb.append(processValue(key, value));
@@ -1196,16 +1241,13 @@ public class PortletURLImpl
 			publicRenderParameterNames =
 				renderParameters.getPublicRenderParameterNames();
 
-			boolean copyAllRenderParameters = MimeResponse.Copy.ALL.equals(
-				copy);
-			boolean copyPublicRenderParameters =
-				MimeResponse.Copy.PUBLIC.equals(copy);
+			if (MimeResponse.Copy.ALL.equals(copy) ||
+				MimeResponse.Copy.PUBLIC.equals(copy)) {
 
-			if (copyAllRenderParameters || copyPublicRenderParameters) {
 				Set<String> renderParameterNames = renderParameters.getNames();
 
 				for (String renderParameterName : renderParameterNames) {
-					if (copyAllRenderParameters ||
+					if (MimeResponse.Copy.ALL.equals(copy) ||
 						renderParameters.isPublic(renderParameterName)) {
 
 						mutableRenderParameterMap.put(
@@ -1342,9 +1384,9 @@ public class PortletURLImpl
 		return _mutableRenderParameters;
 	}
 
-	private static final String _ACTION_PARAMETER_PREFIX = "p_action_p_";
+	private static final String _ACTION_PARAMETER_NAMESPACE = "p_action_p_";
 
-	private static final String _RESOURCE_PARAMETER_PREFIX = "p_resource_p_";
+	private static final String _RESOURCE_PARAMETER_NAMESPACE = "p_resource_p_";
 
 	private static final Log _log = LogFactoryUtil.getLog(PortletURLImpl.class);
 
