@@ -32,6 +32,7 @@ public class MutableRenderParametersImpl
 		Set<String> publicRenderParameterNames) {
 
 		super(parameterMap);
+
 		_originalParameterMap = deepCopyMap(parameterMap);
 		_publicRenderParameterNames = publicRenderParameterNames;
 	}
@@ -51,7 +52,6 @@ public class MutableRenderParametersImpl
 
 	@Override
 	public void clearPublic() {
-
 		Map<String, String[]> parameterMap = getParameterMap();
 
 		Set<String> parameterNames = parameterMap.keySet();

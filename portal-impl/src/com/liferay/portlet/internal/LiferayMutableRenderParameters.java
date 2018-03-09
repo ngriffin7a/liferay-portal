@@ -19,8 +19,8 @@ import javax.portlet.MutableRenderParameters;
 /**
  * @author Neil Griffin
  */
-public interface LiferayMutableRenderParameters extends MutableRenderParameters,
-	LiferayMutablePortletParameters {
+public interface LiferayMutableRenderParameters
+	extends MutableRenderParameters, LiferayMutablePortletParameters {
 
 	/**
 	 * Returns a flag indicating whether or not the value of the parameter

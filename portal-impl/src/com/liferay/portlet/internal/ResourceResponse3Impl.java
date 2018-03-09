@@ -111,6 +111,7 @@ public class ResourceResponse3Impl
 		// https://issues.liferay.com/browse/LPS-73874 is merged. Waiting to
 		// hear back from Minhchau in the JIRA issue.
 		// response.setContentLengthLong(length)
+
 		throw new UnsupportedOperationException();
 	}
 

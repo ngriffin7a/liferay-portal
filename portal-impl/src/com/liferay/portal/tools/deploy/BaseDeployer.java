@@ -1183,7 +1183,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			displayName = displayName.substring(1);
 		}
 
-		StringBundler sb = new StringBundler(62);
+		StringBundler sb = new StringBundler(70);
 
 		sb.append("<display-name>");
 		sb.append(displayName);

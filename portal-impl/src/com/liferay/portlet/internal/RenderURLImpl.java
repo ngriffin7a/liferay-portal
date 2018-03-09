@@ -78,6 +78,7 @@ public class RenderURLImpl extends PortletURLImpl implements RenderURL {
 	@Override
 	protected void clearCache() {
 		super.clearCache();
+
 		_toString = null;
 	}
 
