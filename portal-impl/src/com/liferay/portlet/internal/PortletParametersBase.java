@@ -14,12 +14,16 @@
 
 package com.liferay.portlet.internal;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.portlet.MutablePortletParameters;
 import javax.portlet.PortletParameters;
+
+import org.apache.ecs.xhtml.map;
 
 /**
  * @author Neil Griffin
@@ -42,7 +46,17 @@ public abstract class PortletParametersBase implements PortletParameters {
 
 	@Override
 	public Set<String> getNames() {
-		return _parameterMap.keySet();
+		if (_parameterMap == null) {
+			return Collections.emptySet();
+		}
+
+		Set<String> keySet = _parameterMap.keySet();
+
+		if (_namespace == null) {
+			return keySet;
+		}
+
+		return new NameHashSet(keySet, _namespace);
 	}
 
 	@Override
@@ -60,8 +74,16 @@ public abstract class PortletParametersBase implements PortletParameters {
 	public String[] getValues(String name) {
 		String[] values = _parameterMap.get(name);
 
-		if ((values == null) && (_namespace != null)) {
+		if (values != null) {
+			return values;
+		}
+
+		if ((_namespace != null) && (name != null)) {
 			values = _parameterMap.get(_namespace + name);
+
+			if ((values == null) && name.startsWith(_namespace)) {
+				values = _parameterMap.get(name.substring(_namespace.length()));
+			}
 		}
 
 		return values;
@@ -103,5 +125,42 @@ public abstract class PortletParametersBase implements PortletParameters {
 
 	private final String _namespace;
 	private final Map<String, String[]> _parameterMap;
+
+	private static class NameHashSet extends HashSet<String> {
+
+		public NameHashSet(Set<String> names, String namespace) {
+			for (String name : names) {
+				if ((namespace != null) && name.startsWith(namespace)) {
+					add(name.substring(namespace.length()));
+				}
+				else {
+					add(name);
+				}
+			}
+
+			_namespace = namespace;
+		}
+
+		@Override
+		public boolean contains(Object name) {
+			if (super.contains(name)) {
+				return true;
+			}
+
+			String nameString = (String)name;
+
+			if ((_namespace != null) && (nameString != null) &&
+				nameString.startsWith(_namespace)) {
+
+				return super.contains(
+					nameString.substring(_namespace.length()));
+			}
+
+			return false;
+		}
+
+		private String _namespace;
+
+	}
 
 }
