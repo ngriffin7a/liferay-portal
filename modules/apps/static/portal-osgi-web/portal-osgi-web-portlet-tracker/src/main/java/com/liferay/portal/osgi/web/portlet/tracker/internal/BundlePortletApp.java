@@ -176,22 +176,12 @@ public class BundlePortletApp implements PortletApp {
 		return _portletApp.getServletURLPatterns();
 	}
 
-	// Not until depending on com.liferay.portal.kernel-default.jar @Override
-
 	public int getSpecMajorVersion() {
-		return 2;
-
-		// return _portletApp.getSpecMajorVersion();
-
+		return _portletApp.getSpecMajorVersion();
 	}
 
-	// Not until depending on com.liferay.portal.kernel-default.jar @Override
-
 	public int getSpecMinorVersion() {
-		return 0;
-
-		// return _portletApp.getSpecMinorVersion();
-
+		return _portletApp.getSpecMinorVersion();
 	}
 
 	@Override
@@ -224,20 +214,12 @@ public class BundlePortletApp implements PortletApp {
 		throw new UnsupportedOperationException();
 	}
 
-	// Not until depending on com.liferay.portal.kernel-default.jar @Override
-
 	public void setSpecMajorVersion(int specMajorVersion) {
-
-		// _portletApp.setSpecMajorVersion(specMajorVersion);
-
+		_portletApp.setSpecMajorVersion(specMajorVersion);
 	}
 
-	// Not until depending on com.liferay.portal.kernel-default.jar @Override
-
 	public void setSpecMinorVersion(int specMinorVersion) {
-
-		// _portletApp.setSpecMinorVersion(specMinorVersion);
-
+		_portletApp.setSpecMinorVersion(specMinorVersion);
 	}
 
 	@Override
