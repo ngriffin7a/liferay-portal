@@ -273,8 +273,8 @@ public class PortletTracker
 			BundlePortletApp bundlePortletApp = createBundlePortletApp(
 				bundle, bundleClassLoader, serviceRegistrations);
 
-			String specVersion =
-				(String) serviceReference.getProperty("javax.portlet.version");
+			String specVersion = (String)serviceReference.getProperty(
+				"javax.portlet.version");
 
 			if (specVersion != null) {
 				String[] specVersionParts = StringUtil.split(
