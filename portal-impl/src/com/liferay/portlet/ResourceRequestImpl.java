@@ -18,15 +18,12 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.internal.ResourceParametersImpl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -93,10 +90,13 @@ public class ResourceRequestImpl
 		// TODO: portlet3 - This method used to return null but Dante and Tina
 		// implemented it for https://issues.liferay.com/browse/LPS-76916. You
 		// refactored it to use RenderParameters but it needs to be tested.
+
 		Map<String, String[]> privateRenderParameters = new HashMap<>();
 		RenderParameters renderParameters = getRenderParameters();
+
 		Set<String> renderParameterNames = renderParameters.getNames();
-		for (String renderParameterName: renderParameterNames) {
+
+		for (String renderParameterName : renderParameterNames) {
 			if (!renderParameters.isPublic(renderParameterName)) {
 				privateRenderParameters.put(
 					renderParameterName,
