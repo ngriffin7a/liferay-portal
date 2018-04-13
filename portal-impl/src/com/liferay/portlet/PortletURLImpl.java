@@ -97,6 +97,7 @@ import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
 import javax.portlet.annotations.PortletSerializable;
 
+import javax.portlet.annotations.RenderStateScoped;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -401,9 +402,31 @@ public class PortletURLImpl
 	@Override
 	public void setBeanParameter(PortletSerializable portletSerializable) {
 
-		// TODO: portlet3
+		if (portletSerializable == null) {
+			throw new IllegalArgumentException();
+		}
 
-		throw new UnsupportedOperationException();
+		Class<? extends PortletSerializable> portletSerializableClass =
+			portletSerializable.getClass();
+
+		RenderStateScoped renderStateScoped =
+			portletSerializableClass.getAnnotation(RenderStateScoped.class);
+
+		if (renderStateScoped == null) {
+			throw new IllegalArgumentException(
+				"Class not annotated with @RenderStateScoped");
+		}
+
+		String paramName = renderStateScoped.paramName();
+
+		if (Validator.isNull(paramName)) {
+			paramName = portletSerializableClass.getSimpleName();
+		}
+
+		MutableRenderParameters mutableRenderParameters = getRenderParameters();
+
+		mutableRenderParameters.setValues(
+			paramName, portletSerializable.serialize());
 	}
 
 	@Override
