@@ -96,8 +96,8 @@ import javax.portlet.ResourceURL;
 import javax.portlet.WindowState;
 import javax.portlet.WindowStateException;
 import javax.portlet.annotations.PortletSerializable;
-
 import javax.portlet.annotations.RenderStateScoped;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -401,7 +401,6 @@ public class PortletURLImpl
 
 	@Override
 	public void setBeanParameter(PortletSerializable portletSerializable) {
-
 		if (portletSerializable == null) {
 			throw new IllegalArgumentException();
 		}
