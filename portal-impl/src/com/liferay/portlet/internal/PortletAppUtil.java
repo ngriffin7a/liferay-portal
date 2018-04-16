@@ -37,6 +37,14 @@ public class PortletAppUtil {
 		return portletApp.getSpecMinorVersion();
 	}
 
+	public static boolean isPortletSpec2(PortletApp portletApp) {
+		if (getSpecMajorVersion(portletApp) == 2) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public static boolean isPortletSpec3(PortletApp portletApp) {
 		if (getSpecMajorVersion(portletApp) == 3) {
 			return true;

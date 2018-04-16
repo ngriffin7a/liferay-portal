@@ -61,6 +61,7 @@ import com.liferay.portlet.internal.LiferayRenderParameters;
 import com.liferay.portlet.internal.MutableActionParametersImpl;
 import com.liferay.portlet.internal.MutableRenderParametersImpl;
 import com.liferay.portlet.internal.MutableResourceParametersImpl;
+import com.liferay.portlet.internal.PortletAppUtil;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -550,8 +551,20 @@ public class PortletURLImpl
 
 	@Override
 	public void setParameter(String name, String[] values, boolean append) {
-		if ((name == null) || (values == null)) {
+		if ((name == null) ||
+			((values == null) &&
+			 PortletAppUtil.isPortletSpec2(_portlet.getPortletApp()))) {
+
 			throw new IllegalArgumentException();
+		}
+
+		LiferayMutablePortletParameters liferayMutablePortletParameters =
+			_getMutablePortletParameters(name);
+
+		if (values == null) {
+			liferayMutablePortletParameters.removeParameter(name);
+
+			return;
 		}
 
 		for (String value : values) {
@@ -559,9 +572,6 @@ public class PortletURLImpl
 				throw new IllegalArgumentException();
 			}
 		}
-
-		LiferayMutablePortletParameters liferayMutablePortletParameters =
-			_getMutablePortletParameters(name);
 
 		liferayMutablePortletParameters.setValues(name, values, append);
 	}
