@@ -100,7 +100,7 @@ public class LiferayPortletURLPrivilegedAction
 	public LiferayPortletURL run() {
 		if (_request != null) {
 			return PortletURLFactoryUtil.create(
-				_request, _portlet, _layout, _lifecycle);
+				_request, _portlet, _layout, _lifecycle, _copy);
 		}
 
 		boolean includeLinkToLayoutUuid = _includeLinkToLayoutUuid;
