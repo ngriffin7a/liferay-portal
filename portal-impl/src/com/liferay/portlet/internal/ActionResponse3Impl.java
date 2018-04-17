@@ -73,11 +73,11 @@ public class ActionResponse3Impl
 		ThemeDisplay themeDisplay = (ThemeDisplay)
 			portletRequestImpl.getAttribute(WebKeys.THEME_DISPLAY);
 
-		Layout layout = PortletResponseUtil.getLayout(
+		Layout layout = LiferayPortletResponseUtil.getLayout(
 			portletRequestImpl, themeDisplay);
 
 		if (_portletSetup == null) {
-			_portletSetup = PortletResponseUtil.getPortletSetup(
+			_portletSetup = LiferayPortletResponseUtil.getPortletSetup(
 				themeDisplay, layout, portletName);
 		}
 
