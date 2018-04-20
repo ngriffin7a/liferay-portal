@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portlet.internal.PortletAsyncContextImpl;
 import com.liferay.portlet.internal.ResourceParametersImpl;
 
 import java.util.Collections;
@@ -78,10 +79,7 @@ public class ResourceRequestImpl
 
 	@Override
 	public PortletAsyncContext getPortletAsyncContext() {
-
-		// TODO: portlet3
-
-		return null;
+		return _portletAsyncContext;
 	}
 
 	@Override
@@ -141,9 +139,9 @@ public class ResourceRequestImpl
 	public PortletAsyncContext startPortletAsync()
 		throws IllegalStateException {
 
-		// TODO: portlet3
+		_portletAsyncContext = new PortletAsyncContextImpl();
 
-		return null;
+		return _portletAsyncContext;
 	}
 
 	@Override
@@ -151,9 +149,11 @@ public class ResourceRequestImpl
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws IllegalStateException {
 
-		// TODO: portlet3
+		// TODO: portlet3 - Ignoring ResourceRequest and ResourceResponse
 
-		return null;
+		_portletAsyncContext = new PortletAsyncContextImpl();
+
+		return _portletAsyncContext;
 	}
 
 	@Override
@@ -227,6 +227,7 @@ public class ResourceRequestImpl
 	}
 
 	private String _cacheablity;
+	private PortletAsyncContext _portletAsyncContext;
 	private String _resourceID;
 	private ResourceParameters _resourceParameters;
 
