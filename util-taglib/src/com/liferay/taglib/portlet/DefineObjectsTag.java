@@ -17,17 +17,25 @@ package com.liferay.taglib.portlet;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.taglib.aui.AUIUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.portlet.ActionRequest;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletSession;
+import javax.portlet.ResourceRequest;
+import javax.portlet.StateAwareResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.tagext.TagSupport;
@@ -52,6 +60,8 @@ public class DefineObjectsTag extends TagSupport {
 		if (portletConfig != null) {
 			pageContext.setAttribute("portletConfig", portletConfig);
 			pageContext.setAttribute(
+				"portletContext", portletConfig.getPortletContext());
+			pageContext.setAttribute(
 				"portletName", portletConfig.getPortletName());
 		}
 
@@ -59,14 +69,35 @@ public class DefineObjectsTag extends TagSupport {
 			JavaConstants.JAVAX_PORTLET_REQUEST);
 
 		if (portletRequest != null) {
+			if (lifecycle.equals(PortletRequest.ACTION_PHASE) ||
+				lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+
+				pageContext.setAttribute("clientDataRequest", portletRequest);
+			}
+
+			pageContext.setAttribute(
+				"contextPath", portletRequest.getContextPath());
+			pageContext.setAttribute("cookies", portletRequest.getCookies());
+
 			pageContext.setAttribute(
 				"liferayPortletRequest",
 				PortalUtil.getLiferayPortletRequest(portletRequest));
+
+			pageContext.setAttribute("locale", portletRequest.getLocale());
+
+			ArrayList<Locale> locales = Collections.list(
+				portletRequest.getLocales());
+			pageContext.setAttribute(
+				"locales", locales.toArray(new Locale[locales.size()]));
 
 			String portletRequestAttrName = null;
 
 			if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
 				portletRequestAttrName = "actionRequest";
+				ActionRequest actionRequest = (ActionRequest)portletRequest;
+
+				pageContext.setAttribute(
+					"actionParams", actionRequest.getActionParameters());
 			}
 			else if (lifecycle.equals(PortletRequest.EVENT_PHASE)) {
 				portletRequestAttrName = "eventRequest";
@@ -79,8 +110,16 @@ public class DefineObjectsTag extends TagSupport {
 			}
 			else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
 				portletRequestAttrName = "resourceRequest";
+				ResourceRequest resourceRequest =
+					(ResourceRequest)portletRequest;
+
+				pageContext.setAttribute(
+					"resourceParams", resourceRequest.getResourceParameters());
 			}
 
+			pageContext.setAttribute(
+				"portletMode", portletRequest.getPortletMode());
+			pageContext.setAttribute("portletRequest", portletRequest);
 			pageContext.setAttribute(portletRequestAttrName, portletRequest);
 
 			PortletPreferences portletPreferences =
@@ -105,6 +144,10 @@ public class DefineObjectsTag extends TagSupport {
 			}
 			catch (IllegalStateException ise) {
 			}
+
+			pageContext.setAttribute("windowId", portletRequest.getWindowID());
+			pageContext.setAttribute(
+				"windowState", portletRequest.getWindowState());
 		}
 
 		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
@@ -117,6 +160,14 @@ public class DefineObjectsTag extends TagSupport {
 		pageContext.setAttribute(
 			"liferayPortletResponse",
 			PortalUtil.getLiferayPortletResponse(portletResponse));
+
+		String namespace = AUIUtil.getNamespace(portletRequest, portletResponse);
+
+		if (Validator.isNull(namespace)) {
+			namespace = AUIUtil.getNamespace(request);
+		}
+
+		pageContext.setAttribute("namespace", namespace);
 
 		String portletResponseAttrName = null;
 
@@ -136,7 +187,20 @@ public class DefineObjectsTag extends TagSupport {
 			portletResponseAttrName = "resourceResponse";
 		}
 
+		pageContext.setAttribute("portletResponse", portletResponse);
 		pageContext.setAttribute(portletResponseAttrName, portletResponse);
+
+		if (lifecycle.equals(PortletRequest.ACTION_PHASE) ||
+			lifecycle.equals(PortletRequest.EVENT_PHASE)) {
+
+			StateAwareResponse stateAwareResponse =
+				(StateAwareResponse)portletResponse;
+
+			pageContext.setAttribute(
+				"mutableRenderParams",
+				stateAwareResponse.getRenderParameters());
+			pageContext.setAttribute("stateAwareResponse", stateAwareResponse);
+		}
 
 		return SKIP_BODY;
 	}

@@ -24,17 +24,9 @@ page import="com.liferay.taglib.util.TagResourceBundleUtil" %>
 
 <%@ page import="java.io.IOException" %>
 
+<portlet:defineObjects />
+
 <%
-PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstants.JAVAX_PORTLET_REQUEST);
-
-PortletResponse portletResponse = (PortletResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
-
-String namespace = AUIUtil.getNamespace(portletRequest, portletResponse);
-
-if (Validator.isNull(namespace)) {
-	namespace = AUIUtil.getNamespace(request);
-}
-
 String currentURL = null;
 
 if ((portletRequest != null) && (portletResponse != null)) {
