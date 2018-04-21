@@ -50,7 +50,7 @@ public class MutableRenderParametersImpl
 			String parameterName = itr.next();
 
 			if (!_publicRenderParameterNames.contains(parameterName)) {
-				parameterMap.remove(parameterName);
+				itr.remove();
 			}
 		}
 	}
@@ -67,7 +67,7 @@ public class MutableRenderParametersImpl
 			String parameterName = itr.next();
 
 			if (_publicRenderParameterNames.contains(parameterName)) {
-				parameterMap.remove(parameterName);
+				itr.remove();
 			}
 		}
 	}
