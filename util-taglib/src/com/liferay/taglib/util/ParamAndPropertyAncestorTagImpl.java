@@ -38,6 +38,11 @@ public class ParamAndPropertyAncestorTagImpl
 
 	@Override
 	public void addParam(String name, String value) {
+		addParam(name, null, value);
+	}
+
+	@Override
+	public void addParam(String name, String type, String value) {
 		if (Validator.isNull(name)) {
 			throw new IllegalArgumentException();
 		}

@@ -33,7 +33,7 @@ public class ParamTag extends TagSupport {
 			throw new JspException();
 		}
 
-		paramAncestorTag.addParam(_name, _value);
+		paramAncestorTag.addParam(_name, _type, _value);
 
 		return SKIP_BODY;
 	}
@@ -42,11 +42,16 @@ public class ParamTag extends TagSupport {
 		_name = name;
 	}
 
+	public void setType(String type) {
+		_type = type;
+	}
+
 	public void setValue(String value) {
 		_value = value;
 	}
 
 	private String _name;
+	private String _type;
 	private String _value;
 
 }

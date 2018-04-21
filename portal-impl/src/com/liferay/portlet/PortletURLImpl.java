@@ -537,6 +537,11 @@ public class PortletURLImpl
 		LiferayMutablePortletParameters liferayMutablePortletParameters =
 			_getMutablePortletParameters(name);
 
+		if (name.startsWith(PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE)) {
+			name = name.substring(
+				PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE.length());
+		}
+
 		if (value == null) {
 			liferayMutablePortletParameters.removeParameter(name);
 		}
@@ -560,6 +565,11 @@ public class PortletURLImpl
 
 		LiferayMutablePortletParameters liferayMutablePortletParameters =
 			_getMutablePortletParameters(name);
+
+		if (name.startsWith(PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE)) {
+			name = name.substring(
+				PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE.length());
+		}
 
 		if (values == null) {
 			liferayMutablePortletParameters.removeParameter(name);
@@ -1401,7 +1411,9 @@ public class PortletURLImpl
 		String parameterName) {
 
 		if (_lifecycle.equals(PortletRequest.ACTION_PHASE) &&
-			!_mutableRenderParameters.isPublic(parameterName)) {
+			!_mutableRenderParameters.isPublic(parameterName) &&
+			!parameterName.startsWith(
+				PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE)) {
 
 			return (LiferayMutablePortletParameters)_mutableActionParameters;
 		}

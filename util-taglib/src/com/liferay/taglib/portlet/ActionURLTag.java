@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse3;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletModeFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryConstants;
+import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -183,6 +184,15 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		liferayPortletURL.setRemovedParameterNames(removedParameterNames);
 
 		return liferayPortletURL;
+	}
+
+	@Override
+	public void addParam(String name, String type, String value) {
+		if ("render".equals(type) && Validator.isNotNull(name)) {
+			name = PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE + name;
+		}
+
+		super.addParam(name, type, value);
 	}
 
 	@Override
