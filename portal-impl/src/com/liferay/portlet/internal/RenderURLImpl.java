@@ -58,7 +58,6 @@ public class RenderURLImpl extends PortletURLImpl implements RenderURL {
 	@Override
 	public void setFragmentIdentifier(String fragmentIdentifier) {
 		_fragmentIdentifier = fragmentIdentifier;
-		clearCache();
 	}
 
 	@Override
@@ -67,22 +66,10 @@ public class RenderURLImpl extends PortletURLImpl implements RenderURL {
 			return super.toString();
 		}
 		else {
-			if (_toString == null) {
-				_toString = super.toString() + "#" + _fragmentIdentifier;
-			}
-
-			return _toString;
+			return super.toString() + "#" + _fragmentIdentifier;
 		}
 	}
 
-	@Override
-	protected void clearCache() {
-		super.clearCache();
-
-		_toString = null;
-	}
-
 	private String _fragmentIdentifier;
-	private String _toString;
 
 }
