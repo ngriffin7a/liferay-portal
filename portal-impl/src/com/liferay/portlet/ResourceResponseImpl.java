@@ -25,10 +25,7 @@ import com.liferay.portlet.extra.config.ExtraPortletAppConfigRegistry;
 
 import java.util.Locale;
 
-import javax.portlet.ActionURL;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
-import javax.portlet.RenderURL;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.portlet.ResourceURL;
@@ -66,18 +63,7 @@ public class ResourceResponseImpl
 		}
 	}
 
-	@Override
-	public PortletURL createActionURL() {
-		return super.createActionURL();
-	}
-
-	@Override
-	public ActionURL createActionURL(Copy copy) {
-
-		// See ResourceResponse3Impl.createActionURL(Copy)
-
-		throw new UnsupportedOperationException();
-	}
+	// TODO: portlet3 - Need an override of this for MimeResponse.Copy?
 
 	@Override
 	public LiferayPortletURL createLiferayPortletURL(
@@ -106,29 +92,13 @@ public class ResourceResponseImpl
 	}
 
 	@Override
-	public PortletURL createRenderURL() {
-		return super.createRenderURL();
-	}
-
-	@Override
-	public RenderURL createRenderURL(Copy copy) {
-
-		// See ResourceResponse3Impl.createRenderURL(Copy)
-
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public String getLifecycle() {
 		return PortletRequest.RESOURCE_PHASE;
 	}
 
 	@Override
 	public int getStatus() {
-
-		// See ResourceResponse3Impl.getStatus()
-
-		throw new UnsupportedOperationException();
+		return response.getStatus();
 	}
 
 	@Override
@@ -146,7 +116,10 @@ public class ResourceResponseImpl
 	@Override
 	public void setContentLengthLong(long length) {
 
-		// See ResourceResponse3Impl.setContentLengthLong(length)
+		// TODO: portlet3 - This method can't be implemented until
+		// https://issues.liferay.com/browse/LPS-73874 is merged. Waiting to
+		// hear back from Minhchau in the JIRA issue.
+		// response.setContentLengthLong(length)
 
 		throw new UnsupportedOperationException();
 	}
@@ -203,10 +176,7 @@ public class ResourceResponseImpl
 
 	@Override
 	public void setStatus(int statusCode) {
-
-		// See ResourceResponse3Impl.setStatus(int)
-
-		throw new UnsupportedOperationException();
+		response.setStatus(statusCode);
 	}
 
 	private boolean _canSetLocaleEncoding = true;

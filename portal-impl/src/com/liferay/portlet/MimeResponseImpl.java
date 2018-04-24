@@ -30,7 +30,6 @@ import javax.portlet.CacheControl;
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
 
 /**
@@ -41,16 +40,6 @@ import javax.portlet.WindowState;
 @ProviderType
 public abstract class MimeResponseImpl
 	extends PortletResponseImpl implements MimeResponse {
-
-	@Override
-	public PortletURL createActionURL() {
-		return super.createActionURL();
-	}
-
-	@Override
-	public PortletURL createRenderURL() {
-		return super.createRenderURL();
-	}
 
 	@Override
 	public void flushBuffer() throws IOException {

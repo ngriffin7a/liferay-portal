@@ -35,9 +35,7 @@ public class ActionResponseImpl
 	public RenderURL createRedirectURL(MimeResponse.Copy copy)
 		throws IllegalStateException {
 
-		// See ActionResponse3Impl.createRedirectURL(MimeResponse.Copy)
-
-		return null;
+		return createRenderURL(copy);
 	}
 
 	@Override

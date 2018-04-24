@@ -132,10 +132,7 @@ public class PortletURLUtil {
 			return portletURL;
 		}
 
-		LiferayPortletResponse3 liferayPortletResponse3 =
-			(LiferayPortletResponse3)liferayPortletResponse;
-
-		portletURL = liferayPortletResponse3.createRenderURL(
+		portletURL = liferayPortletResponse.createRenderURL(
 			MimeResponse.Copy.NONE);
 
 		MutableRenderParameters mutableRenderParameters =

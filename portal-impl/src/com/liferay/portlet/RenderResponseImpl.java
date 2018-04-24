@@ -25,10 +25,8 @@ import com.liferay.portlet.configuration.kernel.util.PortletConfigurationUtil;
 
 import java.util.Collection;
 
-import javax.portlet.ActionURL;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
-import javax.portlet.RenderURL;
 
 /**
  * @author Brian Wing Shun Chan
@@ -37,24 +35,6 @@ import javax.portlet.RenderURL;
 @ProviderType
 public class RenderResponseImpl
 	extends MimeResponseImpl implements LiferayRenderResponse {
-
-	@Override
-	public ActionURL createActionURL(Copy copy) {
-
-		// See RenderResponse3Impl.createActionURL(Copy) and
-		// ResourceResponse3Impl.createActionURL(Copy)
-
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public RenderURL createRenderURL(Copy copy) {
-
-		// See RenderResponse3Impl.createRenderURL(Copy) and
-		// ResourceResponse3Impl.createRenderURL(Copy)
-
-		throw new UnsupportedOperationException();
-	}
 
 	@Override
 	public String getLifecycle() {

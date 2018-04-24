@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.DummyPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse3;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletModeFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryConstants;
@@ -332,19 +332,18 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-		LiferayPortletResponse3 liferayPortletResponse3 =
-			(LiferayPortletResponse3)PortalUtil.getLiferayPortletResponse(
-				portletResponse);
+		LiferayPortletResponse liferayPortletResponse =
+			PortalUtil.getLiferayPortletResponse(portletResponse);
 
 		if (((copyCurrentRenderParameters != null) &&
 			 copyCurrentRenderParameters) ||
 			lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
 
-			return liferayPortletResponse3.createLiferayPortletURL(
+			return liferayPortletResponse.createLiferayPortletURL(
 				plid, portletName, lifecycle, MimeResponse.Copy.ALL);
 		}
 
-		return liferayPortletResponse3.createLiferayPortletURL(
+		return liferayPortletResponse.createLiferayPortletURL(
 			plid, portletName, lifecycle, MimeResponse.Copy.NONE);
 	}
 
