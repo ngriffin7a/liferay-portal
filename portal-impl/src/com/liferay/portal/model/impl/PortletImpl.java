@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.model.PluginSetting;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.model.PortletDependency;
 import com.liferay.portal.kernel.model.PortletFilter;
 import com.liferay.portal.kernel.model.PortletInfo;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
@@ -121,6 +122,10 @@ public class PortletImpl extends PortletBaseImpl {
 		_assetRendererFactoryClasses = new ArrayList<>();
 		_atomCollectionAdapterClasses = new ArrayList<>();
 		_autopropagatedParameters = new LinkedHashSet<>();
+		_cdnPortletDependencyPathCss =
+			PropsValues.CDN_PORTLET_DEPENDENCY_PATH_CSS;
+		_cdnPortletDependencyPathJavaScript =
+			PropsValues.CDN_PORTLET_DEPENDENCY_PATH_JAVASCRIPT;
 		_customAttributesDisplayClasses = new ArrayList<>();
 		_footerPortalCss = new ArrayList<>();
 		_footerPortalJavaScript = new ArrayList<>();
@@ -134,6 +139,7 @@ public class PortletImpl extends PortletBaseImpl {
 		_initParams = new HashMap<>();
 		_portletFilters = new LinkedHashMap<>();
 		_portletModes = new HashMap<>();
+		_portletDependencies = new ArrayList<>();
 		_roleMappers = new LinkedHashMap<>();
 		_rootPortlet = this;
 		_schedulerEntries = new ArrayList<>();
@@ -192,14 +198,16 @@ public class PortletImpl extends PortletBaseImpl {
 		List<String> footerPortletJavaScript, String cssClassWrapper,
 		boolean addDefaultResource, String roles, Set<String> unlinkedRoles,
 		Map<String, String> roleMappers, boolean system, boolean active,
-		boolean include, Map<String, String> initParams, Integer expCache,
+		boolean include, String cdnPortletDependencyPathCss,
+		String cdnPortletDependencyPathJavaScript,
+		Map<String, String> initParams, Integer expCache,
 		Map<String, Set<String>> portletModes,
 		Map<String, Set<String>> windowStates, Set<String> supportedLocales,
 		String resourceBundle, PortletInfo portletInfo,
 		Map<String, PortletFilter> portletFilters, Set<QName> processingEvents,
 		Set<QName> publishingEvents,
 		Set<PublicRenderParameter> publicRenderParameters,
-		PortletApp portletApp) {
+		List<PortletDependency> portletDependencies, PortletApp portletApp) {
 
 		setPortletId(portletId);
 		setCompanyId(companyId);
@@ -291,6 +299,9 @@ public class PortletImpl extends PortletBaseImpl {
 		_roleMappers = roleMappers;
 		_system = system;
 		_include = include;
+		_cdnPortletDependencyPathCss = cdnPortletDependencyPathCss;
+		_cdnPortletDependencyPathJavaScript =
+			cdnPortletDependencyPathJavaScript;
 		_initParams = initParams;
 		_expCache = expCache;
 		_portletModes = portletModes;
@@ -299,103 +310,8 @@ public class PortletImpl extends PortletBaseImpl {
 		_resourceBundle = resourceBundle;
 		_portletInfo = portletInfo;
 		_portletFilters = portletFilters;
+		_portletDependencies = portletDependencies;
 		_portletApp = portletApp;
-	}
-
-	/**
-	 * Constructs a portlet with the specified parameters.
-	 *
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public PortletImpl(
-		String portletId, Portlet rootPortlet, PluginPackage pluginPackage,
-		PluginSetting pluginSetting, long companyId, String icon,
-		String virtualPath, String strutsPath, String parentStrutsPath,
-		String portletName, String displayName, String portletClass,
-		String configurationActionClass, List<String> indexerClasses,
-		String openSearchClass, List<SchedulerEntry> schedulerEntries,
-		String portletURLClass, String friendlyURLMapperClass,
-		String friendlyURLMapping, String friendlyURLRoutes,
-		String urlEncoderClass, String portletDataHandlerClass,
-		List<String> stagedModelDataHandlerClasses, String templateHandlerClass,
-		String portletLayoutListenerClass, String pollerProcessorClass,
-		String popMessageListenerClass,
-		List<String> socialActivityInterpreterClasses,
-		String socialRequestInterpreterClass,
-		String userNotificationDefinitions,
-		List<String> userNotificationHandlerClasses, String webDAVStorageToken,
-		String webDAVStorageClass, String xmlRpcMethodClass,
-		String controlPanelEntryCategory, double controlPanelEntryWeight,
-		String controlPanelClass, List<String> assetRendererFactoryClasses,
-		List<String> atomCollectionAdapterClasses,
-		List<String> customAttributesDisplayClasses,
-		String permissionPropagatorClass, List<String> trashHandlerClasses,
-		List<String> workflowHandlerClasses, String defaultPreferences,
-		String preferencesValidator, boolean preferencesCompanyWide,
-		boolean preferencesUniquePerLayout, boolean preferencesOwnedByGroup,
-		boolean useDefaultTemplate, boolean showPortletAccessDenied,
-		boolean showPortletInactive, boolean actionURLRedirect,
-		boolean restoreCurrentView, boolean maximizeEdit, boolean maximizeHelp,
-		boolean popUpPrint, boolean layoutCacheable, boolean instanceable,
-		boolean remoteable, boolean scopeable, boolean singlePageApplication,
-		String userPrincipalStrategy, boolean privateRequestAttributes,
-		boolean privateSessionAttributes, Set<String> autopropagatedParameters,
-		boolean requiresNamespacedParameters, int actionTimeout,
-		int renderTimeout, int renderWeight, boolean ajaxable,
-		List<String> headerPortalCss, List<String> headerPortletCss,
-		List<String> headerPortalJavaScript,
-		List<String> headerPortletJavaScript, List<String> footerPortalCss,
-		List<String> footerPortletCss, List<String> footerPortalJavaScript,
-		List<String> footerPortletJavaScript, String cssClassWrapper,
-		String facebookIntegration, boolean addDefaultResource, String roles,
-		Set<String> unlinkedRoles, Map<String, String> roleMappers,
-		boolean system, boolean active, boolean include,
-		Map<String, String> initParams, Integer expCache,
-		Map<String, Set<String>> portletModes,
-		Map<String, Set<String>> windowStates, Set<String> supportedLocales,
-		String resourceBundle, PortletInfo portletInfo,
-		Map<String, PortletFilter> portletFilters, Set<QName> processingEvents,
-		Set<QName> publishingEvents,
-		Set<PublicRenderParameter> publicRenderParameters,
-		PortletApp portletApp) {
-
-		this(
-			portletId, rootPortlet, pluginPackage, pluginSetting, companyId,
-			icon, virtualPath, strutsPath, parentStrutsPath, portletName,
-			displayName, portletClass, configurationActionClass, indexerClasses,
-			openSearchClass, schedulerEntries, portletURLClass,
-			friendlyURLMapperClass, friendlyURLMapping, friendlyURLRoutes,
-			urlEncoderClass, portletDataHandlerClass,
-			stagedModelDataHandlerClasses, templateHandlerClass,
-			portletLayoutListenerClass, pollerProcessorClass,
-			popMessageListenerClass, socialActivityInterpreterClasses,
-			socialRequestInterpreterClass, userNotificationDefinitions,
-			userNotificationHandlerClasses, webDAVStorageToken,
-			webDAVStorageClass, xmlRpcMethodClass, controlPanelEntryCategory,
-			controlPanelEntryWeight, controlPanelClass,
-			assetRendererFactoryClasses, atomCollectionAdapterClasses,
-			customAttributesDisplayClasses, permissionPropagatorClass,
-			trashHandlerClasses, workflowHandlerClasses, defaultPreferences,
-			preferencesValidator, preferencesCompanyWide,
-			preferencesUniquePerLayout, preferencesOwnedByGroup,
-			useDefaultTemplate, showPortletAccessDenied, showPortletInactive,
-			actionURLRedirect, restoreCurrentView, maximizeEdit, maximizeHelp,
-			popUpPrint, layoutCacheable, instanceable, remoteable, scopeable,
-			singlePageApplication, userPrincipalStrategy,
-			privateRequestAttributes, privateSessionAttributes,
-			autopropagatedParameters, requiresNamespacedParameters,
-			actionTimeout, renderTimeout, renderWeight, ajaxable,
-			headerPortalCss, headerPortletCss, headerPortalJavaScript,
-			headerPortletJavaScript, footerPortalCss, footerPortletCss,
-			footerPortalJavaScript, footerPortletJavaScript, cssClassWrapper,
-			addDefaultResource, roles, unlinkedRoles, roleMappers, system,
-			active, include, initParams, expCache, portletModes, windowStates,
-			supportedLocales, resourceBundle, portletInfo, portletFilters,
-			processingEvents, publishingEvents, publicRenderParameters,
-			portletApp);
-
-		_facebookIntegration = facebookIntegration;
 	}
 
 	/**
@@ -406,6 +322,16 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public void addApplicationType(ApplicationType applicationType) {
 		_applicationTypes.add(applicationType);
+	}
+
+	/**
+	 * Adds a portlet JS/CSS resource dependency.
+	 *
+	 * @param portletDependency a portlet JS/CSS resource dependency
+	 */
+	@Override
+	public void addPortletDependency(PortletDependency portletDependency) {
+		_portletDependencies.add(portletDependency);
 	}
 
 	/**
@@ -508,10 +434,12 @@ public class PortletImpl extends PortletBaseImpl {
 			getFooterPortalJavaScript(), getFooterPortletJavaScript(),
 			getCssClassWrapper(), isAddDefaultResource(), getRoles(),
 			getUnlinkedRoles(), getRoleMappers(), isSystem(), isActive(),
-			isInclude(), getInitParams(), getExpCache(), getPortletModes(),
-			getWindowStates(), getSupportedLocales(), getResourceBundle(),
-			getPortletInfo(), getPortletFilters(), getProcessingEvents(),
-			getPublishingEvents(), getPublicRenderParameters(),
+			isInclude(), getCdnPortletDependencyPathCss(),
+			getCdnPortletDependencyPathJavaScript(), getInitParams(),
+			getExpCache(), getPortletModes(), getWindowStates(),
+			getSupportedLocales(), getResourceBundle(), getPortletInfo(),
+			getPortletFilters(), getProcessingEvents(), getPublishingEvents(),
+			getPublicRenderParameters(), getPortletDependencies(),
 			getPortletApp());
 
 		portletImpl.setApplicationTypes(getApplicationTypes());
@@ -722,6 +650,24 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public Set<String> getAutopropagatedParameters() {
 		return _autopropagatedParameters;
+	}
+
+	/**
+	 * Returns the CDN path for CSS portlet dependencies.
+	 *
+	 * @return the CDN path for CSS portlet dependencies
+	 */
+	public String getCdnPortletDependencyPathCss() {
+		return _cdnPortletDependencyPathCss;
+	}
+
+	/**
+	 * Returns the CDN path for JavaScript portlet dependencies.
+	 *
+	 * @return the CDN path for JavaScript portlet dependencies
+	 */
+	public String getCdnPortletDependencyPathJavaScript() {
+		return _cdnPortletDependencyPathJavaScript;
 	}
 
 	/**
@@ -1434,6 +1380,16 @@ public class PortletImpl extends PortletBaseImpl {
 		}
 
 		return portletDataHandlerInstances.get(0);
+	}
+
+	/**
+	 * Returns the list of portlet JS/CSS resource dependencies.
+	 *
+	 * @return the list of portlet JS/CSS resource dependencies.
+	 */
+	@Override
+	public List<PortletDependency> getPortletDependencies() {
+		return _portletDependencies;
 	}
 
 	/**
@@ -2983,6 +2939,31 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Sets the CDN path for CSS portlet dependencies.
+	 *
+	 * @param cdnPortletDependencyPathCss the CDN path for CSS portlet
+	 *        dependencies
+	 */
+	public void setCdnPortletDependencyPathCss(
+		String cdnPortletDependencyPathCss) {
+
+		_cdnPortletDependencyPathCss = cdnPortletDependencyPathCss;
+	}
+
+	/**
+	 * Sets the CDN path for JavaScript portlet dependencies.
+	 *
+	 * @param cdnPortletDependencyPathJavaScript the CDN path for CSS portlet
+	 *        dependencies
+	 */
+	public void setCdnPortletDependencyPathJavaScript(
+		String cdnPortletDependencyPathJavaScript) {
+
+		_cdnPortletDependencyPathJavaScript =
+			cdnPortletDependencyPathJavaScript;
+	}
+
+	/**
 	 * Sets the configuration action class of the portlet.
 	 *
 	 * @param configurationActionClass the configuration action class of the
@@ -4198,6 +4179,16 @@ public class PortletImpl extends PortletBaseImpl {
 	private Set<String> _autopropagatedParameters;
 
 	/**
+	 * The CDN path for CSS portlet dependencies.
+	 */
+	private String _cdnPortletDependencyPathCss;
+
+	/**
+	 * The CDN path for JavaScript portlet dependencies.
+	 */
+	private String _cdnPortletDependencyPathJavaScript;
+
+	/**
 	 * The configuration action class of the portlet.
 	 */
 	private String _configurationActionClass;
@@ -4419,6 +4410,11 @@ public class PortletImpl extends PortletBaseImpl {
 	 * The name of the portlet data handler class of the portlet.
 	 */
 	private String _portletDataHandlerClass;
+
+	/**
+	 * The client-side dependencies associated with the portlet.
+	 */
+	private List<PortletDependency> _portletDependencies;
 
 	/**
 	 * The filters of the portlet.

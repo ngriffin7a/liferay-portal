@@ -85,6 +85,7 @@ import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.model.impl.EventDefinitionImpl;
 import com.liferay.portal.model.impl.PortletAppImpl;
+import com.liferay.portal.model.impl.PortletDependencyImpl;
 import com.liferay.portal.model.impl.PortletFilterImpl;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.model.impl.PortletURLListenerImpl;
@@ -2030,6 +2031,15 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			GetterUtil.getBoolean(
 				portletElement.elementText("include"),
 				portletModel.isInclude()));
+		portletModel.setCdnPortletDependencyPathCss(
+			GetterUtil.getString(
+				portletElement.elementText("cdn-portlet-dependency-path-css"),
+				portletModel.getCdnPortletDependencyPathCss()));
+		portletModel.setCdnPortletDependencyPathJavaScript(
+			GetterUtil.getString(
+				portletElement.elementText(
+					"cdn-portlet-dependency-path-javascript"),
+				portletModel.getCdnPortletDependencyPathJavaScript()));
 
 		if (Validator.isNull(servletContextName)) {
 			portletModel.setReady(true);
@@ -2107,7 +2117,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			String servletContextName, PluginPackage pluginPackage,
 			PortletApp portletApp, Element portletElement,
 			Map<String, Portlet> portletsMap,
-			Set<String> validCustomPortletModes)
+			Set<String> validCustomPortletModes,
+			boolean javaScriptDependenciesFromCDN)
 		throws PortletIdException {
 
 		String portletName = portletElement.elementText("portlet-name");
@@ -2414,12 +2425,37 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			for (Element valueElement :
 					containerRuntimeOptionElement.elements("value")) {
 
-				values.add(valueElement.getTextTrim());
+				String value = valueElement.getTextTrim();
+
+				if ("com.liferay.javaScriptDependenciesFromCDN".equals(name)) {
+					javaScriptDependenciesFromCDN =
+						GetterUtil.getBoolean(value);
+				}
+
+				values.add(value);
 			}
 
 			containerRuntimeOptions.put(
 				containerRuntimeOptionPrefix.concat(name),
 				values.toArray(new String[values.size()]));
+		}
+
+		if (javaScriptDependenciesFromCDN) {
+			for (Element dependencyElement :
+					portletElement.elements("dependency")) {
+
+				String name = GetterUtil.getString(
+					dependencyElement.elementText("name"));
+
+				String scope = GetterUtil.getString(
+					dependencyElement.elementText("scope"));
+
+				String version = GetterUtil.getString(
+					dependencyElement.elementText("version"));
+
+				portletModel.addPortletDependency(
+					new PortletDependencyImpl(name, scope, version));
+			}
 		}
 
 		portletsMap.put(portletId, portletModel);
@@ -2462,26 +2498,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 				if (versionAttributeParts.length > 1) {
 					portletApp.setSpecMinorVersion(
 						GetterUtil.getInteger(versionAttributeParts[1]));
-				}
-			}
-		}
-
-		portletApp.setSpecMajorVersion(2);
-		portletApp.setSpecMinorVersion(0);
-
-		Attribute specVersion = rootElement.attribute("version");
-
-		if (specVersion != null) {
-			String[] specVersionParts = StringUtil.split(
-				specVersion.getValue(), CharPool.PERIOD);
-
-			if (specVersionParts.length > 0) {
-				portletApp.setSpecMajorVersion(
-					GetterUtil.getInteger(specVersionParts[0], 2));
-
-				if (specVersionParts.length > 1) {
-					portletApp.setSpecMinorVersion(
-						GetterUtil.getInteger(specVersionParts[1]));
 				}
 			}
 		}
@@ -2545,6 +2561,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			portletApp.addPublicRenderParameter(publicRenderParameter);
 		}
 
+		boolean javaScriptDependenciesFromCDN = true;
+
 		for (Element containerRuntimeOptionElement :
 				rootElement.elements("container-runtime-option")) {
 
@@ -2556,7 +2574,14 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			for (Element valueElement :
 					containerRuntimeOptionElement.elements("value")) {
 
-				values.add(valueElement.getTextTrim());
+				String value = valueElement.getTextTrim();
+
+				if ("com.liferay.javaScriptDependenciesFromCDN".equals(name)) {
+					javaScriptDependenciesFromCDN =
+						GetterUtil.getBoolean(value);
+				}
+
+				values.add(value);
 			}
 
 			Map<String, String[]> containerRuntimeOptions =
@@ -2594,7 +2619,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		for (Element portletElement : rootElement.elements("portlet")) {
 			readPortletXML(
 				servletContextName, pluginPackage, portletApp, portletElement,
-				portletsMap, validCustomPortletModes);
+				portletsMap, validCustomPortletModes,
+				javaScriptDependenciesFromCDN);
 		}
 
 		for (Element filterElement : rootElement.elements("filter")) {

@@ -16,7 +16,10 @@ package com.liferay.portlet;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.portal.kernel.model.PortletDependency;
 import com.liferay.portlet.internal.HeaderResponseImpl;
+
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,11 +30,13 @@ import javax.servlet.http.HttpServletResponse;
 public class HeaderResponseFactory {
 
 	public static HeaderResponseImpl create(
-		RenderRequestImpl renderRequestImpl, HttpServletResponse response) {
+		RenderRequestImpl renderRequestImpl, HttpServletResponse response,
+		List<PortletDependency> portletDependencies) {
 
 		HeaderResponseImpl headerResponseImpl = new HeaderResponseImpl();
 
-		headerResponseImpl.init(renderRequestImpl, response);
+		headerResponseImpl.init(
+			renderRequestImpl, response, portletDependencies);
 
 		return headerResponseImpl;
 	}

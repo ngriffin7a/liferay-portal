@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.kernel.xml.SAXReader;
+import com.liferay.portal.model.impl.PortletDependencyImpl;
 import com.liferay.portal.model.impl.PublicRenderParameterImpl;
 import com.liferay.portal.osgi.web.servlet.context.helper.ServletContextHelperFactory;
 import com.liferay.portal.osgi.web.servlet.context.helper.ServletContextHelperRegistration;
@@ -450,6 +451,7 @@ public class PortletTracker
 		collectPortletModes(serviceReference, portletModel);
 		collectPortletPreferences(serviceReference, portletModel);
 		collectResourceBundle(serviceReference, portletModel);
+		collectResourceDependencies(serviceReference, portletModel);
 		collectSecurityRoleRefs(serviceReference, portletModel);
 		collectSupportedProcessingEvents(serviceReference, portletModel);
 		collectSupportedPublicRenderParameters(serviceReference, portletModel);
@@ -738,6 +740,21 @@ public class PortletTracker
 			portletModel.getResourceBundle());
 
 		portletModel.setResourceBundle(resourceBundle);
+	}
+
+	protected void collectResourceDependencies(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		List<String> dependencies = StringPlus.asList(
+			serviceReference.getProperty("javax.portlet.dependency"));
+
+		for (String dependency : dependencies) {
+			String[] parts = StringUtil.split(dependency, CharPool.SEMICOLON);
+
+			portletModel.addPortletDependency(
+				new PortletDependencyImpl(parts[0], parts[1], parts[2]));
+		}
 	}
 
 	protected void collectSecurityRoleRefs(

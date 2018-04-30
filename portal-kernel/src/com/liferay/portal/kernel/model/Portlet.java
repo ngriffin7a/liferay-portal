@@ -79,6 +79,13 @@ public interface Portlet extends PortletModel, PersistedModel {
 		com.liferay.portal.kernel.application.type.ApplicationType applicationType);
 
 	/**
+	* Adds a portlet JS/CSS resource dependency.
+	*
+	* @param portletDependency a portlet JS/CSS resource dependency
+	*/
+	public void addPortletDependency(PortletDependency portletDependency);
+
+	/**
 	* Adds a processing event.
 	*/
 	public void addProcessingEvent(
@@ -197,6 +204,20 @@ public interface Portlet extends PortletModel, PersistedModel {
 	* @return the atom collection adapter instances of the portlet
 	*/
 	public java.util.List<com.liferay.portal.kernel.atom.AtomCollectionAdapter<?>> getAtomCollectionAdapterInstances();
+
+	/**
+	* Returns the CDN path for CSS portlet dependencies.
+	*
+	* @return the CDN path for CSS portlet dependencies
+	*/
+	public java.lang.String getCdnPortletDependencyPathCss();
+
+	/**
+	* Returns the CDN path for JavaScript portlet dependencies.
+	*
+	* @return the CDN path for JavaScript portlet dependencies
+	*/
+	public java.lang.String getCdnPortletDependencyPathJavaScript();
 
 	/**
 	* Returns the names of the parameters that will be automatically propagated
@@ -644,6 +665,13 @@ public interface Portlet extends PortletModel, PersistedModel {
 	* @return the portlet data handler instance of the portlet
 	*/
 	public com.liferay.exportimport.kernel.lar.PortletDataHandler getPortletDataHandlerInstance();
+
+	/**
+	* Returns the list of portlet JS/CSS resource dependencies.
+	*
+	* @return the list of portlet JS/CSS resource dependencies.
+	*/
+	public java.util.List<PortletDependency> getPortletDependencies();
 
 	/**
 	* Returns the filters of the portlet.
@@ -1573,6 +1601,24 @@ public interface Portlet extends PortletModel, PersistedModel {
 	*/
 	public void setAutopropagatedParameters(
 		java.util.Set<String> autopropagatedParameters);
+
+	/**
+	* Sets the CDN path for CSS portlet dependencies.
+	*
+	* @param cdnPortletDependencyPathCss the CDN path for CSS portlet
+	dependencies
+	*/
+	public void setCdnPortletDependencyPathCss(
+		java.lang.String cdnPortletDependencyPathCss);
+
+	/**
+	* Sets the CDN path for JavaScript portlet dependencies.
+	*
+	* @param cdnPortletDependencyPathJavaScript the CDN path for CSS portlet
+	dependencies
+	*/
+	public void setCdnPortletDependencyPathJavaScript(
+		java.lang.String cdnPortletDependencyPathJavaScript);
 
 	/**
 	* Sets the configuration action class of the portlet.

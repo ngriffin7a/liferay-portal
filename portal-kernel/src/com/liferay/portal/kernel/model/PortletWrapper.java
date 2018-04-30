@@ -116,6 +116,16 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	}
 
 	/**
+	* Adds a portlet JS/CSS resource dependency.
+	*
+	* @param portletDependency a portlet JS/CSS resource dependency
+	*/
+	@Override
+	public void addPortletDependency(PortletDependency portletDependency) {
+		_portlet.addPortletDependency(portletDependency);
+	}
+
+	/**
 	* Adds a processing event.
 	*/
 	@Override
@@ -301,6 +311,26 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	@Override
 	public java.util.Set<String> getAutopropagatedParameters() {
 		return _portlet.getAutopropagatedParameters();
+	}
+
+	/**
+	* Returns the CDN path for CSS portlet dependencies.
+	*
+	* @return the CDN path for CSS portlet dependencies
+	*/
+	@Override
+	public java.lang.String getCdnPortletDependencyPathCss() {
+		return _portlet.getCdnPortletDependencyPathCss();
+	}
+
+	/**
+	* Returns the CDN path for JavaScript portlet dependencies.
+	*
+	* @return the CDN path for JavaScript portlet dependencies
+	*/
+	@Override
+	public java.lang.String getCdnPortletDependencyPathJavaScript() {
+		return _portlet.getCdnPortletDependencyPathJavaScript();
 	}
 
 	/**
@@ -942,6 +972,16 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	@Override
 	public com.liferay.exportimport.kernel.lar.PortletDataHandler getPortletDataHandlerInstance() {
 		return _portlet.getPortletDataHandlerInstance();
+	}
+
+	/**
+	* Returns the list of portlet JS/CSS resource dependencies.
+	*
+	* @return the list of portlet JS/CSS resource dependencies.
+	*/
+	@Override
+	public java.util.List<PortletDependency> getPortletDependencies() {
+		return _portlet.getPortletDependencies();
 	}
 
 	/**
@@ -2322,6 +2362,30 @@ public class PortletWrapper implements Portlet, ModelWrapper<Portlet> {
 	@Override
 	public void setCachedModel(boolean cachedModel) {
 		_portlet.setCachedModel(cachedModel);
+	}
+
+	/**
+	* Sets the CDN path for CSS portlet dependencies.
+	*
+	* @param cdnPortletDependencyPathCss the CDN path for CSS portlet
+	dependencies
+	*/
+	@Override
+	public void setCdnPortletDependencyPathCss(
+		java.lang.String cdnPortletDependencyPathCss) {
+		_portlet.setCdnPortletDependencyPathCss(cdnPortletDependencyPathCss);
+	}
+
+	/**
+	* Sets the CDN path for JavaScript portlet dependencies.
+	*
+	* @param cdnPortletDependencyPathJavaScript the CDN path for CSS portlet
+	dependencies
+	*/
+	@Override
+	public void setCdnPortletDependencyPathJavaScript(
+		java.lang.String cdnPortletDependencyPathJavaScript) {
+		_portlet.setCdnPortletDependencyPathJavaScript(cdnPortletDependencyPathJavaScript);
 	}
 
 	/**

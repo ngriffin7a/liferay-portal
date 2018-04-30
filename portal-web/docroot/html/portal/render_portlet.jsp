@@ -161,7 +161,7 @@ boolean renderHeaders = (Boolean)request.getAttribute(WebKeys.RENDER_HEADERS);
 if (renderHeaders) {
 	headerRequestImpl = HeaderRequestFactory.create(request, portlet, invokerPortlet, portletCtx, windowState, portletMode, portletPreferences, plid);
 	portletRequest = headerRequestImpl;
-	headerResponseImpl = HeaderResponseFactory.create(headerRequestImpl, bufferCacheServletResponse);
+	headerResponseImpl = HeaderResponseFactory.create(headerRequestImpl, bufferCacheServletResponse, portlet.getPortletDependencies());
 	mimeResponse = headerResponseImpl;
 	headerRequestImpl.defineObjects(portletConfig, headerResponseImpl);
 	responseContentType = headerRequestImpl.getResponseContentType();

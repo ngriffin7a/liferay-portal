@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletDependency;
 import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -30,7 +31,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.xml.StAXReaderUtil;
 import com.liferay.portlet.MimeResponseImpl;
-import com.liferay.portlet.PortletURLImpl;
+import com.liferay.portlet.PortletRequestImpl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,19 +40,16 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 
-import java.lang.reflect.Constructor;
-
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.HeaderRequest;
 import javax.portlet.HeaderResponse;
-import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -84,10 +82,15 @@ public class HeaderResponseImpl
 		ThemeDisplay themeDisplay = (ThemeDisplay)
 			portletRequestImpl.getAttribute(WebKeys.THEME_DISPLAY);
 
-		ClientDependency clientDependency = new ClientDependency(
-			themeDisplay.getCDNBaseURL(), name, scope, version, markup);
+		Portlet portlet = getPortlet();
 
-		_addMarkupToHead(name, scope, version, clientDependency.toString());
+		PortletDependencyURL portletDependencyURL = new PortletDependencyURL(
+			themeDisplay.getCDNBaseURL(),
+			portlet.getCdnPortletDependencyPathCss(),
+			portlet.getCdnPortletDependencyPathJavaScript(), name, scope,
+			version, markup);
+
+		_addMarkupToHead(name, scope, version, portletDependencyURL.toString());
 	}
 
 	@Override
@@ -154,6 +157,21 @@ public class HeaderResponseImpl
 		_calledGetWriter = true;
 
 		return _printWriter;
+	}
+
+	public void init(
+		PortletRequestImpl portletRequestImpl, HttpServletResponse response,
+		List<PortletDependency> portletDependencies) {
+
+		super.init(portletRequestImpl, response);
+
+		if (portletDependencies != null) {
+			for (PortletDependency portletDependency : portletDependencies) {
+				addDependency(
+					portletDependency.getName(), portletDependency.getScope(),
+					portletDependency.getVersion());
+			}
+		}
 	}
 
 	@Override
@@ -391,10 +409,7 @@ public class HeaderResponseImpl
 	private boolean _calledFlushBuffer;
 	private boolean _calledGetPortletOutputStream;
 	private boolean _calledGetWriter;
-	private final Map<String, Constructor<? extends PortletURLImpl>> _constructors =
-		new ConcurrentHashMap<>();
 	private OutputStream _portletOutputStream;
-	private PortletPreferences _portletSetup;
 	private PrintWriter _printWriter;
 	private String _title;
 	private Boolean _useDefaultTemplate;

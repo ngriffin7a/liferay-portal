@@ -21,13 +21,15 @@ import com.liferay.portal.kernel.util.Validator;
 /**
  * @author Neil Griffin
  */
-public class ClientDependency {
+public class PortletDependencyURL {
 
-	public ClientDependency(
-		String cdnBaseURL, String name, String scope, String version,
-		String markup) {
+	public PortletDependencyURL(
+		String cdnBaseURL, String cdnCssPath, String cdnJavaScriptPath,
+		String name, String scope, String version, String markup) {
 
 		_cdnBaseURL = cdnBaseURL;
+		_cdnCssPath = cdnCssPath;
+		_cdnJavaScriptPath = cdnJavaScriptPath;
 		_name = name;
 		_scope = scope;
 		_version = version;
@@ -39,20 +41,20 @@ public class ClientDependency {
 		if (Validator.isNull(_markup)) {
 			StringBundler sb = new StringBundler(8);
 
-			if (_name.endsWith(".js")) {
-				sb.append("<script ");
-				sb.append("src=\"");
-				sb.append(_getPortalURL("js"));
-				sb.append("\" type=\"text/javascript\"></script>");
-			}
-			else if (_name.endsWith(".css")) {
+			if (_name.endsWith(".css")) {
 				sb.append("<link ");
 				sb.append("href=\"");
-				sb.append(_getPortalURL("css"));
+				sb.append(_getPortalURL(Type.CSS));
 				sb.append("\" type=\"text/css\"></link>");
 			}
+			else if (_name.endsWith(".js")) {
+				sb.append("<script ");
+				sb.append("src=\"");
+				sb.append(_getPortalURL(Type.JAVASCRIPT));
+				sb.append("\" type=\"text/javascript\"></script>");
+			}
 			else {
-				sb.append("<!-- Unknown client dependency type ");
+				sb.append("<!-- Unknown portlet resource dependency type ");
 				sb.append("name=\"");
 				sb.append(_name);
 				sb.append("\" scope=\"");
@@ -68,16 +70,27 @@ public class ClientDependency {
 		return _markup;
 	}
 
-	private String _getPortalURL(String type) {
-		StringBundler sb = new StringBundler(7);
+	private String _getPortalURL(Type type) {
+		StringBundler sb = new StringBundler(9);
 
 		sb.append(_cdnBaseURL);
 		sb.append(StringPool.FORWARD_SLASH);
-		sb.append(type);
+
+		if (type.equals(Type.CSS)) {
+			sb.append(_cdnCssPath);
+		}
+		else if (type.equals(Type.JAVASCRIPT)) {
+			sb.append(_cdnJavaScriptPath);
+		}
 
 		if (Validator.isNotNull(_scope)) {
 			sb.append(StringPool.FORWARD_SLASH);
 			sb.append(_scope);
+		}
+
+		if (Validator.isNotNull(_version)) {
+			sb.append(StringPool.FORWARD_SLASH);
+			sb.append(_version);
 		}
 
 		sb.append(StringPool.FORWARD_SLASH);
@@ -87,9 +100,17 @@ public class ClientDependency {
 	}
 
 	private final String _cdnBaseURL;
+	private final String _cdnCssPath;
+	private final String _cdnJavaScriptPath;
 	private final String _markup;
 	private final String _name;
 	private final String _scope;
 	private final String _version;
+
+	private enum Type {
+
+		CSS, JAVASCRIPT
+
+	}
 
 }
