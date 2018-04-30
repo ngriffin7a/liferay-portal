@@ -55,16 +55,6 @@ page import="javax.portlet.PortletURL" %>
 <portlet:defineObjects />
 
 <%
-PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstants.JAVAX_PORTLET_REQUEST);
-
-PortletResponse portletResponse = (PortletResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
-
-String namespace = AUIUtil.getNamespace(portletRequest, portletResponse);
-
-if (Validator.isNull(namespace)) {
-	namespace = AUIUtil.getNamespace(request);
-}
-
 String currentURL = null;
 
 if ((portletRequest != null) && (portletResponse != null)) {

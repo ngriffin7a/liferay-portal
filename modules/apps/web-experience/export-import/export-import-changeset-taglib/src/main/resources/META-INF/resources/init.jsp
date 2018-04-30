@@ -66,10 +66,6 @@ page import="javax.portlet.PortletURL" %>
 <portlet:defineObjects />
 
 <%
-PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstants.JAVAX_PORTLET_REQUEST);
-
-PortletResponse portletResponse = (PortletResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
-
 if ((portletRequest == null) || (portletResponse == null)) {
 	currentURL = PortalUtil.getCurrentURL(request);
 }
