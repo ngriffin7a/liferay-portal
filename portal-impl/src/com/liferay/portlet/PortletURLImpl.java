@@ -1223,10 +1223,6 @@ public class PortletURLImpl
 		}
 	}
 
-	protected String processValue(Key key, int value) {
-		return processValue(key, String.valueOf(value));
-	}
-
 	protected String processValue(Key key, long value) {
 		return processValue(key, String.valueOf(value));
 	}
