@@ -63,7 +63,6 @@ import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistration;
 import com.liferay.util.JS;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -163,13 +162,35 @@ public class PortletHotDeployListener extends BaseHotDeployListener {
 
 		String servletContextName = servletContext.getServletContextName();
 
+		Set<String> beanPortletIds = (Set<String>)servletContext.getAttribute(
+			"com.liferay.beanPortletIds");
+
+		Set<String> beanFilterNames = (Set<String>)servletContext.getAttribute(
+			"com.liferay.beanFilterNames");
+
+		if ((beanPortletIds != null) || (beanFilterNames != null)) {
+			if ((beanFilterNames != null) && _log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						String.valueOf(beanFilterNames.size()),
+						" bean filters for ", servletContextName,
+						" are available for use"));
+			}
+
+			if ((beanPortletIds != null) && _log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						String.valueOf(beanPortletIds.size()),
+						" bean portlets for ", servletContextName,
+						" are available for use"));
+			}
+
+			return;
+		}
+
 		if (_log.isDebugEnabled()) {
 			_log.debug("Invoking deploy for " + servletContextName);
 		}
-
-		Set<String> beanPortletIds =
-			(Set<String>)servletContext.getAttribute(
-				"com.liferay.beanPortletIds");
 
 		String[] xmls = {
 			HttpUtil.URLtoString(
@@ -183,19 +204,12 @@ public class PortletHotDeployListener extends BaseHotDeployListener {
 			HttpUtil.URLtoString(servletContext.getResource("/WEB-INF/web.xml"))
 		};
 
-		if ((xmls[0] == null) && (xmls[1] == null) && (beanPortletIds != null)) {
+		if ((xmls[0] == null) && (xmls[1] == null)) {
 			return;
 		}
 
 		if (_log.isInfoEnabled()) {
-
-			if (beanPortletIds == null) {
-				_log.info("Registering portlets for " + servletContextName);
-			}
-			else {
-				_log.info("Registering bean portlets for " +
-					 servletContextName);
-			}
+			_log.info("Registering portlets for " + servletContextName);
 		}
 
 		PortletContextBag portletContextBag = new PortletContextBag(
@@ -203,21 +217,9 @@ public class PortletHotDeployListener extends BaseHotDeployListener {
 
 		PortletContextBagPool.put(servletContextName, portletContextBag);
 
-		List<Portlet> portlets;
-
-		if (beanPortletIds == null) {
-			portlets = PortletLocalServiceUtil.initWAR(
-				servletContextName, servletContext, xmls,
-				hotDeployEvent.getPluginPackage());
-		}
-		else {
-			portlets = new ArrayList<>();
-
-			for (String beanPortletId: beanPortletIds) {
-				portlets.add(
-					PortletLocalServiceUtil.getPortletById(beanPortletId));
-			}
-		}
+		List<Portlet> portlets = PortletLocalServiceUtil.initWAR(
+			servletContextName, servletContext, xmls,
+			hotDeployEvent.getPluginPackage());
 
 		boolean portletAppInitialized = false;
 
@@ -566,9 +568,8 @@ public class PortletHotDeployListener extends BaseHotDeployListener {
 			PortletURLListenerFactory.destroy(portletURLListener);
 		}
 
-		Set<String> beanPortletIds =
-			(Set<String>)servletContext.getAttribute(
-				"com.liferay.beanPortletIds");
+		Set<String> beanPortletIds = (Set<String>)servletContext.getAttribute(
+			"com.liferay.beanPortletIds");
 
 		if (beanPortletIds == null) {
 			PortletInstanceFactoryUtil.destroy(portlet);
