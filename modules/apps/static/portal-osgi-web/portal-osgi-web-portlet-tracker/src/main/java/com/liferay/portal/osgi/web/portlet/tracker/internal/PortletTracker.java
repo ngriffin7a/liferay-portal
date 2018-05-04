@@ -30,10 +30,12 @@ import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.EventDefinition;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletCategory;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletInfo;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
+import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactory;
@@ -406,6 +408,69 @@ public class PortletTracker
 		com.liferay.portal.kernel.model.Portlet portletModel) {
 	}
 
+	protected void collectContainerRuntimeOptions(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		PortletApp portletApp = portletModel.getPortletApp();
+
+		Map<String, String[]> containerRuntimeOptionsMap =
+			portletApp.getContainerRuntimeOptions();
+
+		List<String> containerRuntimeOptions = StringPlus.asList(
+			serviceReference.getProperty(
+				"javax.portlet.container-runtime-option"));
+
+		for (String containerRuntimeOption : containerRuntimeOptions) {
+			String name = containerRuntimeOption;
+			String[] parts = StringUtil.split(
+				containerRuntimeOption, StringPool.SEMICOLON);
+
+			if (parts.length == 2) {
+				name = parts[0];
+			}
+
+			containerRuntimeOptionsMap.remove(name);
+		}
+
+		for (String containerRuntimeOption : containerRuntimeOptions) {
+			String name = containerRuntimeOption;
+			String value = null;
+			String[] parts = StringUtil.split(
+				containerRuntimeOption, StringPool.SEMICOLON);
+
+			if (parts.length == 2) {
+				name = parts[0];
+				value = parts[1];
+			}
+
+			String[] values = containerRuntimeOptionsMap.get(name);
+
+			if (values == null) {
+				values = new String[] {value};
+			}
+			else {
+				values = ArrayUtil.append(values, value);
+			}
+
+			String containerRuntimeOptionPrefix =
+				LiferayPortletConfig.class.getName();
+
+			String portletName = portletModel.getPortletName();
+
+			if (portletName.contains(PortletConstants.WAR_SEPARATOR)) {
+				portletName = portletName.substring(
+					0, portletName.indexOf(PortletConstants.WAR_SEPARATOR));
+			}
+
+			containerRuntimeOptionPrefix = containerRuntimeOptionPrefix.concat(
+				portletName);
+
+			containerRuntimeOptionsMap.put(
+				containerRuntimeOptionPrefix.concat(name), values);
+		}
+	}
+
 	protected void collectExpirationCache(
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.kernel.model.Portlet portletModel) {
@@ -445,6 +510,7 @@ public class PortletTracker
 
 		collectApplicationTypes(serviceReference, portletModel);
 		collectCacheScope(serviceReference, portletModel);
+		collectContainerRuntimeOptions(serviceReference, portletModel);
 		collectExpirationCache(serviceReference, portletModel);
 		collectInitParams(serviceReference, portletModel);
 		collectPortletInfo(serviceReference, portletModel);
@@ -746,14 +812,36 @@ public class PortletTracker
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.kernel.model.Portlet portletModel) {
 
-		List<String> dependencies = StringPlus.asList(
-			serviceReference.getProperty("javax.portlet.dependency"));
+		PortletApp portletApp = portletModel.getPortletApp();
 
-		for (String dependency : dependencies) {
-			String[] parts = StringUtil.split(dependency, CharPool.SEMICOLON);
+		Map<String, String[]> containerRuntimeOptions =
+			portletApp.getContainerRuntimeOptions();
 
-			portletModel.addPortletDependency(
-				new PortletDependencyImpl(parts[0], parts[1], parts[2]));
+		boolean javaScriptDependenciesFromCDN = true;
+
+		String[] containerRuntimeOptionValues = containerRuntimeOptions.get(
+			"com.liferay.javaScriptDependenciesFromCDN");
+
+		if (containerRuntimeOptionValues != null) {
+			for (String containerRuntimeOptionValue :
+					containerRuntimeOptionValues) {
+
+				javaScriptDependenciesFromCDN = GetterUtil.getBoolean(
+					containerRuntimeOptionValue);
+			}
+		}
+
+		if (javaScriptDependenciesFromCDN) {
+			List<String> dependencies = StringPlus.asList(
+				serviceReference.getProperty("javax.portlet.dependency"));
+
+			for (String dependency : dependencies) {
+				String[] parts = StringUtil.split(
+					dependency, CharPool.SEMICOLON);
+
+				portletModel.addPortletDependency(
+					new PortletDependencyImpl(parts[0], parts[1], parts[2]));
+			}
 		}
 	}
 
