@@ -17,8 +17,6 @@
 <%@ include file="/layouts_tree/init.jsp" %>
 
 <%
-String namespace = AUIUtil.getNamespace(liferayPortletRequest, liferayPortletResponse);
-
 boolean checkContentDisplayPage = GetterUtil.getBoolean((String)request.getAttribute("liferay-layout:layouts-tree:checkContentDisplayPage"));
 String checkedNodes = (String)request.getAttribute("liferay-layout:layouts-tree:checkedNodes");
 boolean defaultStateChecked = GetterUtil.getBoolean((String)request.getAttribute("liferay-layout:layouts-tree:defaultStateChecked"));
