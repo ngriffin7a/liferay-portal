@@ -86,11 +86,22 @@ public class HeaderResponseImpl
 
 		PortletDependencyURL portletDependencyURL = new PortletDependencyURL(
 			themeDisplay.getCDNBaseURL(),
-			portlet.getCdnPortletDependencyPathCss(),
-			portlet.getCdnPortletDependencyPathJavaScript(), name, scope,
+			portlet.getCdnPortletCssDependenciesPath(),
+			portlet.getCdnPortletJavaScriptDependenciesPath(), name, scope,
 			version, markup);
 
-		_addMarkupToHead(name, scope, version, portletDependencyURL.toString());
+		if ((PortletDependencyURL.Type.CSS.equals(
+				portletDependencyURL.getType()) &&
+			 portlet.isCdnPortletCssDependenciesEnabled()) ||
+			(PortletDependencyURL.Type.JAVASCRIPT.equals(
+			portletDependencyURL.getType()) &&
+			 portlet.isCdnPortletJavaScriptDependenciesEnabled()) ||
+			PortletDependencyURL.Type.OTHER.equals(
+			portletDependencyURL.getType())) {
+
+			_addMarkupToHead(
+				name, scope, version, portletDependencyURL.toString());
+		}
 	}
 
 	@Override
@@ -384,7 +395,7 @@ public class HeaderResponseImpl
 		String scope = getNamespace();
 		Portlet portlet = getPortlet();
 
-		String version = Long.toString(portlet.getMvccVersion());
+		String version = String.valueOf(portlet.getMvccVersion());
 
 		try {
 			if (_portletOutputStream != null) {

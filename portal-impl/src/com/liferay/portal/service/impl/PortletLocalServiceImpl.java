@@ -2031,15 +2031,15 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			GetterUtil.getBoolean(
 				portletElement.elementText("include"),
 				portletModel.isInclude()));
-		portletModel.setCdnPortletDependencyPathCss(
+		portletModel.setCdnPortletCssDependenciesPath(
 			GetterUtil.getString(
 				portletElement.elementText("cdn-portlet-dependency-path-css"),
-				portletModel.getCdnPortletDependencyPathCss()));
-		portletModel.setCdnPortletDependencyPathJavaScript(
+				portletModel.getCdnPortletCssDependenciesPath()));
+		portletModel.setCdnPortletJavaScriptDependenciesPath(
 			GetterUtil.getString(
 				portletElement.elementText(
 					"cdn-portlet-dependency-path-javascript"),
-				portletModel.getCdnPortletDependencyPathJavaScript()));
+				portletModel.getCdnPortletJavaScriptDependenciesPath()));
 
 		if (Validator.isNull(servletContextName)) {
 			portletModel.setReady(true);
@@ -2117,8 +2117,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			String servletContextName, PluginPackage pluginPackage,
 			PortletApp portletApp, Element portletElement,
 			Map<String, Portlet> portletsMap,
-			Set<String> validCustomPortletModes,
-			boolean javaScriptDependenciesFromCDN)
+			Set<String> validCustomPortletModes)
 		throws PortletIdException {
 
 		String portletName = portletElement.elementText("portlet-name");
@@ -2427,11 +2426,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 				String value = valueElement.getTextTrim();
 
-				if ("com.liferay.javaScriptDependenciesFromCDN".equals(name)) {
-					javaScriptDependenciesFromCDN =
-						GetterUtil.getBoolean(value);
-				}
-
 				values.add(value);
 			}
 
@@ -2440,23 +2434,25 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 				values.toArray(new String[values.size()]));
 		}
 
-		if (javaScriptDependenciesFromCDN) {
-			for (Element dependencyElement :
-					portletElement.elements("dependency")) {
+		for (Element dependencyElement :
+				portletElement.elements("dependency")) {
 
-				String name = GetterUtil.getString(
-					dependencyElement.elementText("name"));
+			String name = GetterUtil.getString(
+				dependencyElement.elementText("name"));
 
-				String scope = GetterUtil.getString(
-					dependencyElement.elementText("scope"));
+			String scope = GetterUtil.getString(
+				dependencyElement.elementText("scope"));
 
-				String version = GetterUtil.getString(
-					dependencyElement.elementText("version"));
+			String version = GetterUtil.getString(
+				dependencyElement.elementText("version"));
 
-				portletModel.addPortletDependency(
-					new PortletDependencyImpl(name, scope, version));
-			}
+			portletModel.addPortletDependency(
+				new PortletDependencyImpl(name, scope, version));
 		}
+
+		portletModel.setAsyncSupported(
+			GetterUtil.getBoolean(
+				portletElement.elementText("async-supported")));
 
 		portletsMap.put(portletId, portletModel);
 	}
@@ -2561,8 +2557,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			portletApp.addPublicRenderParameter(publicRenderParameter);
 		}
 
-		boolean javaScriptDependenciesFromCDN = true;
-
 		for (Element containerRuntimeOptionElement :
 				rootElement.elements("container-runtime-option")) {
 
@@ -2575,11 +2569,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 					containerRuntimeOptionElement.elements("value")) {
 
 				String value = valueElement.getTextTrim();
-
-				if ("com.liferay.javaScriptDependenciesFromCDN".equals(name)) {
-					javaScriptDependenciesFromCDN =
-						GetterUtil.getBoolean(value);
-				}
 
 				values.add(value);
 			}
@@ -2619,8 +2608,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		for (Element portletElement : rootElement.elements("portlet")) {
 			readPortletXML(
 				servletContextName, pluginPackage, portletApp, portletElement,
-				portletsMap, validCustomPortletModes,
-				javaScriptDependenciesFromCDN);
+				portletsMap, validCustomPortletModes);
 		}
 
 		for (Element filterElement : rootElement.elements("filter")) {

@@ -122,10 +122,14 @@ public class PortletImpl extends PortletBaseImpl {
 		_assetRendererFactoryClasses = new ArrayList<>();
 		_atomCollectionAdapterClasses = new ArrayList<>();
 		_autopropagatedParameters = new LinkedHashSet<>();
-		_cdnPortletDependencyPathCss =
-			PropsValues.CDN_PORTLET_DEPENDENCY_PATH_CSS;
-		_cdnPortletDependencyPathJavaScript =
-			PropsValues.CDN_PORTLET_DEPENDENCY_PATH_JAVASCRIPT;
+		_cdnPortletCssDependenciesEnabled =
+			PropsValues.CDN_PORTLET_CSS_DEPENDENCIES_ENABLED;
+		_cdnPortletCssDependenciesPath =
+			PropsValues.CDN_PORTLET_CSS_DEPENDENCIES_PATH;
+		_cdnPortletJavaScriptDependenciesEnabled =
+			PropsValues.CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_ENABLED;
+		_cdnPortletJavaScriptDependenciesPath =
+			PropsValues.CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_PATH;
 		_customAttributesDisplayClasses = new ArrayList<>();
 		_footerPortalCss = new ArrayList<>();
 		_footerPortalJavaScript = new ArrayList<>();
@@ -198,8 +202,10 @@ public class PortletImpl extends PortletBaseImpl {
 		List<String> footerPortletJavaScript, String cssClassWrapper,
 		boolean addDefaultResource, String roles, Set<String> unlinkedRoles,
 		Map<String, String> roleMappers, boolean system, boolean active,
-		boolean include, String cdnPortletDependencyPathCss,
-		String cdnPortletDependencyPathJavaScript,
+		boolean include, boolean cdnPortletCssDependenciesEnabled,
+		String cdnPortletCssDependenciesPath,
+		boolean cdnPortletJavaScriptDependenciesEnabled,
+		String cdnPortletJavaScriptDependenciesPath,
 		Map<String, String> initParams, Integer expCache,
 		Map<String, Set<String>> portletModes,
 		Map<String, Set<String>> windowStates, Set<String> supportedLocales,
@@ -299,9 +305,12 @@ public class PortletImpl extends PortletBaseImpl {
 		_roleMappers = roleMappers;
 		_system = system;
 		_include = include;
-		_cdnPortletDependencyPathCss = cdnPortletDependencyPathCss;
-		_cdnPortletDependencyPathJavaScript =
-			cdnPortletDependencyPathJavaScript;
+		_cdnPortletCssDependenciesEnabled = cdnPortletCssDependenciesEnabled;
+		_cdnPortletCssDependenciesPath = cdnPortletCssDependenciesPath;
+		_cdnPortletJavaScriptDependenciesEnabled =
+			cdnPortletJavaScriptDependenciesEnabled;
+		_cdnPortletJavaScriptDependenciesPath =
+			cdnPortletJavaScriptDependenciesPath;
 		_initParams = initParams;
 		_expCache = expCache;
 		_portletModes = portletModes;
@@ -434,8 +443,8 @@ public class PortletImpl extends PortletBaseImpl {
 			getFooterPortalJavaScript(), getFooterPortletJavaScript(),
 			getCssClassWrapper(), isAddDefaultResource(), getRoles(),
 			getUnlinkedRoles(), getRoleMappers(), isSystem(), isActive(),
-			isInclude(), getCdnPortletDependencyPathCss(),
-			getCdnPortletDependencyPathJavaScript(), getInitParams(),
+			isInclude(), isCdnPortletCssDependenciesEnabled(),
+			getCdnPortletCssDependenciesPath(),isCdnPortletJavaScriptDependenciesEnabled(), getCdnPortletJavaScriptDependenciesPath(), getInitParams(),
 			getExpCache(), getPortletModes(), getWindowStates(),
 			getSupportedLocales(), getResourceBundle(), getPortletInfo(),
 			getPortletFilters(), getProcessingEvents(), getPublishingEvents(),
@@ -657,8 +666,8 @@ public class PortletImpl extends PortletBaseImpl {
 	 *
 	 * @return the CDN path for CSS portlet dependencies
 	 */
-	public String getCdnPortletDependencyPathCss() {
-		return _cdnPortletDependencyPathCss;
+	public String getCdnPortletCssDependenciesPath() {
+		return _cdnPortletCssDependenciesPath;
 	}
 
 	/**
@@ -666,8 +675,8 @@ public class PortletImpl extends PortletBaseImpl {
 	 *
 	 * @return the CDN path for JavaScript portlet dependencies
 	 */
-	public String getCdnPortletDependencyPathJavaScript() {
-		return _cdnPortletDependencyPathJavaScript;
+	public String getCdnPortletJavaScriptDependenciesPath() {
+		return _cdnPortletJavaScriptDependenciesPath;
 	}
 
 	/**
@@ -2503,6 +2512,44 @@ public class PortletImpl extends PortletBaseImpl {
 		return _ajaxable;
 	}
 
+	/**
+	 * Returns <code>true</code> if the portlet supports asynchronous processing
+	 * in resource requests.
+	 *
+	 * @return <code>true</code> if the portlet supports asynchrounous
+	 *         processing in resource requests
+	 */
+	@Override
+	public boolean isAsyncSupported() {
+		return _asyncSupported;
+	}
+
+	/**
+	 * Returns <code>true</code> if CSS resource dependencies added via
+	 * portlet.xml, @Dependency, or HeaderResponse.addDependency are to be added
+	 * to the head of the portal page.
+	 *
+	 * @return <code>true</code> if CSS resource dependencies added via
+	 * portlet.xml, @Dependency, or HeaderResponse.addDependency are to be added
+	 * to the head of the portal page
+	 */
+	public boolean isCdnPortletCssDependenciesEnabled() {
+		return _cdnPortletCssDependenciesEnabled;
+	}
+
+	/**
+	 * Returns <code>true</code> if JavaScript resource dependencies added via
+	 * portlet.xml, @Dependency, or HeaderResponse.addDependency are to be added
+	 * to the head of the portal page.
+	 *
+	 * @return <code>true</code> if JavaScript resource dependencies added via
+	 * portlet.xml, @Dependency, or HeaderResponse.addDependency are to be added
+	 * to the head of the portal page
+	 */
+	public boolean isCdnPortletJavaScriptDependenciesEnabled() {
+		return _cdnPortletJavaScriptDependenciesEnabled;
+	}
+
 	@Override
 	public boolean isFullPageDisplayable() {
 		return _applicationTypes.contains(
@@ -2911,6 +2958,18 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Set to <code>true</code> if the portlet supports asynchronous processing
+	 * in resource requests.
+	 *
+	 * @param asyncSupported boolean value for whether the portlet supports
+	 *        asynchronous processing in resource requests
+	 */
+	@Override
+	public void setAsyncSupported(boolean asyncSupported) {
+		_asyncSupported = asyncSupported;
+	}
+
+	/**
 	 * Sets the names of the classes that represent atom collection adapters
 	 * associated with the portlet.
 	 *
@@ -2939,28 +2998,61 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Set to <code>true</code> if the CSS resource dependencies added via
+	 * portlet.xml, @Dependency, or HeaderResponse.addDependency are to be added
+	 * to the head of the portal page.
+	 *
+	 * @param cdnPortletCssDependenciesEnabled boolean value for whether the
+	 *        CSS resource dependencies added via portlet.xml, @Dependency, or
+	 *        HeaderResponse.addDependency are to be added to the head of the
+	 *        portal page
+	 */
+	public void setCdnPortletCssDependenciesEnabled(
+		boolean cdnPortletCssDependenciesEnabled) {
+
+		_cdnPortletCssDependenciesEnabled = cdnPortletCssDependenciesEnabled;
+	}
+
+	/**
 	 * Sets the CDN path for CSS portlet dependencies.
 	 *
-	 * @param cdnPortletDependencyPathCss the CDN path for CSS portlet
+	 * @param cdnPortletCssDependenciesPath the CDN path for CSS portlet
 	 *        dependencies
 	 */
-	public void setCdnPortletDependencyPathCss(
-		String cdnPortletDependencyPathCss) {
+	public void setCdnPortletCssDependenciesPath(
+		String cdnPortletCssDependenciesPath) {
 
-		_cdnPortletDependencyPathCss = cdnPortletDependencyPathCss;
+		_cdnPortletCssDependenciesPath = cdnPortletCssDependenciesPath;
+	}
+
+	/**
+	 * Set to <code>true</code> if the JavaScript resource dependencies added
+	 * via portlet.xml, @Dependency, or HeaderResponse.addDependency are to be
+	 * added to the head of the portal page.
+	 *
+	 * @param cdnPortletJavaScriptDependenciesEnabled boolean value for whether
+	 *        the JavaScript resource dependencies added via portlet.xml,
+	 *        @Dependency, or HeaderResponse.addDependency are to be added to
+	 *        the head of the portal page
+	 */
+	public void setCdnPortletJavaScriptDependenciesEnabled(
+		boolean cdnPortletJavaScriptDependenciesEnabled) {
+
+		_cdnPortletJavaScriptDependenciesEnabled =
+			cdnPortletJavaScriptDependenciesEnabled;
 	}
 
 	/**
 	 * Sets the CDN path for JavaScript portlet dependencies.
 	 *
-	 * @param cdnPortletDependencyPathJavaScript the CDN path for CSS portlet
+	 * @param cdnPortletJavaScriptDependenciesPath the CDN path for CSS portlet
 	 *        dependencies
 	 */
-	public void setCdnPortletDependencyPathJavaScript(
-		String cdnPortletDependencyPathJavaScript) {
+	public void setCdnPortletJavaScriptDependenciesPath(
+		String cdnPortletJavaScriptDependenciesPath) {
 
-		_cdnPortletDependencyPathJavaScript =
-			cdnPortletDependencyPathJavaScript;
+		_cdnPortletJavaScriptDependenciesPath =
+			cdnPortletJavaScriptDependenciesPath;
 	}
 
 	/**
@@ -4167,6 +4259,12 @@ public class PortletImpl extends PortletBaseImpl {
 	private List<String> _assetRendererFactoryClasses;
 
 	/**
+	 * <code>True</code> if the portlet supports asynchronous processing in
+	 * resource requests.
+	 */
+	private boolean _asyncSupported;
+
+	/**
 	 * The names of the classes that represents atom collection adapters
 	 * associated with the portlet.
 	 */
@@ -4179,14 +4277,28 @@ public class PortletImpl extends PortletBaseImpl {
 	private Set<String> _autopropagatedParameters;
 
 	/**
+	 * <code>True</code> if CSS resource dependencies added via portlet.xml,
+	 * @Dependency, or HeaderResponse.addDependency are to be added to the head
+	 * of the portal page.
+	 */
+	private boolean _cdnPortletCssDependenciesEnabled;
+
+	/**
 	 * The CDN path for CSS portlet dependencies.
 	 */
-	private String _cdnPortletDependencyPathCss;
+	private String _cdnPortletCssDependenciesPath;
+
+	/**
+	 * <code>True</code> if JavaScript resource dependencies added via
+	 * portlet.xml, @Dependency, or HeaderResponse.addDependency are to be added
+	 * to the head of the portal page.
+	 */
+	private boolean _cdnPortletJavaScriptDependenciesEnabled;
 
 	/**
 	 * The CDN path for JavaScript portlet dependencies.
 	 */
-	private String _cdnPortletDependencyPathJavaScript;
+	private String _cdnPortletJavaScriptDependenciesPath;
 
 	/**
 	 * The configuration action class of the portlet.

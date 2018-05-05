@@ -34,6 +34,20 @@ public class PortletDependencyURL {
 		_scope = scope;
 		_version = version;
 		_markup = markup;
+
+		if (_name.endsWith(".css")) {
+			_type = Type.CSS;
+		}
+		else if (_name.endsWith(".js")) {
+			_type = Type.JAVASCRIPT;
+		}
+		else {
+			_type = Type.OTHER;
+		}
+	}
+
+	public Type getType() {
+		return _type;
 	}
 
 	@Override
@@ -41,16 +55,16 @@ public class PortletDependencyURL {
 		if (Validator.isNull(_markup)) {
 			StringBundler sb = new StringBundler(8);
 
-			if (_name.endsWith(".css")) {
+			if (_type.equals(Type.CSS)) {
 				sb.append("<link ");
 				sb.append("href=\"");
-				sb.append(_getPortalURL(Type.CSS));
+				sb.append(_getPortalURL());
 				sb.append("\" type=\"text/css\"></link>");
 			}
-			else if (_name.endsWith(".js")) {
+			else if (_type.equals(Type.JAVASCRIPT)) {
 				sb.append("<script ");
 				sb.append("src=\"");
-				sb.append(_getPortalURL(Type.JAVASCRIPT));
+				sb.append(_getPortalURL());
 				sb.append("\" type=\"text/javascript\"></script>");
 			}
 			else {
@@ -70,16 +84,25 @@ public class PortletDependencyURL {
 		return _markup;
 	}
 
-	private String _getPortalURL(Type type) {
+	/**
+	 * @author Neil Griffin
+	 */
+	public enum Type {
+
+		CSS, JAVASCRIPT, OTHER
+
+	}
+
+	private String _getPortalURL() {
 		StringBundler sb = new StringBundler(9);
 
 		sb.append(_cdnBaseURL);
 		sb.append(StringPool.FORWARD_SLASH);
 
-		if (type.equals(Type.CSS)) {
+		if (_type.equals(Type.CSS)) {
 			sb.append(_cdnCssPath);
 		}
-		else if (type.equals(Type.JAVASCRIPT)) {
+		else if (_type.equals(Type.JAVASCRIPT)) {
 			sb.append(_cdnJavaScriptPath);
 		}
 
@@ -105,12 +128,7 @@ public class PortletDependencyURL {
 	private final String _markup;
 	private final String _name;
 	private final String _scope;
+	private final Type _type;
 	private final String _version;
-
-	private enum Type {
-
-		CSS, JAVASCRIPT
-
-	}
 
 }

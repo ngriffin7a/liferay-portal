@@ -380,9 +380,13 @@ public class PropsValues {
 
 	public static final String CDN_HOST_HTTPS = PropsUtil.get(PropsKeys.CDN_HOST_HTTPS);
 
-	public static final String CDN_PORTLET_DEPENDENCY_PATH_CSS = PropsUtil.get(PropsKeys.CDN_PORTLET_DEPENDENCY_PATH_CSS);
+	public static final boolean CDN_PORTLET_CSS_DEPENDENCIES_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.CDN_PORTLET_CSS_DEPENDENCIES_ENABLED));
 
-	public static final String CDN_PORTLET_DEPENDENCY_PATH_JAVASCRIPT = PropsUtil.get(PropsKeys.CDN_PORTLET_DEPENDENCY_PATH_JAVASCRIPT);
+	public static final String CDN_PORTLET_CSS_DEPENDENCIES_PATH = PropsUtil.get(PropsKeys.CDN_PORTLET_CSS_DEPENDENCIES_PATH);
+
+	public static final boolean CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_ENABLED));
+
+	public static final String CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_PATH = PropsUtil.get(PropsKeys.CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_PATH);
 
 	public static final boolean CLUSTER_LINK_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.CLUSTER_LINK_ENABLED));
 

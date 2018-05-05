@@ -39,7 +39,9 @@ header-portlet-css*, header-portal-javascript*, header-portlet-javascript*,
 footer-portal-css*, footer-portlet-css*, footer-portal-javascript*,
 footer-portlet-javascript*, css-class-wrapper?, facebook-integration?,
 add-default-resource?, system?, active?, include?,
-cdn-portlet-dependency-path-css?, cdn-portlet-dependency-path-javascript?)>
+cdn-portlet-css-dependencies-enabled?, cdn-portlet-css-dependencies-path?,
+cdn-portlet-javascript-dependencies-enabled?,
+cdn-portlet-javascript-dependencies-path?)>
 
 <!--
 The portlet-name element contains the unique name of the portlet. This name must
@@ -818,17 +820,31 @@ installation and upgrade path.
 <!ELEMENT include (#PCDATA)>
 
 <!--
-Set the path of CSS resources that will be referenced in the page's header
-relative to the CDN host root path. The default value is the value of the
-portal property "
+The default value of cdn-portlet-css-dependencies-enabled is true. If set to
+false, then CSS resource dependencies added via portlet.xml, @Dependency, or
+HeaderResponse.addDependency will not be added to the head of the portal page.
 -->
-<!ELEMENT cdn-portlet-dependency-path-css (#PCDATA)>
+<!ELEMENT cdn-portlet-css-dependencies-enabled (#PCDATA)>
+
+<!--
+Set the path of CSS resources that will be referenced in the page's header
+relative to the CDN host root path.
+-->
+<!ELEMENT cdn-portlet-css-dependencies-path (#PCDATA)>
+
+<!--
+The default value of cdn-portlet-javascript-dependencies-enabled is true. If set
+to false, then JavaScript resource dependencies added via portlet.xml,
+@Dependency, or HeaderResponse.addDependency will not be added to the head of
+the portal page.
+-->
+<!ELEMENT cdn-portlet-javascript-dependencies-enabled (#PCDATA)>
 
 <!--
 Set the path of JavaScript resources that will be referenced in the page's
 header relative to the CDN host root path.
 -->
-<!ELEMENT cdn-portlet-dependency-path-javascript (#PCDATA)>
+<!ELEMENT cdn-portlet-javascript-dependencies-path (#PCDATA)>
 
 <!--
 The role-mapper contains two names specified by role-name and role-link. The

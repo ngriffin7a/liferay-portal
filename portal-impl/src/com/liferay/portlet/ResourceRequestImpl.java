@@ -129,15 +129,18 @@ public class ResourceRequestImpl
 
 	@Override
 	public boolean isAsyncSupported() {
+		Portlet portlet = getPortlet();
 
-		// TODO: portlet3
-
-		return false;
+		return portlet.isAsyncSupported();
 	}
 
 	@Override
 	public PortletAsyncContext startPortletAsync()
 		throws IllegalStateException {
+
+		if (!isAsyncSupported()) {
+			throw new IllegalStateException();
+		}
 
 		_portletAsyncContext = new PortletAsyncContextImpl();
 

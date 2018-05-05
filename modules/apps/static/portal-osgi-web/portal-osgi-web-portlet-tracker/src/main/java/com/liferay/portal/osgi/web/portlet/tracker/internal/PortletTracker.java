@@ -73,6 +73,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -403,6 +404,16 @@ public class PortletTracker
 		portletModel.setApplicationTypes(applicationTypes);
 	}
 
+	protected void collectAsyncSupported(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		boolean asyncSupported = GetterUtil.getBoolean(
+			serviceReference.getProperty("javax.portlet.async-supported"));
+
+		portletModel.setAsyncSupported(asyncSupported);
+	}
+
 	protected void collectCacheScope(
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.kernel.model.Portlet portletModel) {
@@ -509,6 +520,7 @@ public class PortletTracker
 		com.liferay.portal.kernel.model.Portlet portletModel) {
 
 		collectApplicationTypes(serviceReference, portletModel);
+		collectAsyncSupported(serviceReference, portletModel);
 		collectCacheScope(serviceReference, portletModel);
 		collectContainerRuntimeOptions(serviceReference, portletModel);
 		collectExpirationCache(serviceReference, portletModel);
@@ -519,6 +531,7 @@ public class PortletTracker
 		collectResourceBundle(serviceReference, portletModel);
 		collectResourceDependencies(serviceReference, portletModel);
 		collectSecurityRoleRefs(serviceReference, portletModel);
+		collectSupportedLocales(serviceReference, portletModel);
 		collectSupportedProcessingEvents(serviceReference, portletModel);
 		collectSupportedPublicRenderParameters(serviceReference, portletModel);
 		collectSupportedPublishingEvents(serviceReference, portletModel);
@@ -812,36 +825,14 @@ public class PortletTracker
 		ServiceReference<Portlet> serviceReference,
 		com.liferay.portal.kernel.model.Portlet portletModel) {
 
-		PortletApp portletApp = portletModel.getPortletApp();
+		List<String> dependencies = StringPlus.asList(
+			serviceReference.getProperty("javax.portlet.dependency"));
 
-		Map<String, String[]> containerRuntimeOptions =
-			portletApp.getContainerRuntimeOptions();
+		for (String dependency : dependencies) {
+			String[] parts = StringUtil.split(dependency, CharPool.SEMICOLON);
 
-		boolean javaScriptDependenciesFromCDN = true;
-
-		String[] containerRuntimeOptionValues = containerRuntimeOptions.get(
-			"com.liferay.javaScriptDependenciesFromCDN");
-
-		if (containerRuntimeOptionValues != null) {
-			for (String containerRuntimeOptionValue :
-					containerRuntimeOptionValues) {
-
-				javaScriptDependenciesFromCDN = GetterUtil.getBoolean(
-					containerRuntimeOptionValue);
-			}
-		}
-
-		if (javaScriptDependenciesFromCDN) {
-			List<String> dependencies = StringPlus.asList(
-				serviceReference.getProperty("javax.portlet.dependency"));
-
-			for (String dependency : dependencies) {
-				String[] parts = StringUtil.split(
-					dependency, CharPool.SEMICOLON);
-
-				portletModel.addPortletDependency(
-					new PortletDependencyImpl(parts[0], parts[1], parts[2]));
-			}
+			portletModel.addPortletDependency(
+				new PortletDependencyImpl(parts[0], parts[1], parts[2]));
 		}
 	}
 
@@ -870,6 +861,19 @@ public class PortletTracker
 		portletModel.setUnlinkedRoles(unlinkedRoles);
 
 		portletModel.linkRoles();
+	}
+
+	protected void collectSupportedLocales(
+		ServiceReference<Portlet> serviceReference,
+		com.liferay.portal.kernel.model.Portlet portletModel) {
+
+		Set<String> supportedLocales = new LinkedHashSet<>();
+
+		supportedLocales.addAll(StringPlus.asList(
+			serviceReference.getProperty(
+				"javax.portlet.supported-locale")));
+
+		portletModel.setSupportedLocales(supportedLocales);
 	}
 
 	protected void collectSupportedProcessingEvents(

@@ -437,9 +437,13 @@ public interface PropsKeys {
 
 	public static final String CDN_HOST_HTTPS = "cdn.host.https";
 
-	public static final String CDN_PORTLET_DEPENDENCY_PATH_CSS = "cdn.portlet.dependency.path.css";
+	public static final String CDN_PORTLET_CSS_DEPENDENCIES_ENABLED = "cdn.portlet.css.dependencies.enabled";
 
-	public static final String CDN_PORTLET_DEPENDENCY_PATH_JAVASCRIPT = "cdn.portlet.dependency.path.javascript";
+	public static final String CDN_PORTLET_CSS_DEPENDENCIES_PATH = "cdn.portlet.css.dependencies.path";
+
+	public static final String CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_ENABLED = "cdn.portlet.javascript.dependencies.enabled";
+
+	public static final String CDN_PORTLET_JAVASCRIPT_DEPENDENCIES_PATH = "cdn.portlet.javascript.dependencies.path";
 
 	public static final String CLUSTER_LINK_AUTODETECT_ADDRESS = "cluster.link.autodetect.address";
 
