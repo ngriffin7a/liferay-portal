@@ -550,17 +550,10 @@ public class InvokerPortletImpl
 
 			if (response == null) {
 				invokeHeader(headerRequest, headerResponse);
-
-				response = new InvokerPortletResponse(
-					null, bufferCacheServletResponse.getString(),
-					now + Time.SECOND * _expCache.intValue());
-
-				sessionResponses.put(sessionResponseId, response);
 			}
 			else if ((response.getTime() < now) && (_expCache.intValue() > 0)) {
 				invokeHeader(headerRequest, headerResponse);
 				response.setContent(bufferCacheServletResponse.getString());
-				response.setTime(now + Time.SECOND * _expCache.intValue());
 			}
 			else {
 				headerResponseImpl.setTitle(response.getTitle());
