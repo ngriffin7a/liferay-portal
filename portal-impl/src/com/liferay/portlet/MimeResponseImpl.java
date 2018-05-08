@@ -16,6 +16,7 @@ package com.liferay.portlet;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -55,7 +56,10 @@ public abstract class MimeResponseImpl
 
 	@Override
 	public CacheControl getCacheControl() {
-		return new CacheControlImpl(null, 0, false, false, this);
+		Portlet portlet = getPortlet();
+
+		return new CacheControlImpl(
+			null, portlet.getExpCache(), false, false, this);
 	}
 
 	@Override
