@@ -277,6 +277,10 @@ public class PortletTracker
 			BundlePortletApp bundlePortletApp = createBundlePortletApp(
 				bundle, bundleClassLoader, serviceRegistrations);
 
+			bundlePortletApp.setDefaultNamespace(
+				(String)serviceReference.getProperty(
+					"javax.portlet.default-namespace"));
+
 			String jxPortletVersion = (String)serviceReference.getProperty(
 				"javax.portlet.version");
 
@@ -870,8 +874,7 @@ public class PortletTracker
 		Set<String> supportedLocales = new LinkedHashSet<>();
 
 		supportedLocales.addAll(StringPlus.asList(
-			serviceReference.getProperty(
-				"javax.portlet.supported-locale")));
+			serviceReference.getProperty("javax.portlet.supported-locale")));
 
 		portletModel.setSupportedLocales(supportedLocales);
 	}
