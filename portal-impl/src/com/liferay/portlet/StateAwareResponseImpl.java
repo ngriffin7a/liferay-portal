@@ -380,7 +380,7 @@ public abstract class StateAwareResponseImpl
 			}
 		}
 
-		_portletMode = null;
+		_portletMode = PortletMode.UNDEFINED;
 
 		_redirectLocation = null;
 
@@ -393,7 +393,7 @@ public abstract class StateAwareResponseImpl
 			}
 		}
 
-		_windowState = null;
+		_windowState = WindowState.UNDEFINED;
 
 		_calledSetRenderParameter = false;
 	}
@@ -431,10 +431,10 @@ public abstract class StateAwareResponseImpl
 	private Layout _layout;
 	private LiferayMutableRenderParameters _mutableRenderParameters;
 	private final Map<String, String[]> _params = new LinkedHashMap<>();
-	private PortletMode _portletMode;
+	private PortletMode _portletMode = PortletMode.UNDEFINED;
 	private Map<String, String[]> _publicRenderParameters;
 	private String _redirectLocation;
 	private User _user;
-	private WindowState _windowState;
+	private WindowState _windowState = WindowState.UNDEFINED;
 
 }
