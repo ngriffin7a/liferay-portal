@@ -227,7 +227,7 @@ public class HeaderResponseImpl
 		if ((xmlMarkup.startsWith("<link") || xmlMarkup.startsWith("<LINK")) &&
 			!(xmlMarkup.endsWith("</link>") || xmlMarkup.endsWith("</LINK>"))) {
 
-			xmlMarkup += "</link>";
+			xmlMarkup = xmlMarkup.concat("</link>");
 		}
 
 		XMLStreamReader xmlStreamReader = null;
