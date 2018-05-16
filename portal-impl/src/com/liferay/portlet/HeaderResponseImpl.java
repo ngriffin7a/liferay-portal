@@ -453,6 +453,8 @@ public class HeaderResponseImpl
 		@Override
 		public void close() throws IOException {
 			_flush();
+
+			super.close();
 		}
 
 		@Override
@@ -480,6 +482,8 @@ public class HeaderResponseImpl
 		@Override
 		public void flush() {
 			_flush();
+
+			super.flush();
 		}
 
 		@Override
