@@ -458,7 +458,7 @@ public class HeaderResponseImpl
 		@Override
 		public String toString() {
 			try {
-				return new String(toByteArray(), StringPool.UTF8);
+				return toString(getCharacterEncoding());
 			}
 			catch (UnsupportedEncodingException uee) {
 				_log.error(uee, uee);
