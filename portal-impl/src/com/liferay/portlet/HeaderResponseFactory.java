@@ -17,7 +17,6 @@ package com.liferay.portlet;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.model.PortletDependency;
-import com.liferay.portlet.internal.HeaderResponseImpl;
 
 import java.util.List;
 

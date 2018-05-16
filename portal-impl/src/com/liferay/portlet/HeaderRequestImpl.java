@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.internal;
+package com.liferay.portlet;
 
 import com.liferay.portlet.RenderRequestImpl;
 
