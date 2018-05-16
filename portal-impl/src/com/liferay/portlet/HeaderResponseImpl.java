@@ -77,7 +77,7 @@ public class HeaderResponseImpl
 	}
 
 	@Override
-	public void flushBuffer() throws IOException {
+	public void flushBuffer() {
 		if (_printWriter != null) {
 			_printWriter.flush();
 		}
@@ -96,7 +96,7 @@ public class HeaderResponseImpl
 	}
 
 	@Override
-	public OutputStream getPortletOutputStream() throws IOException {
+	public OutputStream getPortletOutputStream() {
 		if (_calledGetWriter) {
 			throw new IllegalStateException(
 				"Unable to obtain OutputStream because Writer is already in " +
@@ -121,7 +121,7 @@ public class HeaderResponseImpl
 	}
 
 	@Override
-	public PrintWriter getWriter() throws IOException {
+	public PrintWriter getWriter() {
 		if (_calledGetPortletOutputStream) {
 			throw new IllegalStateException(
 				"Cannot obtain Writer because OutputStream is already in use");
