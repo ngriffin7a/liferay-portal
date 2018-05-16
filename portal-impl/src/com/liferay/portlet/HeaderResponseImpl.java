@@ -381,40 +381,19 @@ public class HeaderResponseImpl
 
 		@Override
 		public int compareTo(SemVer semVer) {
-			if (_major < semVer.getMajor()) {
-				return -1;
-			}
-			else if (_major > semVer.getMajor()) {
-				return 1;
-			}
+			int result = Integer.compare(_major, semVer._major);
 
-			if (_minor < semVer.getMinor()) {
-				return -1;
-			}
-			else if (_minor > semVer.getMinor()) {
-				return -1;
+			if (result != 0) {
+				return result;
 			}
 
-			if (_micro < semVer.getMicro()) {
-				return -1;
+			result = Integer.compare(_minor, semVer._minor);
+
+			if (result != 0) {
+				return result;
 			}
-			else if (_micro > semVer.getMicro()) {
-				return 1;
-			}
 
-			return 0;
-		}
-
-		public int getMajor() {
-			return _major;
-		}
-
-		public int getMicro() {
-			return _micro;
-		}
-
-		public int getMinor() {
-			return _minor;
+			return Integer.compare(_micro, semVer._micro);
 		}
 
 		private SemVer(String version) {
