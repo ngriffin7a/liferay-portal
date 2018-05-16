@@ -269,8 +269,8 @@ public class HeaderResponseImpl
 				try {
 					xmlStreamReader.close();
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (XMLStreamException xmlse) {
+					_log.error(xmlse, xmlse);
 				}
 			}
 		}
