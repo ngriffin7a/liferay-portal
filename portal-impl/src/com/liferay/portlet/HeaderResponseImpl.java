@@ -16,6 +16,9 @@ package com.liferay.portlet;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
+import com.liferay.petra.io.unsync.UnsyncPrintWriter;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
@@ -33,11 +36,9 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.xml.StAXReaderUtil;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 
 import java.util.Iterator;
@@ -127,13 +128,7 @@ public class HeaderResponseImpl
 		}
 
 		if (_printWriter == null) {
-			if (_bufferSize > 0) {
-				_printWriter = new HeaderPrintWriter(
-					new StringWriter(_bufferSize));
-			}
-			else {
-				_printWriter = new HeaderPrintWriter(new StringWriter());
-			}
+			_printWriter = new HeaderPrintWriter(new UnsyncStringWriter());
 		}
 
 		_calledGetWriter = true;
@@ -453,7 +448,7 @@ public class HeaderResponseImpl
 
 	}
 
-	private class HeaderOutputStream extends ByteArrayOutputStream {
+	private class HeaderOutputStream extends UnsyncByteArrayOutputStream {
 
 		@Override
 		public void close() throws IOException {
@@ -461,7 +456,7 @@ public class HeaderResponseImpl
 		}
 
 		@Override
-		public synchronized String toString() {
+		public String toString() {
 			try {
 				return new String(toByteArray(), StringPool.UTF8);
 			}
@@ -474,12 +469,12 @@ public class HeaderResponseImpl
 
 	}
 
-	private class HeaderPrintWriter extends PrintWriter {
+	private class HeaderPrintWriter extends UnsyncPrintWriter {
 
-		public HeaderPrintWriter(StringWriter stringWriter) {
-			super(stringWriter);
+		public HeaderPrintWriter(UnsyncStringWriter unsyncStringWriter) {
+			super(unsyncStringWriter);
 
-			_stringWriter = stringWriter;
+			_unsyncStringWriter = unsyncStringWriter;
 		}
 
 		@Override
@@ -489,10 +484,10 @@ public class HeaderResponseImpl
 
 		@Override
 		public String toString() {
-			return _stringWriter.toString();
+			return _unsyncStringWriter.toString();
 		}
 
-		private final StringWriter _stringWriter;
+		private final UnsyncStringWriter _unsyncStringWriter;
 
 	}
 
