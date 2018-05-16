@@ -305,7 +305,7 @@ public class HeaderResponseImpl
 			String existingKey = iterator.next();
 
 			String[] existingKeyParts = StringUtil.split(
-				existingKey, StringPool.COLON);
+				existingKey, CharPool.COLON);
 
 			if (existingKeyParts.length == 3) {
 				String existingName = existingKeyParts[0];
