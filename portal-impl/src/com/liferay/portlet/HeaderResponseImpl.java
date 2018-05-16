@@ -214,8 +214,7 @@ public class HeaderResponseImpl
 	}
 
 	private void _addMarkupToHead(
-			String name, String scope, String version, String markup)
-		throws IllegalArgumentException {
+		String name, String scope, String version, String markup) {
 
 		markup = StringUtil.trim(markup);
 
@@ -253,15 +252,17 @@ public class HeaderResponseImpl
 					if (!elementName.equals("script") &&
 						!elementName.equals("link")) {
 
-						throw new IllegalArgumentException(
-							"Invalid markup: " + markup);
+						_log.error("Invalid markup: " + markup);
+
+						return;
 					}
 				}
 			}
 		}
 		catch (XMLStreamException xmlse) {
-			throw new IllegalArgumentException(
-				"Invalid markup: " + markup, xmlse);
+			_log.error("Invalid markup: " + markup, xmlse);
+
+			return;
 		}
 		finally {
 			if (xmlStreamReader != null) {
@@ -349,19 +350,13 @@ public class HeaderResponseImpl
 
 		String version = String.valueOf(portlet.getMvccVersion());
 
-		try {
-			if (_portletOutputStream != null) {
-				_addMarkupToHead(
-					portletName, scope, version,
-					_portletOutputStream.toString());
-			}
-			else if (_printWriter != null) {
-				_addMarkupToHead(
-					portletName, scope, version, _printWriter.toString());
-			}
+		if (_portletOutputStream != null) {
+			_addMarkupToHead(
+				portletName, scope, version, _portletOutputStream.toString());
 		}
-		catch (IllegalArgumentException iae) {
-			_log.error(iae, iae);
+		else if (_printWriter != null) {
+			_addMarkupToHead(
+				portletName, scope, version, _printWriter.toString());
 		}
 	}
 
