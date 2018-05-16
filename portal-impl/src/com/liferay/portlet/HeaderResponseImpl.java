@@ -379,31 +379,6 @@ public class HeaderResponseImpl
 
 	private static class SemVer implements Comparable<SemVer> {
 
-		public SemVer(String version) {
-			String[] parts = StringUtil.split(version, CharPool.PERIOD);
-
-			if (parts.length > 0) {
-				_major = GetterUtil.getInteger(parts[0]);
-			}
-			else {
-				_major = 0;
-			}
-
-			if (parts.length > 1) {
-				_minor = GetterUtil.getInteger(parts[1]);
-			}
-			else {
-				_minor = 0;
-			}
-
-			if (parts.length > 2) {
-				_micro = GetterUtil.getInteger(parts[2]);
-			}
-			else {
-				_micro = 0;
-			}
-		}
-
 		@Override
 		public int compareTo(SemVer semVer) {
 			if (_major < semVer.getMajor()) {
@@ -440,6 +415,31 @@ public class HeaderResponseImpl
 
 		public int getMinor() {
 			return _minor;
+		}
+
+		private SemVer(String version) {
+			String[] parts = StringUtil.split(version, CharPool.PERIOD);
+
+			if (parts.length > 0) {
+				_major = GetterUtil.getInteger(parts[0]);
+			}
+			else {
+				_major = 0;
+			}
+
+			if (parts.length > 1) {
+				_minor = GetterUtil.getInteger(parts[1]);
+			}
+			else {
+				_minor = 0;
+			}
+
+			if (parts.length > 2) {
+				_micro = GetterUtil.getInteger(parts[2]);
+			}
+			else {
+				_micro = 0;
+			}
 		}
 
 		private final int _major;
@@ -480,12 +480,6 @@ public class HeaderResponseImpl
 
 	private class HeaderPrintWriter extends UnsyncPrintWriter {
 
-		public HeaderPrintWriter(UnsyncStringWriter unsyncStringWriter) {
-			super(unsyncStringWriter);
-
-			_unsyncStringWriter = unsyncStringWriter;
-		}
-
 		@Override
 		public void close() {
 			_flush();
@@ -503,6 +497,12 @@ public class HeaderResponseImpl
 		@Override
 		public String toString() {
 			return _unsyncStringWriter.toString();
+		}
+
+		private HeaderPrintWriter(UnsyncStringWriter unsyncStringWriter) {
+			super(unsyncStringWriter);
+
+			_unsyncStringWriter = unsyncStringWriter;
 		}
 
 		private final UnsyncStringWriter _unsyncStringWriter;
