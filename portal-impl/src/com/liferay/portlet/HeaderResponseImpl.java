@@ -280,7 +280,7 @@ public class HeaderResponseImpl
 		}
 
 		if (Validator.isNull(version)) {
-			version = StringPool.ASCII_TABLE[48];
+			version = "0";
 		}
 
 		HeaderRequest headerRequest = (HeaderRequest)getPortletRequest();
