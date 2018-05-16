@@ -458,6 +458,13 @@ public class HeaderResponseImpl
 		}
 
 		@Override
+		public void flush() throws IOException {
+			_flush();
+
+			super.flush();
+		}
+
+		@Override
 		public String toString() {
 			try {
 				return toString(getCharacterEncoding());
@@ -477,6 +484,13 @@ public class HeaderResponseImpl
 			super(unsyncStringWriter);
 
 			_unsyncStringWriter = unsyncStringWriter;
+		}
+
+		@Override
+		public void close() {
+			_flush();
+
+			super.close();
 		}
 
 		@Override
