@@ -392,4 +392,11 @@ public class MonitoringInvokerPortlet
 	private final PortletMonitoringControl _portletMonitoringControl;
 	private long _renderTimeout;
 
+	@FunctionalInterface
+	private interface Renderable {
+
+		public void render() throws IOException, PortletException;
+
+	}
+
 }

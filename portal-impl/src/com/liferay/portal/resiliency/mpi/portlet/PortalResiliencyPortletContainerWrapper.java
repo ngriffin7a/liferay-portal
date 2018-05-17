@@ -171,7 +171,7 @@ public class PortalResiliencyPortletContainerWrapper
 			Portlet portlet)
 		throws PortletContainerException {
 
-		render(
+		_render(
 			request, response, portlet,
 			() -> _portletContainer.render(request, response, portlet));
 	}
@@ -182,7 +182,7 @@ public class PortalResiliencyPortletContainerWrapper
 			Portlet portlet)
 		throws PortletContainerException {
 
-		render(
+		_render(
 			request, response, portlet,
 			() -> _portletContainer.renderHeaders(request, response, portlet));
 	}
@@ -257,7 +257,23 @@ public class PortalResiliencyPortletContainerWrapper
 		}
 	}
 
-	protected void render(
+	protected void restoreRequestAttibutes(
+		HttpServletRequest request, String[] names, Object[] values) {
+
+		for (int i = 0; i < names.length; i++) {
+			String name = names[i];
+			Object value = values[i];
+
+			if (value == null) {
+				request.removeAttribute(name);
+			}
+			else {
+				request.setAttribute(name, value);
+			}
+		}
+	}
+
+	private void _render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet, Renderable renderable)
 		throws PortletContainerException {
@@ -287,22 +303,6 @@ public class PortalResiliencyPortletContainerWrapper
 			restoreRequestAttibutes(
 				request, _RENDER_REQUEST_ATTRIBUTE_NAMES,
 				requestAttributeValues);
-		}
-	}
-
-	protected void restoreRequestAttibutes(
-		HttpServletRequest request, String[] names, Object[] values) {
-
-		for (int i = 0; i < names.length; i++) {
-			String name = names[i];
-			Object value = values[i];
-
-			if (value == null) {
-				request.removeAttribute(name);
-			}
-			else {
-				request.setAttribute(name, value);
-			}
 		}
 	}
 
