@@ -872,9 +872,7 @@ if (portlet.isActive() && portlet.isReady() && supportsMimeType && (invokerPortl
 			if (renderHeaders) {
 				if (invokerPortlet.isHeaderPortlet()) {
 					invokerPortlet.renderHeaders(headerRequestImpl, headerResponseImpl);
-					java.io.Writer writer = headerResponseImpl.getWriter();
-
-					writer.flush();
+					headerResponseImpl.writeToHead();
 				}
 			}
 			else {
