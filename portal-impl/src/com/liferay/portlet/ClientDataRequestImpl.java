@@ -179,10 +179,6 @@ public abstract class ClientDataRequestImpl
 
 	private static final class PartImpl implements Part {
 
-		public PartImpl(FileItem fileItem) {
-			_fileItem = fileItem;
-		}
-
 		@Override
 		public void delete() throws IOException {
 			_fileItem.delete();
@@ -223,6 +219,7 @@ public abstract class ClientDataRequestImpl
 			return _fileItem.getSize();
 		}
 
+		@Override
 		public String getSubmittedFileName() {
 			return _fileItem.getFileName();
 		}
@@ -230,6 +227,10 @@ public abstract class ClientDataRequestImpl
 		@Override
 		public void write(String fileName) throws IOException {
 			FileUtil.copy(_fileItem.getStoreLocation(), new File(fileName));
+		}
+
+		private PartImpl(FileItem fileItem) {
+			_fileItem = fileItem;
 		}
 
 		private final FileItem _fileItem;
