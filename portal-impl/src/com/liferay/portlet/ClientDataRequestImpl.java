@@ -163,16 +163,18 @@ public abstract class ClientDataRequestImpl
 	}
 
 	private UploadRequest _getUploadRequest(Object request) {
-		if (request instanceof UploadRequest) {
-			return (UploadRequest)request;
-		}
+		while (true) {
+			if (request instanceof UploadRequest) {
+				return (UploadRequest)request;
+			}
 
-		if (request instanceof ServletRequestWrapper) {
-			return _getUploadRequest(
-				((ServletRequestWrapper)request).getRequest());
+			if (request instanceof ServletRequestWrapper) {
+				request = ((ServletRequestWrapper)request).getRequest();
+			}
+			else {
+				return null;
+			}
 		}
-
-		return null;
 	}
 
 	private boolean _calledGetReader;
