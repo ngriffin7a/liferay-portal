@@ -37,7 +37,7 @@ import java.util.Map;
 import javax.portlet.ClientDataRequest;
 import javax.portlet.PortletException;
 
-import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.Part;
 
 import jodd.io.FileUtil;
@@ -167,9 +167,9 @@ public abstract class ClientDataRequestImpl
 			return (UploadRequest)request;
 		}
 
-		if (request instanceof HttpServletRequestWrapper) {
+		if (request instanceof ServletRequestWrapper) {
 			return _getUploadRequest(
-				((HttpServletRequestWrapper)request).getRequest());
+				((ServletRequestWrapper)request).getRequest());
 		}
 
 		return null;
