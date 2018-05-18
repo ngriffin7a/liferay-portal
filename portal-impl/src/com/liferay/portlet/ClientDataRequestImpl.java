@@ -108,7 +108,7 @@ public abstract class ClientDataRequestImpl
 		Map<String, FileItem[]> multipartParameterMap =
 			uploadRequest.getMultipartParameterMap();
 
-		List<Part> parts = new ArrayList<>(multipartParameterMap.size());
+		List<Part> parts = new ArrayList<>();
 
 		for (Map.Entry<String, FileItem[]> entry :
 				multipartParameterMap.entrySet()) {
