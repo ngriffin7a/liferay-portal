@@ -98,9 +98,7 @@ public class PortletConfigImpl implements LiferayPortletConfig {
 			String name = portletAppContainerRuntimeOption.getKey();
 
 			if (!name.startsWith(className) &&
-				(!PortletAppUtil.isPortletSpec3(_portletApp) ||
-				 (PortletAppUtil.isPortletSpec3(_portletApp) &&
-				  !"javax.portlet.renderHeaders".equals(name)))) {
+				!"javax.portlet.renderHeaders".equals(name)) {
 
 				containerRuntimeOptions.put(
 					name, portletAppContainerRuntimeOption.getValue());
