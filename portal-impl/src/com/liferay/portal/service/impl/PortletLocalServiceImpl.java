@@ -1859,10 +1859,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			GetterUtil.getBoolean(
 				portletElement.elementText("instanceable"),
 				portletModel.isInstanceable()));
-		portletModel.setRemoteable(
-			GetterUtil.getBoolean(
-				portletElement.elementText("remoteable"),
-				portletModel.isRemoteable()));
 		portletModel.setScopeable(
 			GetterUtil.getBoolean(
 				portletElement.elementText("scopeable"),
@@ -2424,9 +2420,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			for (Element valueElement :
 					containerRuntimeOptionElement.elements("value")) {
 
-				String value = valueElement.getTextTrim();
-
-				values.add(value);
+				values.add(valueElement.getTextTrim());
 			}
 
 			containerRuntimeOptions.put(
@@ -2568,9 +2562,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			for (Element valueElement :
 					containerRuntimeOptionElement.elements("value")) {
 
-				String value = valueElement.getTextTrim();
-
-				values.add(value);
+				values.add(valueElement.getTextTrim());
 			}
 
 			Map<String, String[]> containerRuntimeOptions =
