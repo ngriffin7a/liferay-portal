@@ -107,18 +107,6 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 
 	@Override
 	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, Layout layout,
-		String lifecycle, MimeResponse.Copy copy) {
-
-		return create(
-			request,
-			PortletLocalServiceUtil.getPortletById(
-				PortalUtil.getCompanyId(request), portletId),
-			layout, lifecycle, copy);
-	}
-
-	@Override
-	public LiferayPortletURL create(
 		HttpServletRequest request, String portletId, long plid,
 		String lifecycle) {
 
@@ -132,26 +120,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 	public LiferayPortletURL create(
 		HttpServletRequest request, String portletId, String lifecycle) {
 
-		return create(request, portletId, lifecycle, null);
-	}
-
-	@Override
-	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, String lifecycle,
-		MimeResponse.Copy copy) {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		Layout layout = themeDisplay.getLayout();
-
-		if (layout == null) {
-			layout = _getLayout(
-				(Layout)request.getAttribute(WebKeys.LAYOUT),
-				themeDisplay.getPlid());
-		}
-
-		return create(request, portletId, layout, lifecycle, copy);
+		return _create(request, portletId, lifecycle, null);
 	}
 
 	@Override
@@ -159,26 +128,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 		PortletRequest portletRequest, Portlet portlet, Layout layout,
 		String lifecycle) {
 
-		return create(portletRequest, portlet, layout, lifecycle, null);
-	}
-
-	@Override
-	public LiferayPortletURL create(
-		PortletRequest portletRequest, Portlet portlet, Layout layout,
-		String lifecycle, MimeResponse.Copy copy) {
-
-		if (PortletRequest.RENDER_PHASE.equals(lifecycle)) {
-			return new RenderURLImpl(
-				portletRequest, portlet, layout, lifecycle, copy);
-		}
-		else if (PortletRequest.ACTION_PHASE.equals(lifecycle)) {
-			return new ActionURLImpl(
-				portletRequest, portlet, layout, lifecycle, copy);
-		}
-		else {
-			return new PortletURLImpl(
-				portletRequest, portlet, layout, lifecycle, copy);
-		}
+		return _create(portletRequest, portlet, layout, lifecycle, null);
 	}
 
 	@Override
@@ -198,7 +148,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 		PortletRequest portletRequest, Portlet portlet, long plid,
 		String lifecycle, MimeResponse.Copy copy) {
 
-		return create(
+		return _create(
 			portletRequest, portlet,
 			_getLayout(
 				(Layout)portletRequest.getAttribute(WebKeys.LAYOUT), plid),
@@ -219,18 +169,6 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 
 	@Override
 	public LiferayPortletURL create(
-		PortletRequest portletRequest, String portletId, Layout layout,
-		String lifecycle, MimeResponse.Copy copy) {
-
-		return create(
-			portletRequest,
-			PortletLocalServiceUtil.getPortletById(
-				PortalUtil.getCompanyId(portletRequest), portletId),
-			layout, lifecycle, copy);
-	}
-
-	@Override
-	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, long plid,
 		String lifecycle) {
 
@@ -242,7 +180,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 		PortletRequest portletRequest, String portletId, long plid,
 		String lifecycle, MimeResponse.Copy copy) {
 
-		return create(
+		return _create(
 			portletRequest, portletId,
 			_getLayout(
 				(Layout)portletRequest.getAttribute(WebKeys.LAYOUT), plid),
@@ -253,11 +191,68 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, String lifecycle) {
 
-		return create(portletRequest, portletId, lifecycle, null);
+		return _create(portletRequest, portletId, lifecycle, null);
 	}
 
-	@Override
-	public LiferayPortletURL create(
+	private LiferayPortletURL _create(
+		HttpServletRequest request, String portletId, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return create(
+			request,
+			PortletLocalServiceUtil.getPortletById(
+				PortalUtil.getCompanyId(request), portletId),
+			layout, lifecycle, copy);
+	}
+
+	private LiferayPortletURL _create(
+		HttpServletRequest request, String portletId, String lifecycle,
+		MimeResponse.Copy copy) {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		Layout layout = themeDisplay.getLayout();
+
+		if (layout == null) {
+			layout = _getLayout(
+				(Layout)request.getAttribute(WebKeys.LAYOUT),
+				themeDisplay.getPlid());
+		}
+
+		return _create(request, portletId, layout, lifecycle, copy);
+	}
+
+	private LiferayPortletURL _create(
+		PortletRequest portletRequest, Portlet portlet, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		if (PortletRequest.RENDER_PHASE.equals(lifecycle)) {
+			return new RenderURLImpl(
+				portletRequest, portlet, layout, lifecycle, copy);
+		}
+		else if (PortletRequest.ACTION_PHASE.equals(lifecycle)) {
+			return new ActionURLImpl(
+				portletRequest, portlet, layout, lifecycle, copy);
+		}
+		else {
+			return new PortletURLImpl(
+				portletRequest, portlet, layout, lifecycle, copy);
+		}
+	}
+
+	private LiferayPortletURL _create(
+		PortletRequest portletRequest, String portletId, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return _create(
+			portletRequest,
+			PortletLocalServiceUtil.getPortletById(
+				PortalUtil.getCompanyId(portletRequest), portletId),
+			layout, lifecycle, copy);
+	}
+
+	private LiferayPortletURL _create(
 		PortletRequest portletRequest, String portletId, String lifecycle,
 		MimeResponse.Copy copy) {
 
@@ -272,7 +267,7 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 				themeDisplay.getPlid());
 		}
 
-		return create(portletRequest, portletId, layout, lifecycle, copy);
+		return _create(portletRequest, portletId, layout, lifecycle, copy);
 	}
 
 	private Layout _getLayout(Layout layout, long plid) {

@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 @ProviderType
 public interface PortletURLFactory {
@@ -46,10 +47,6 @@ public interface PortletURLFactory {
 		String lifecycle);
 
 	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, Layout layout,
-		String lifecycle, MimeResponse.Copy copy);
-
-	public LiferayPortletURL create(
 		HttpServletRequest request, String portletId, long plid,
 		String lifecycle);
 
@@ -57,16 +54,8 @@ public interface PortletURLFactory {
 		HttpServletRequest request, String portletId, String lifecycle);
 
 	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, String lifecycle,
-		MimeResponse.Copy copy);
-
-	public LiferayPortletURL create(
 		PortletRequest portletRequest, Portlet portlet, Layout layout,
 		String lifecycle);
-
-	public LiferayPortletURL create(
-		PortletRequest portletRequest, Portlet portlet, Layout layout,
-		String lifecycle, MimeResponse.Copy copy);
 
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, Portlet portlet, long plid,
@@ -79,10 +68,6 @@ public interface PortletURLFactory {
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, Layout layout,
 		String lifecycle);
-
-	public LiferayPortletURL create(
-		PortletRequest portletRequest, String portletId, Layout layout,
-		String lifecycle, MimeResponse.Copy copy);
 
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, long plid,
@@ -94,9 +79,5 @@ public interface PortletURLFactory {
 
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, String lifecycle);
-
-	public LiferayPortletURL create(
-		PortletRequest portletRequest, String portletId, String lifecycle,
-		MimeResponse.Copy copy);
 
 }

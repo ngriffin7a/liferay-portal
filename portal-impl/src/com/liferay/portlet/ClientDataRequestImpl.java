@@ -62,12 +62,7 @@ public abstract class ClientDataRequestImpl
 
 	@Override
 	public long getContentLengthLong() {
-
-		// TODO: portlet3 - Waiting for Minhchau's Servlet 3.1 upgrade
-		// https://issues.liferay.com/browse/LPS-73874
-		// return getHttpServletRequest().getContentLengthLong();
-
-		return getContentLength();
+		return getHttpServletRequest().getContentLengthLong();
 	}
 
 	@Override
