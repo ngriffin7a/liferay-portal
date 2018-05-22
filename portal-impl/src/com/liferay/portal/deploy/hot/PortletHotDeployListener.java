@@ -162,26 +162,27 @@ public class PortletHotDeployListener extends BaseHotDeployListener {
 
 		String servletContextName = servletContext.getServletContextName();
 
-		Set<String> beanPortletIds = (Set<String>)servletContext.getAttribute(
+		List<String> beanPortletIds = (List<String>)servletContext.getAttribute(
 			"com.liferay.beanPortletIds");
 
-		Set<String> beanFilterNames = (Set<String>)servletContext.getAttribute(
-			"com.liferay.beanFilterNames");
+		List<String> beanFilterNames =
+			(List<String>)servletContext.getAttribute(
+				"com.liferay.beanFilterNames");
 
 		if ((beanPortletIds != null) || (beanFilterNames != null)) {
-			if ((beanFilterNames != null) && _log.isInfoEnabled()) {
-				_log.info(
-					StringBundler.concat(
-						String.valueOf(beanFilterNames.size()),
-						" bean filters for ", servletContextName,
-						" are available for use"));
-			}
-
 			if ((beanPortletIds != null) && _log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
 						String.valueOf(beanPortletIds.size()),
 						" bean portlets for ", servletContextName,
+						" are available for use"));
+			}
+
+			if ((beanFilterNames != null) && _log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						String.valueOf(beanFilterNames.size()),
+						" bean filters for ", servletContextName,
 						" are available for use"));
 			}
 
@@ -568,7 +569,7 @@ public class PortletHotDeployListener extends BaseHotDeployListener {
 			PortletURLListenerFactory.destroy(portletURLListener);
 		}
 
-		Set<String> beanPortletIds = (Set<String>)servletContext.getAttribute(
+		List<String> beanPortletIds = (List<String>)servletContext.getAttribute(
 			"com.liferay.beanPortletIds");
 
 		if (beanPortletIds == null) {
