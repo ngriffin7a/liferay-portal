@@ -100,7 +100,8 @@ public abstract class MimeResponseImpl
 	public PrintWriter getWriter() throws IllegalStateException, IOException {
 		if (_calledGetPortletOutputStream) {
 			throw new IllegalStateException(
-				"Cannot obtain Writer because OutputStream is already in use");
+				"Unable to obtain Writer because OutputStream is already in " +
+					"use");
 		}
 
 		if (_contentType == null) {
@@ -133,7 +134,7 @@ public abstract class MimeResponseImpl
 	public void reset() {
 		if (_calledFlushBuffer) {
 			throw new IllegalStateException(
-				"Cannot reset a buffer that has been flushed");
+				"Unable to reset a buffer that has been flushed");
 		}
 	}
 
@@ -141,7 +142,7 @@ public abstract class MimeResponseImpl
 	public void resetBuffer() {
 		if (_calledFlushBuffer) {
 			throw new IllegalStateException(
-				"Cannot reset a buffer that has been flushed");
+				"Unable to reset a buffer that has been flushed");
 		}
 
 		response.resetBuffer();

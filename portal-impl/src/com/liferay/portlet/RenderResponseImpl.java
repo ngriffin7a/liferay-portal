@@ -49,7 +49,13 @@ public class RenderResponseImpl
 		return _title;
 	}
 
-	public Boolean getUseDefaultTemplate() {
+	public boolean getUseDefaultTemplate() {
+		if (_useDefaultTemplate == null) {
+			Portlet portlet = getPortlet();
+
+			return portlet.isUseDefaultTemplate();
+		}
+
 		return _useDefaultTemplate;
 	}
 
