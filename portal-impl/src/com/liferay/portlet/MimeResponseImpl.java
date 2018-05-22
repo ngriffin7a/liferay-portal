@@ -24,19 +24,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import java.util.Collection;
 import java.util.Locale;
 
 import javax.portlet.CacheControl;
 import javax.portlet.MimeResponse;
-import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.WindowState;
 
 /**
  * @author Brian Wing Shun Chan
  * @author Shuyang Zhou
- * @author Neil Griffin
  */
 @ProviderType
 public abstract class MimeResponseImpl
@@ -178,10 +175,6 @@ public abstract class MimeResponseImpl
 		_contentType = contentType;
 
 		response.setContentType(contentType);
-	}
-
-	public void setNextPossiblePortletModes(
-		Collection<PortletMode> portletModes) {
 	}
 
 	private boolean _calledFlushBuffer;

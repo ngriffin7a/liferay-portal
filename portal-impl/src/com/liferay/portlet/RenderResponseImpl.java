@@ -16,6 +16,7 @@ package com.liferay.portlet;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayRenderResponse;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -25,6 +26,7 @@ import com.liferay.portlet.configuration.kernel.util.PortletConfigurationUtil;
 
 import java.util.Collection;
 
+import javax.portlet.PortletMode;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
@@ -60,7 +62,8 @@ public class RenderResponseImpl
 	}
 
 	@Override
-	public void setNextPossiblePortletModes(Collection portletModes) {
+	public void setNextPossiblePortletModes(
+		Collection<? extends PortletMode> portletModes) {
 	}
 
 	@Override
