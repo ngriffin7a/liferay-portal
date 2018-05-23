@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -27,9 +28,7 @@ import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.URLCodec;
-import com.liferay.portal.model.impl.LayoutTypePortletImpl;
 import com.liferay.portal.security.lang.DoPrivilegedUtil;
 import com.liferay.portlet.RenderParametersPool;
 
@@ -273,16 +272,9 @@ public class RenderStateUtil {
 		else if (layoutTypePortlet.hasModePrintPortletId(portletId)) {
 			return LiferayPortletMode.PRINT;
 		}
-		else if (layoutTypePortlet instanceof LayoutTypePortletImpl) {
-
-			// TODO: portlet3 - After Brian does the breaking changes, will no
-			// longer need to cast to LayoutTypePortletImpl.
-
-			LayoutTypePortletImpl layoutTypePortletImpl =
-				(LayoutTypePortletImpl)layoutTypePortlet;
-
+		else {
 			String customPortletMode =
-				layoutTypePortletImpl.getAddedCustomPortletMode();
+				layoutTypePortlet.getAddedCustomPortletMode();
 
 			if (customPortletMode != null) {
 				return new PortletMode(customPortletMode);

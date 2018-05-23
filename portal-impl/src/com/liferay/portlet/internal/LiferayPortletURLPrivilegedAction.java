@@ -53,18 +53,17 @@ public class LiferayPortletURLPrivilegedAction
 	implements PrivilegedAction<LiferayPortletURL> {
 
 	public LiferayPortletURLPrivilegedAction(
-		long plid, String portletName, String lifecycle,
-		boolean includeLinkToLayoutUuid, MimeResponse.Copy copy, Layout layout,
-		Portlet portlet, PortletPreferences portletPreferences,
-		PortletRequest portletRequest, PortletResponseImpl portletResponseImpl,
-		long requestPlid,
+		long plid, String portletName, String lifecycle, MimeResponse.Copy copy,
+		boolean includeLinkToLayoutUuid, Layout layout, Portlet portlet,
+		PortletPreferences portletPreferences, PortletRequest portletRequest,
+		PortletResponseImpl portletResponseImpl, long requestPlid,
 		Map<String, Constructor<? extends PortletURLImpl>> constructors) {
 
 		_plid = plid;
 		_portletName = portletName;
 		_lifecycle = lifecycle;
-		_includeLinkToLayoutUuid = includeLinkToLayoutUuid;
 		_copy = copy;
+		_includeLinkToLayoutUuid = includeLinkToLayoutUuid;
 		_layout = layout;
 		_portlet = portlet;
 		_portletPreferences = portletPreferences;
@@ -235,7 +234,7 @@ public class LiferayPortletURLPrivilegedAction
 
 	private final Map<String, Constructor<? extends PortletURLImpl>>
 		_constructors;
-	private MimeResponse.Copy _copy;
+	private final MimeResponse.Copy _copy;
 	private final boolean _includeLinkToLayoutUuid;
 	private final Layout _layout;
 	private final String _lifecycle;
