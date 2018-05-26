@@ -30,14 +30,13 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.ParamAndPropertyAncestorTagImpl;
+import com.liferay.taglib.util.TypedParamAccessorTag;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.portlet.ActionRequest;
-import javax.portlet.MimeResponse;
-import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
@@ -50,7 +49,8 @@ import javax.servlet.jsp.JspWriter;
  * @author Brian Wing Shun Chan
  * @author Neil Griffin
  */
-public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
+public class ActionURLTag
+	extends ParamAndPropertyAncestorTagImpl implements TypedParamAccessorTag {
 
 	public static PortletURL doTag(
 			String lifecycle, String windowState, String portletMode,
@@ -68,7 +68,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		}
 
 		LiferayPortletURL liferayPortletURL = _getLiferayPortletURL(
-			request, plid, portletName, lifecycle, copyCurrentRenderParameters);
+			request, plid, portletName, lifecycle);
 
 		if (liferayPortletURL == null) {
 			_log.error(
@@ -193,7 +193,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 			name = PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE + name;
 		}
 
-		super.addParam(name, type, value);
+		super.addParam(name, value);
 	}
 
 	@Override
@@ -321,7 +321,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 	private static LiferayPortletURL _getLiferayPortletURL(
 		HttpServletRequest request, long plid, String portletName,
-		String lifecycle, Boolean copyCurrentRenderParameters) {
+		String lifecycle) {
 
 		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
@@ -335,22 +335,6 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 		LiferayPortletResponse liferayPortletResponse =
 			PortalUtil.getLiferayPortletResponse(portletResponse);
-
-		LiferayPortletConfig liferayPortletConfig =
-			(LiferayPortletConfig)request.getAttribute(
-				JavaConstants.JAVAX_PORTLET_CONFIG);
-
-		PortletContext portletContext =
-			liferayPortletConfig.getPortletContext();
-
-		if ((portletContext.getEffectiveMajorVersion() == 3) &&
-			(((copyCurrentRenderParameters != null) &&
-			  copyCurrentRenderParameters) ||
-			 lifecycle.equals(PortletRequest.RESOURCE_PHASE))) {
-
-			return liferayPortletResponse.createLiferayPortletURL(
-				plid, portletName, lifecycle, MimeResponse.Copy.ALL);
-		}
 
 		return liferayPortletResponse.createLiferayPortletURL(
 			plid, portletName, lifecycle);

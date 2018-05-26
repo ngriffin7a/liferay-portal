@@ -20,6 +20,7 @@ import javax.servlet.jsp.JspException;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 public class ParamTag extends TagSupport {
 
@@ -33,7 +34,15 @@ public class ParamTag extends TagSupport {
 			throw new JspException();
 		}
 
-		paramAncestorTag.addParam(_name, _type, _value);
+		if (paramAncestorTag instanceof TypedParamAccessorTag) {
+			TypedParamAccessorTag typedParamAccessorTag =
+				(TypedParamAccessorTag)paramAncestorTag;
+
+			typedParamAccessorTag.addParam(_name, _type, _value);
+		}
+		else {
+			paramAncestorTag.addParam(_name, _value);
+		}
 
 		return SKIP_BODY;
 	}
