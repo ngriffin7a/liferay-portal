@@ -29,3 +29,7 @@ page import="com.liferay.portal.kernel.util.JavaConstants" %>
 <%@ page import="javax.portlet.PortletRequest" %>
 
 <liferay-theme:defineObjects />
+
+<%
+PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstants.JAVAX_PORTLET_REQUEST);
+%>
