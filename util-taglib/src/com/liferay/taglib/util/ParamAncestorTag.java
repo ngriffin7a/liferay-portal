@@ -21,6 +21,4 @@ public interface ParamAncestorTag {
 
 	public void addParam(String name, String value);
 
-	public void addParam(String name, String type, String value);
-
 }
