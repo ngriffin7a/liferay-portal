@@ -168,7 +168,7 @@ public class AlloyMockUtil {
 		extends MockPortletResponse implements ActionResponse {
 
 		@Override
-		public RenderURL createRedirectURL(MimeResponse.Copy option)
+		public RenderURL createRedirectURL(MimeResponse.Copy copy)
 			throws IllegalStateException {
 
 			throw new UnsupportedOperationException();
@@ -1364,7 +1364,7 @@ public class AlloyMockUtil {
 		@Override
 		public LiferayPortletURL createLiferayPortletURL(
 			long plid, String portletName, String lifecycle,
-			boolean includeLinkToLayoutUuid, MimeResponse.Copy copy) {
+			MimeResponse.Copy copy) {
 
 			throw new UnsupportedOperationException();
 		}
@@ -1372,7 +1372,7 @@ public class AlloyMockUtil {
 		@Override
 		public LiferayPortletURL createLiferayPortletURL(
 			long plid, String portletName, String lifecycle,
-			MimeResponse.Copy copy) {
+			MimeResponse.Copy copy, boolean includeLinkToLayoutUuid) {
 
 			throw new UnsupportedOperationException();
 		}
@@ -1514,7 +1514,7 @@ public class AlloyMockUtil {
 		}
 
 		@Override
-		public ActionURL createActionURL(Copy option) {
+		public ActionURL createActionURL(Copy copy) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -1524,7 +1524,7 @@ public class AlloyMockUtil {
 		}
 
 		@Override
-		public RenderURL createRenderURL(Copy option) {
+		public RenderURL createRenderURL(Copy copy) {
 			throw new UnsupportedOperationException();
 		}
 

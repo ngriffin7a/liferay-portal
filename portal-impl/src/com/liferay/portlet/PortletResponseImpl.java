@@ -76,8 +76,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.poi.ss.formula.functions.T;
-
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -297,13 +295,22 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 		boolean includeLinkToLayoutUuid) {
 
 		return createLiferayPortletURL(
-			plid, portletName, lifecycle, includeLinkToLayoutUuid, null);
+			plid, portletName, lifecycle, null, includeLinkToLayoutUuid);
 	}
 
 	@Override
 	public LiferayPortletURL createLiferayPortletURL(
 		long plid, String portletName, String lifecycle,
-		boolean includeLinkToLayoutUuid, MimeResponse.Copy copy) {
+		MimeResponse.Copy copy) {
+
+		return createLiferayPortletURL(
+			plid, portletName, lifecycle, copy, true);
+	}
+
+	@Override
+	public LiferayPortletURL createLiferayPortletURL(
+		long plid, String portletName, String lifecycle, MimeResponse.Copy copy,
+		boolean includeLinkToLayoutUuid) {
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)portletRequestImpl.getAttribute(
@@ -319,18 +326,9 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 		return DoPrivilegedUtil.wrap(
 			new LiferayPortletURLPrivilegedAction(
-				plid, portletName, lifecycle, includeLinkToLayoutUuid, copy,
+				plid, portletName, lifecycle, copy, includeLinkToLayoutUuid,
 				layout, getPortlet(), _portletSetup, portletRequestImpl, this,
 				_plid, _constructors));
-	}
-
-	@Override
-	public LiferayPortletURL createLiferayPortletURL(
-		long plid, String portletName, String lifecycle,
-		MimeResponse.Copy copy) {
-
-		return createLiferayPortletURL(
-			plid, portletName, lifecycle, true, copy);
 	}
 
 	@Override
@@ -392,8 +390,8 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 	@Override
 	public LiferayPortletURL createResourceURL(String portletName) {
 		return createLiferayPortletURL(
-			_plid, portletName, PortletRequest.RESOURCE_PHASE, true,
-			MimeResponse.Copy.ALL);
+			_plid, portletName, PortletRequest.RESOURCE_PHASE,
+			MimeResponse.Copy.ALL, true);
 	}
 
 	@Override
