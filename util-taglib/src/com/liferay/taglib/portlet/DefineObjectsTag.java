@@ -34,7 +34,6 @@ import javax.servlet.jsp.tagext.TagSupport;
 
 /**
  * @author Brian Wing Shun Chan
- * @author Neil Griffin
  */
 public class DefineObjectsTag extends TagSupport {
 
