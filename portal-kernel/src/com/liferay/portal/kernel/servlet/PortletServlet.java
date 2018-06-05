@@ -39,6 +39,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 public class PortletServlet extends HttpServlet {
 
