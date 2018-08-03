@@ -34,6 +34,51 @@ const VALUE_NULL = '';
 const WINDOW_STATE = 'p_p_state';
 
 /**
+ * The page render state containing the all portlets and public parameters map.
+ * @type {Object}
+ * @review
+ */
+
+let pageRenderState;
+
+/**
+ * Used by the portlet hub methods to check the number and types of the
+ * arguments.
+ *
+ * @param {string[]} args The argument list to be checked.
+ * @param {number} min The minimum number of arguments.
+ * @param {number} max The maximum number of arguments. If this value is
+ * undefined, the function can take any number of arguments greater
+ * than max.
+ * @param {string[]} types An array containing the expected parameter types in the
+ * order of occurrance in the argument array.
+ * @throws {TypeError} Thrown if the parameters are in some manner incorrect.
+ * @review
+ */
+
+const checkArguments = function(args = [], min = 0, max = 1, types = []) {
+	if (args.length < min) {
+		throw new TypeError(`Too few arguments provided: Number of arguments: ${args.length}`);
+	}
+	else if (args.length > max) {
+		throw new TypeError(`Too many arguments provided: ${[].join.call(args, ', ')}`);
+	}
+	else if (Array.isArray(types)) {
+
+		let i = Math.min(args.length, types.length) - 1;
+		for (i; i >= 0; i--) {
+			if ((typeof args[i]) !== types[i]) {
+				throw new TypeError(`Parameter ${i} is of type ${(typeof args[i])} rather than the expected type ${types[i]}`);
+			}
+
+			if (args[i] === null || args[i] === undefined) {
+				throw new TypeError(`Argument is ${typeof args[i]}`);
+			}
+		}
+	}
+};
+
+/**
  * Decodes the update strings.
  * The update string is a JSON object containing the entire page state.
  * This decoder returns an object containing the portlet data for portlets whose
@@ -212,6 +257,21 @@ const generatePortletModeAndWindowStateString = function(pageRenderState, portle
 	}
 
 	return str;
+};
+
+/**
+ * Gets the pageRenderState containing information
+ * about all porlets on the page.
+ *
+ * @return {Object}
+ * @review
+ */
+
+const getPageRenderState = function() {
+	if (!pageRenderState) {
+		pageRenderState = global.portlet.impl.getInitData();
+	}
+	return pageRenderState;
 };
 
 /**
@@ -606,6 +666,27 @@ const validateParameters = function(parameters) {
 };
 
 /**
+ * Validates the specificed portletId against the list
+ * of current portlet in the pageRenderState.
+ *
+ * @param {string} portletId The ID of the portlet to be registered.
+ * @param {Object} pageRenderState The current pageRenderState.
+ * @return {boolean} A flag indicating if the specified portlet id is valid.
+ * @review
+ */
+
+const validatePortletId = function(portletId, pageRenderState = {}) {
+	let result = false;
+
+	if (pageRenderState.portlets) {
+		const keys = Object.keys(pageRenderState.portlets);
+		result = keys.indexOf(portletId) !== -1;
+	}
+
+	return result;
+};
+
+/**
  * Verifies that the input parameters are in valid format, that the portlet
  * mode and window state values are allowed for the portlet.
  * @param {RenderState} state The render state object to check.
@@ -645,12 +726,15 @@ const validateState = function(state, portletData) {
 };
 
 export {
+	checkArguments,
 	decodeUpdateString,
 	encodeFormAsString,
 	generatePortletModeAndWindowStateString,
+	getPageRenderState,
 	getUpdatedPublicRenderParameters,
 	getUrl,
 	validateForm,
 	validateParameters,
+	validatePortletId,
 	validateState
 };

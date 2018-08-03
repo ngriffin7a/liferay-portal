@@ -8,7 +8,7 @@ describe(
 			() => {
 				const stub = jest.fn();
 
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 						const handle = hub.addEventListener('clientEvent', stub);
 
@@ -29,7 +29,7 @@ describe(
 			() => {
 				const stub = jest.fn();
 
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 
 						expect(stub.mock.calls.length).toBe(0);
@@ -47,7 +47,7 @@ describe(
 		it(
 			'should throw error if addEventListener is called with invalid args',
 			() => {
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 
 						expect(
@@ -77,7 +77,7 @@ describe(
 			() => {
 				const stub = jest.fn();
 
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 						const handle = hub.addEventListener('toBeRemoved', stub);
 
@@ -97,7 +97,7 @@ describe(
 			() => {
 				const stub = jest.fn();
 
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 						expect(
 							() => {
@@ -118,7 +118,7 @@ describe(
 		it(
 			'should throw error when attempting to dispatch event with protected name',
 			() => {
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 						expect(
 							() => {
@@ -133,7 +133,7 @@ describe(
 		it(
 			'should throw error if removeEventListener is called with invalid args',
 			() => {
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 						expect(
 							() => {
@@ -162,7 +162,7 @@ describe(
 			() => {
 				const stub = jest.fn();
 
-				return register('portletA').then(
+				return register('PortletA').then(
 					hub => {
 						const handle = hub.addEventListener('awesome\\w+Event$', stub);
 
@@ -386,7 +386,7 @@ describe(
 			() => {
 
 				const ids = portlet.getIds();
-				const pageState = portlet.getInitData().portlets;
+				const pageState = portlet.impl.getInitData().portlets;
 				const portletA = ids[0];
 
 				let hubA;
@@ -556,7 +556,7 @@ describe(
 			() => {
 				const eventType = 'portlet.onStateChange';
 				const ids = portlet.getIds();
-				const pageState = portlet.getInitData().portlets;
+				const pageState = portlet.impl.getInitData().portlets;
 				const portletA = ids[0];
 
 				let hubA;
@@ -950,7 +950,7 @@ describe(
 			() => {
 				const eventType = 'portlet.onStateChange';
 				const ids = portlet.getIds();
-				const pageState = portlet.getInitData().portlets;
+				const pageState = portlet.impl.getInitData().portlets;
 				const portletA = ids[0];
 				const portletB = ids[3];
 
@@ -1352,7 +1352,7 @@ describe(
 				const portletC = ids[2];
 				const portletD = ids[3];
 
-				const pageState = portlet.getInitData();
+				const pageState = portlet.impl.getInitData();
 
 				let hubA;
 				let hubB;

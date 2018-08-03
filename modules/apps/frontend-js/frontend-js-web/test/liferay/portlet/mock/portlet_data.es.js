@@ -143,8 +143,10 @@ const portlet = {
 		return Object.keys(portlet.data.initialPageState.portlets);
 	},
 
-	getInitData() {
-		return JSON.parse(JSON.stringify(portlet.data.initialPageState));
+	impl: {
+		getInitData() {
+			return JSON.parse(JSON.stringify(portlet.data.initialPageState));
+		},
 	},
 
 	resource: {
