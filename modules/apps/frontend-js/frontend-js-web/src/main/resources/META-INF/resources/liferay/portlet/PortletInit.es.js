@@ -396,6 +396,7 @@ class PortletInit {
 					return this._updatePortletStates(updatedIds)
 						.then(
 							updatedIds => {
+								busy = false;
 								Promise.resolve(updatedIds);
 							}
 						);

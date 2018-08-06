@@ -90,13 +90,13 @@ const checkArguments = function(args = [], min = 0, max = 1, types = []) {
  */
 
 const decodeUpdateString = function(pageRenderState, updateString) {
-	const portlets = {};
+	const portlets = pageRenderState && pageRenderState.portlets ?
+		pageRenderState.portlets : {};
 
 	try {
 		const newRenderState = JSON.parse(updateString);
-		const portlets = pageRenderState.portlets;
 
-		if (newRenderState.portlets && portlets) {
+		if (newRenderState.portlets) {
 			const keys = Object.keys(portlets);
 
 			for (const key of keys) {
@@ -107,7 +107,7 @@ const decodeUpdateString = function(pageRenderState, updateString) {
 					throw new Error(`Invalid update string.\nold state=${oldState}\nnew state=${newState}`);
 				}
 
-				if (stateChanged(newState, key)) {
+				if (stateChanged(pageRenderState, newState, key)) {
 					portlets[key] = newRenderState.portlets[key];
 				}
 			}
