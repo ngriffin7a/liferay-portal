@@ -10,6 +10,7 @@ import PortletConstants from './portlet_constants.es';
 import {
 	decodeUpdateString,
 	encodeFormAsString,
+	getPageRenderState,
 	getUpdatedPublicRenderParameters,
 	getUrl,
 	validateForm,
@@ -96,7 +97,7 @@ class PortletInit {
 		this.constants = Object.assign({}, PortletConstants);
 
 		if (!initialized) {
-			pageRenderState = global.portlet.getInitData();
+			pageRenderState = getPageRenderState();
 
 			this._updateHistory(true);
 
@@ -354,23 +355,7 @@ class PortletInit {
 
 		this._updateHistory();
 
-		return new Promise((resolve, reject) => {
-
-			let simulateValue = '';
-
-			if (portletId === 'SimulateCommError' && state.parameters.SimulateError !== undefined) {
-				simulateValue = state.parameters.SimulateError[0];
-			}
-
-			// Reject promise if an error is to be simulated
-
-			if (simulateValue === 'reject') {
-				reject(new Error('Simulated error occured when setting state!'));
-			}
-			else {
-				resolve(updatedIds);
-			}
-		});
+		return Promise.resolve(updatedIds);
 	}
 
 	/**
@@ -386,42 +371,41 @@ class PortletInit {
 	 */
 
 	_setupAction(parameters, element) {
-		return new Promise((resolve, reject) => {
-			if (this.isInProgress()) {
-				throw {
-					message: 'Operation is already in progress',
-					name: 'AccessDeniedException'
-				};
-			}
+		if (this.isInProgress()) {
+			throw {
+				message: 'Operation is already in progress',
+				name: 'AccessDeniedException'
+			};
+		}
 
-			if (!this._hasListener(this._portletId)) {
-				throw {
-					message: `No onStateChange listener registered for portlet: ${this._portletId}`,
-					name: 'NotInitializedException'
-				};
-			}
+		if (!this._hasListener(this._portletId)) {
+			throw {
+				message: `No onStateChange listener registered for portlet: ${this._portletId}`,
+				name: 'NotInitializedException'
+			};
+		}
 
-			busy = true;
+		busy = true;
 
-			this._executeAction(
-				parameters,
-				element
-			)
-				.then(
-					updatedIds => {
-						return this._updatePortletStates(updatedIds)
-							.then(
-								updatedIds => {
-									resolve(updatedIds);
-								}
-							);
-					},
-					err => {
-						busy = false;
-						this._reportError(this._portletId, err);
-					}
-				);
-		});
+		return this._executeAction(
+			parameters,
+			element
+		)
+			.then(
+				updatedIds => {
+					return this._updatePortletStates(updatedIds)
+						.then(
+							updatedIds => {
+								busy = false;
+								Promise.resolve(updatedIds);
+							}
+						);
+				},
+				err => {
+					busy = false;
+					this._reportError(this._portletId, err);
+				}
+			);
 	}
 
 	/**
@@ -656,51 +640,49 @@ class PortletInit {
 	 */
 
 	action(...args) {
-		return new Promise((resolve, reject) => {
-			let actionParameters = null;
-			let argCount = 0;
-			let el = null;
+		let actionParameters = null;
+		let argCount = 0;
+		let el = null;
 
-			for (let arg of args) {
-				if (arg instanceof HTMLFormElement) {
-					if (el !== null) {
-						throw new TypeError(`Too many [object HTMLFormElement] arguments: ${arg}, ${el}`);
-					}
-					el = arg;
+		for (let arg of args) {
+			if (arg instanceof HTMLFormElement) {
+				if (el !== null) {
+					throw new TypeError(`Too many [object HTMLFormElement] arguments: ${arg}, ${el}`);
 				}
-				else if (isObject(arg)) {
-					validateParameters(arg);
-					if (actionParameters !== null) {
-						throw new TypeError('Too many parameters arguments');
-					}
-					actionParameters = arg;
-				}
-				else if (arg !== undefined) {
-					const type = Object.prototype.toString.call(arg);
-					throw new TypeError(`Invalid argument type. Argument ${argCount + 1} is of type ${type}`);
-				}
-				argCount++;
+				el = arg;
 			}
-
-			if (el) {
-				validateForm(el);
+			else if (isObject(arg)) {
+				validateParameters(arg);
+				if (actionParameters !== null) {
+					throw new TypeError('Too many parameters arguments');
+				}
+				actionParameters = arg;
 			}
+			else if (arg !== undefined) {
+				const type = Object.prototype.toString.call(arg);
+				throw new TypeError(`Invalid argument type. Argument ${argCount + 1} is of type ${type}`);
+			}
+			argCount++;
+		}
 
-			this._setupAction(
-				actionParameters,
-				el
+		if (el) {
+			validateForm(el);
+		}
+
+		return this._setupAction(
+			actionParameters,
+			el
+		)
+			.then(
+				val => {
+					Promise.resolve(val);
+				}
 			)
-				.then(
-					val => {
-						resolve(val);
-					}
-				)
-				.catch(
-					err => {
-						reject(err);
-					}
-				);
-		});
+			.catch(
+				err => {
+					Promise.reject(err);
+				}
+			);
 	}
 
 	/**
@@ -865,7 +847,7 @@ class PortletInit {
 	 * @review
 	 */
 
-	newParameters(optParameters) {
+	newParameters(optParameters = {}) {
 		const newParameters = {};
 
 		const keys = Object.keys(optParameters);
@@ -946,6 +928,13 @@ class PortletInit {
 	 */
 
 	setRenderState(state) {
+		if (arguments.length < 1) {
+			throw new TypeError(`Too few arguments provided. Number of arguments: ${arguments.length}`);
+		}
+		else if (arguments.length > 1) {
+			throw new TypeError(`Too many arguments provided: ${[].join.call(arguments, ', ')}`);
+		}
+
 		if (!isObject(state)) {
 			throw new TypeError('State must be an object');
 		}
