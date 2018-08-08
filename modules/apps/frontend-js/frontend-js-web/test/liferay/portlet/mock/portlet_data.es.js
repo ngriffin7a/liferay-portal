@@ -164,7 +164,8 @@ const portlet = {
 		},
 
 		isResourceUrl(url) {
-			const regex = /(p_p_hub=2)(&p_p_resource_id=\w+)?/g;
+			const regex = /(p_p_lifecycle=2)(&p_p_resource_id=\w+)?/g;
+
 			const str = regex.exec(url);
 
 			let found = false;

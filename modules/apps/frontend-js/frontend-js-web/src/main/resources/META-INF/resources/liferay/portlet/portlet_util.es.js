@@ -5,15 +5,13 @@ import {
 
 // Constants for URL generation
 
-const CACHE_LEVEL = 'p_p_cacheability';
+const AJAX_ACTION = '0';
 
-const HUB = 'p_p_hub';
+const CACHE_LEVEL = 'p_p_cacheability';
 
 const HUB_ACTION = '0';
 
-const HUB_PARTIAL_ACTION = '1';
-
-const HUB_RESOURCE = '2';
+const PARTIAL_ACTION = '1';
 
 const PORTLET_MODE = 'p_p_mode';
 
@@ -205,7 +203,7 @@ const encodeParameter = function(name, values) {
  * @review
  */
 
-const	generateParameterString = function(pageRenderState, portletId, name, type, group) {
+const generateParameterString = function(pageRenderState, portletId, name, type, group) {
 	let str = '';
 
 	if (pageRenderState.portlets && pageRenderState.portlets[portletId]) {
@@ -325,6 +323,7 @@ const getUpdatedPublicRenderParameters = function(pageRenderState, portletId, st
 
 const getUrl = function(pageRenderState, type, portletId, parameters, cache, resourceId) {
 	let cacheability = 'cacheLevelPage';
+	let str = '';
 	let url = '';
 
 	if (pageRenderState && pageRenderState.portlets) {
@@ -346,7 +345,6 @@ const getUrl = function(pageRenderState, type, portletId, parameters, cache, res
 					cacheability = cache;
 				}
 
-				url += TOKEN_DELIM + HUB + VALUE_DELIM + encodeURIComponent(HUB_RESOURCE);
 				url += TOKEN_DELIM + CACHE_LEVEL + VALUE_DELIM + encodeURIComponent(cacheability);
 
 				if (resourceId) {
@@ -361,11 +359,11 @@ const getUrl = function(pageRenderState, type, portletId, parameters, cache, res
 			}
 			else if (type === 'ACTION') {
 				url = decodeURIComponent(portletData.encodedActionURL);
-				url += TOKEN_DELIM + HUB + VALUE_DELIM + encodeURIComponent(HUB_ACTION);
+				url += TOKEN_DELIM + HUB_ACTION + VALUE_DELIM + encodeURIComponent(AJAX_ACTION);
 			}
 			else if (type === 'PARTIAL_ACTION') {
 				url = decodeURIComponent(portletData.encodedActionURL);
-				url += TOKEN_DELIM + HUB + VALUE_DELIM + encodeURIComponent(HUB_PARTIAL_ACTION);
+				url += TOKEN_DELIM + HUB_ACTION + VALUE_DELIM + encodeURIComponent(PARTIAL_ACTION);
 			}
 
 			// Now add the state to the URL, taking into account cacheability if
@@ -380,14 +378,20 @@ const getUrl = function(pageRenderState, type, portletId, parameters, cache, res
 				// been added previously)
 
 				if (portletId) {
+					url += generatePortletModeAndWindowStateString(pageRenderState, portletId);
+				}
+
+				// Add the state for the target portlet, if there is one.
+				// (for the render URL, pid can be null, and the state will have
+				// been added previously)
+
+				if (portletId) {
 					if (portletData.state && portletData.state.parameters) {
 						const stateParameters = portletData.state.parameters;
 
-						let str = '';
-
 						const keys = Object.keys(stateParameters);
 
-						for (let key in keys) {
+						for (let key of keys) {
 							if (!isPublicParameter(pageRenderState, portletId, key)) {
 								str += generateParameterString(pageRenderState, portletId, key, RENDER_PARAM);
 							}
@@ -400,8 +404,6 @@ const getUrl = function(pageRenderState, type, portletId, parameters, cache, res
 
 				if (pageRenderState.prpMap) {
 					const publicRenderParameters = {};
-
-					let str = '';
 
 					const mapKeys = Object.keys(pageRenderState.prpMap);
 					for (let mapKey of mapKeys) {
@@ -431,9 +433,9 @@ const getUrl = function(pageRenderState, type, portletId, parameters, cache, res
 		}
 	}
 
-	if (parameters) {
-		let str = '';
+	// Encode resource or action parameters
 
+	if (parameters) {
 		const parameterKeys = Object.keys(parameters);
 		for (let parameterKey of parameterKeys) {
 			str += encodeParameter(portletId + parameterKey, parameters[parameterKey]);
