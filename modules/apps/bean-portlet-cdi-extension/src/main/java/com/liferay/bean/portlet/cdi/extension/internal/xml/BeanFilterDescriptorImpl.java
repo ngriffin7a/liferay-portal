@@ -14,26 +14,24 @@
 
 package com.liferay.bean.portlet.cdi.extension.internal.xml;
 
-import com.liferay.bean.portlet.cdi.extension.internal.BeanFilter;
-import com.liferay.portal.kernel.util.HashMapDictionary;
-
-import java.util.Dictionary;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Neil Griffin
  */
-public class BeanFilterDescriptorImpl implements BeanFilter {
+public class BeanFilterDescriptorImpl extends BaseBeanFilterImpl {
 
 	public BeanFilterDescriptorImpl(
 		String filterName, Class<?> filterClass, int ordinal,
-		Set<String> portletNames, Map<String, String> initParams) {
+		Set<String> portletNames, Set<String> lifecycles,
+		Map<String, String> initParams) {
 
 		_filterName = filterName;
 		_filterClass = filterClass;
 		_ordinal = ordinal;
 		_portletNames = portletNames;
+		_lifecycles = lifecycles;
 		_initParams = initParams;
 	}
 
@@ -48,34 +46,30 @@ public class BeanFilterDescriptorImpl implements BeanFilter {
 	}
 
 	@Override
-	public Set<String> getPortletNames() {
-		return _portletNames;
+	public Map<String, String> getInitParams() {
+		return _initParams;
 	}
 
 	@Override
-	public Dictionary<String, Object> toDictionary() {
-		Dictionary<String, Object> dictionary = new HashMapDictionary<>();
+	public Set<String> getLifecycles() {
+		return _lifecycles;
+	}
 
-		if (_ordinal != null) {
-			dictionary.put("service.ranking:Integer", _ordinal);
-		}
+	@Override
+	public int getOrdinal() {
+		return _ordinal;
+	}
 
-		for (Map.Entry<String, String> entry : _initParams.entrySet()) {
-			String value = entry.getValue();
-
-			if (value != null) {
-				dictionary.put(
-					"javax.portlet.init-param.".concat(entry.getKey()), value);
-			}
-		}
-
-		return dictionary;
+	@Override
+	public Set<String> getPortletNames() {
+		return _portletNames;
 	}
 
 	private final Class<?> _filterClass;
 	private final String _filterName;
 	private final Map<String, String> _initParams;
-	private final Integer _ordinal;
+	private final Set<String> _lifecycles;
+	private final int _ordinal;
 	private final Set<String> _portletNames;
 
 }
