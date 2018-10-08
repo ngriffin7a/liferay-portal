@@ -24,14 +24,8 @@ import javax.xml.namespace.QName;
 public class PublicRenderParameterDescriptorImpl
 	extends BasePublicRenderParameterImpl {
 
-	public PublicRenderParameterDescriptorImpl(
-		String identifier, com.liferay.portal.kernel.xml.QName qName) {
-
-		super(
-			identifier,
-			new QName(
-				qName.getNamespaceURI(), qName.getLocalPart(),
-				qName.getNamespacePrefix()));
+	public PublicRenderParameterDescriptorImpl(String identifier, QName qName) {
+		super(identifier, qName);
 	}
 
 }
