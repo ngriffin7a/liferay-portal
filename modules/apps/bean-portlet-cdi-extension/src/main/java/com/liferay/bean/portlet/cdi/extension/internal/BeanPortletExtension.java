@@ -167,21 +167,18 @@ public class BeanPortletExtension implements Extension {
 		Set<Type> typeClosures = annotatedType.getTypeClosure();
 
 		if (typeClosures.contains(PortletConfig.class)) {
-			annotatedType = new PortletConfigAnnotatedTypeImpl<>(annotatedType);
-
-			processAnnotatedType.setAnnotatedType(annotatedType);
+			processAnnotatedType.setAnnotatedType(
+				new PortletConfigAnnotatedTypeImpl<>(annotatedType));
 		}
 
 		if (annotatedType.isAnnotationPresent(RequestScoped.class)) {
-			annotatedType = new RequestScopedAnnotatedTypeImpl<>(annotatedType);
-
-			processAnnotatedType.setAnnotatedType(annotatedType);
+			processAnnotatedType.setAnnotatedType(
+				new RequestScopedAnnotatedTypeImpl<>(annotatedType));
 		}
 
 		if (annotatedType.isAnnotationPresent(SessionScoped.class)) {
-			annotatedType = new SessionScopedAnnotatedTypeImpl<>(annotatedType);
-
-			processAnnotatedType.setAnnotatedType(annotatedType);
+			processAnnotatedType.setAnnotatedType(
+				new SessionScopedAnnotatedTypeImpl<>(annotatedType));
 		}
 
 		Class<T> annotatedClass = annotatedType.getJavaClass();
@@ -216,10 +213,8 @@ public class BeanPortletExtension implements Extension {
 		if (Portlet.class.isAssignableFrom(annotatedClass) &&
 			!annotatedType.isAnnotationPresent(ApplicationScoped.class)) {
 
-			annotatedType = new ApplicationScopedAnnotatedTypeImpl<>(
-				annotatedType);
-
-			processAnnotatedType.setAnnotatedType(annotatedType);
+			processAnnotatedType.setAnnotatedType(
+				new ApplicationScopedAnnotatedTypeImpl<>(annotatedType));
 
 			if (_log.isWarnEnabled()) {
 				_log.warn(
