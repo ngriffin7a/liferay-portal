@@ -1231,6 +1231,8 @@ public class BeanPortletExtension implements Extension {
 	private Function<String, String> _collectPreferencesValidators() {
 		String wildcardPreferencesValidator = null;
 
+		Map<String, String> preferencesValidators = new HashMap<>();
+
 		for (Class<?> annotatedClass : _annotatedClasses) {
 			PortletPreferencesValidator portletPreferencesValidator =
 				annotatedClass.getAnnotation(PortletPreferencesValidator.class);
@@ -1250,8 +1252,6 @@ public class BeanPortletExtension implements Extension {
 			}
 		}
 
-		Map<String, String> preferencesValidators = new HashMap<>();
-
 		for (Class<?> annotatedClass : _annotatedClasses) {
 			PortletPreferencesValidator portletPreferencesValidator =
 				annotatedClass.getAnnotation(PortletPreferencesValidator.class);
@@ -1264,19 +1264,20 @@ public class BeanPortletExtension implements Extension {
 
 			for (String portletName : portletNames) {
 				if (Objects.equals(portletName, "*")) {
-					continue;
-				}
-
-				if (preferencesValidators.containsKey(portletName)) {
-					_log.error(
-						StringBundler.concat(
-							"Only one @PortletPreferencesValidator annotation ",
-							"may be associated with portletName \"",
-							portletName, "\""));
 				}
 				else {
-					preferencesValidators.put(
-						portletName, annotatedClass.getName());
+					if (preferencesValidators.containsKey(portletName)) {
+						_log.error(
+							StringBundler.concat(
+								"Only one @PortletPreferencesValidator " +
+									"annotation may be associated with " +
+										"portletName \"",
+								portletName, "\""));
+					}
+					else {
+						preferencesValidators.put(
+							portletName, annotatedClass.getName());
+					}
 				}
 			}
 		}
