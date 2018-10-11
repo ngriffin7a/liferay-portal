@@ -793,18 +793,12 @@ public class BeanPortletExtension implements Extension {
 
 		Multipart multipart = portletConfiguration.multipart();
 
-		boolean multiPartSupported = false;
-		int multiPartFileSizeThreshold = 0;
-		String multiPartLocation = null;
-		long multiPartMaxFileSize = -1L;
-		long multiPartMaxRequestSize = -1L;
+		MultiPartConfig multiPartConfig = MultiPartConfig.UNSUPPORTED;
 
 		if (multipart.supported()) {
-			multiPartFileSizeThreshold = multipart.fileSizeThreshold();
-			multiPartLocation = multipart.location();
-			multiPartMaxFileSize = multipart.maxFileSize();
-			multiPartMaxRequestSize = multipart.maxRequestSize();
-			multiPartSupported = true;
+			multiPartConfig = new MultiPartConfig(
+				multipart.fileSizeThreshold(), multipart.location(),
+				multipart.maxFileSize(), multipart.maxRequestSize());
 		}
 
 		String displayCategory = descriptorDisplayCategories.get(
@@ -897,9 +891,8 @@ public class BeanPortletExtension implements Extension {
 			securityRoleRefs, supportedProcessingEvents,
 			supportedPublishingEvents, supportedPublicRenderParameters,
 			containerRuntimeOptions, portletDependencies,
-			portletConfiguration.asyncSupported(), multiPartSupported,
-			multiPartFileSizeThreshold, multiPartLocation, multiPartMaxFileSize,
-			multiPartMaxRequestSize, displayCategory, liferayConfiguration);
+			portletConfiguration.asyncSupported(), multiPartConfig,
+			displayCategory, liferayConfiguration);
 
 		if (descriptorBeanPortlet == null) {
 			_beanPortlets.put(configuredPortletName, annotatedBeanPortlet);
@@ -1017,33 +1010,8 @@ public class BeanPortletExtension implements Extension {
 				asyncSupport = true;
 			}
 
-			if (multiPartSupported ||
-				descriptorBeanPortlet.isMultiPartSupported()) {
-
-				multiPartSupported = true;
-
-				if (descriptorBeanPortlet.getMultiPartFileSizeThreshold() > 0) {
-					multiPartFileSizeThreshold =
-						descriptorBeanPortlet.getMultiPartFileSizeThreshold();
-				}
-
-				if (Validator.isNotNull(
-						descriptorBeanPortlet.getMultiPartLocation())) {
-
-					multiPartLocation =
-						descriptorBeanPortlet.getMultiPartLocation();
-				}
-
-				if (descriptorBeanPortlet.getMultiPartMaxFileSize() > 0) {
-					multiPartMaxFileSize =
-						descriptorBeanPortlet.getMultiPartMaxFileSize();
-				}
-
-				if (descriptorBeanPortlet.getMultiPartMaxRequestSize() > 0) {
-					multiPartMaxRequestSize =
-						descriptorBeanPortlet.getMultiPartMaxRequestSize();
-				}
-			}
+			multiPartConfig = multiPartConfig.merge(
+				descriptorBeanPortlet.getMultiPartConfig());
 
 			if (descriptorBeanPortlet.getDisplayCategory() != null) {
 				displayCategory = descriptorBeanPortlet.getDisplayCategory();
@@ -1066,10 +1034,8 @@ public class BeanPortletExtension implements Extension {
 				securityRoleRefs, supportedProcessingEvents,
 				supportedPublishingEvents, supportedPublicRenderParameters,
 				containerRuntimeOptions, portletDependencies,
-				portletConfiguration.asyncSupported(), multiPartSupported,
-				multiPartFileSizeThreshold, multiPartLocation,
-				multiPartMaxFileSize, multiPartMaxRequestSize, displayCategory,
-				liferayConfiguration);
+				portletConfiguration.asyncSupported(), multiPartConfig,
+				displayCategory, liferayConfiguration);
 
 			_beanPortlets.put(configuredPortletName, mergedBeanPortlet);
 		}
