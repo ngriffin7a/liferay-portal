@@ -14,10 +14,12 @@
 
 package com.liferay.bean.portlet.cdi.extension.internal;
 
+import com.liferay.petra.lang.HashUtil;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import java.util.Set;
+import java.util.Objects;
 
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -37,21 +39,50 @@ import javax.xml.namespace.QName;
 /**
  * @author Neil Griffin
  */
-public class BeanMethod {
+public class BeanMethod implements Comparable<BeanMethod> {
 
 	public BeanMethod(
-		BeanManager beanManager, MethodType type, Class<?> beanClass,
-		Method method, int ordinal) {
+		BeanManager beanManager, Bean<?> bean, MethodType type, Method method) {
+
+		this(beanManager, bean, type, method, 0);
+	}
+
+	public BeanMethod(
+		BeanManager beanManager, Bean<?> bean, MethodType type, Method method,
+		int ordinal) {
 
 		_beanManager = beanManager;
+		_bean = bean;
 		_type = type;
-		_beanClass = beanClass;
 		_method = method;
 		_ordinal = ordinal;
+	}
 
-		Set<Bean<?>> beans = beanManager.getBeans(beanClass);
+	@Override
+	public int compareTo(BeanMethod beanMethod) {
+		return Integer.compare(_ordinal, beanMethod._ordinal);
+	}
 
-		_bean = beanManager.resolve(beans);
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+
+		if (!(obj instanceof BeanMethod)) {
+			return false;
+		}
+
+		BeanMethod beanMethod = (BeanMethod)obj;
+
+		if ((_ordinal == beanMethod._ordinal) &&
+			Objects.equals(_method, beanMethod.getMethod()) &&
+			(_type == beanMethod.getType())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public String getActionName() {
@@ -73,10 +104,6 @@ public class BeanMethod {
 		}
 
 		return processAction.name();
-	}
-
-	public Class<?> getBeanClass() {
-		return _beanClass;
 	}
 
 	public String getInclude() {
@@ -112,14 +139,6 @@ public class BeanMethod {
 		return _method;
 	}
 
-	public int getOrdinal() {
-		return _ordinal;
-	}
-
-	public int getParameterCount() {
-		return _method.getParameterCount();
-	}
-
 	public PortletMode getPortletMode() {
 		RenderMethod renderMethod = _method.getAnnotation(RenderMethod.class);
 
@@ -142,6 +161,15 @@ public class BeanMethod {
 
 	public MethodType getType() {
 		return _type;
+	}
+
+	@Override
+	public int hashCode() {
+		int hashCode = HashUtil.hash(0, _method);
+
+		hashCode = HashUtil.hash(hashCode, _ordinal);
+
+		return HashUtil.hash(hashCode, _type);
 	}
 
 	public Object invoke(Object... args)
@@ -184,7 +212,6 @@ public class BeanMethod {
 	}
 
 	private final Bean<?> _bean;
-	private final Class<?> _beanClass;
 	private final BeanManager _beanManager;
 	private final Method _method;
 	private final int _ordinal;

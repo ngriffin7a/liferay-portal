@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +97,7 @@ public class BeanPortletInvoker
 
 		List<BeanMethod> beanMethods = _beanMethods.get(MethodType.EVENT);
 
-		if (beanMethods == null) {
+		if ((beanMethods == null) || beanMethods.isEmpty()) {
 			return;
 		}
 
@@ -110,9 +111,7 @@ public class BeanPortletInvoker
 			}
 		}
 
-		if (!eventMethods.isEmpty()) {
-			_invokeBeanMethods(eventRequest, eventResponse, eventMethods);
-		}
+		_invokeBeanMethods(eventRequest, eventResponse, eventMethods);
 	}
 
 	@Override
@@ -147,6 +146,8 @@ public class BeanPortletInvoker
 		throws IllegalAccessException, InvocationTargetException, IOException,
 			   PortletException {
 
+		Method method = beanMethod.getMethod();
+
 		if (beanMethod.getType() == MethodType.ACTION) {
 			ActionRequest actionRequest = (ActionRequest)args[0];
 
@@ -172,7 +173,7 @@ public class BeanPortletInvoker
 			if ((beanMethodPortletMode == null) ||
 				portletMode.equals(beanMethodPortletMode)) {
 
-				if (beanMethod.getParameterCount() == 0) {
+				if (method.getParameterCount() == 0) {
 					String markup = (String)beanMethod.invoke();
 
 					if (markup != null) {
@@ -190,7 +191,7 @@ public class BeanPortletInvoker
 			}
 		}
 		else if ((beanMethod.getType() == MethodType.SERVE_RESOURCE) &&
-				 (beanMethod.getParameterCount() == 0)) {
+				 (method.getParameterCount() == 0)) {
 
 			String markup = (String)beanMethod.invoke();
 
@@ -229,7 +230,7 @@ public class BeanPortletInvoker
 			List<BeanMethod> beanMethods, Object... args)
 		throws PortletException {
 
-		if (beanMethods == null) {
+		if ((beanMethods == null) || beanMethods.isEmpty()) {
 			return;
 		}
 
@@ -260,7 +261,7 @@ public class BeanPortletInvoker
 			List<BeanMethod> beanMethods)
 		throws PortletException {
 
-		if (beanMethods == null) {
+		if ((beanMethods == null) || beanMethods.isEmpty()) {
 			return;
 		}
 
