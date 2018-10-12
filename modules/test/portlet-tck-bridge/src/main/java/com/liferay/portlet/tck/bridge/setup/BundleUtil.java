@@ -12,37 +12,23 @@
  * details.
  */
 
-package com.liferay.bean.portlet.cdi.extension.internal;
+package com.liferay.portlet.tck.bridge.setup;
 
-import javax.xml.namespace.QName;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 /**
- * @author Neil Griffin
+ * @author Vernon Singleton
  */
-public abstract class BasePublicRenderParameterImpl
-	implements PublicRenderParameter {
+public class BundleUtil {
 
-	@Override
-	public String getIdentifier() {
-		return _id;
+	public static Bundle[] getBundles() {
+		Bundle portletBundle = FrameworkUtil.getBundle(BundleUtil.class);
+
+		BundleContext bundleContext = portletBundle.getBundleContext();
+
+		return bundleContext.getBundles();
 	}
-
-	@Override
-	public QName getQName() {
-		return _qName;
-	}
-
-	@Override
-	public void setIdentifier(String identifier) {
-		_id = identifier;
-	}
-
-	@Override
-	public void setQName(QName qName) {
-		_qName = qName;
-	}
-
-	private String _id;
-	private QName _qName;
 
 }

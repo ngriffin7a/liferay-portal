@@ -29,21 +29,9 @@ import javax.portlet.annotations.ServeResourceMethod;
  */
 public class ScannedMethod {
 
-	public static ScannedMethod create(
-		Class<?> clazz, MethodType methodType, Method method) {
-
-		return new ScannedMethod(clazz, methodType, method);
-	}
-
 	public ScannedMethod(Class<?> clazz, MethodType methodType, Method method) {
-		this(clazz, methodType, method, null);
-	}
-
-	public ScannedMethod(
-		Class<?> clazz, MethodType methodType, Method method,
-		String configuredPortletName) {
-
 		_clazz = clazz;
+		_methodType = methodType;
 		_method = method;
 
 		int ordinal = 0;
@@ -53,62 +41,44 @@ public class ScannedMethod {
 			ActionMethod actionMethod = method.getAnnotation(
 				ActionMethod.class);
 
-			if (actionMethod != null) {
-				portletNames = new String[] {actionMethod.portletName()};
-			}
+			portletNames = new String[] {actionMethod.portletName()};
 		}
 		else if (methodType == MethodType.DESTROY) {
 			DestroyMethod destroyMethod = method.getAnnotation(
 				DestroyMethod.class);
 
-			if (destroyMethod != null) {
-				portletNames = new String[] {destroyMethod.value()};
-			}
+			portletNames = new String[] {destroyMethod.value()};
 		}
 		else if (methodType == MethodType.EVENT) {
 			EventMethod eventMethod = method.getAnnotation(EventMethod.class);
 
-			if (eventMethod != null) {
-				portletNames = new String[] {eventMethod.portletName()};
-			}
+			portletNames = new String[] {eventMethod.portletName()};
 		}
 		else if (methodType == MethodType.HEADER) {
 			HeaderMethod headerMethod = method.getAnnotation(
 				HeaderMethod.class);
 
-			if (headerMethod != null) {
-				ordinal = headerMethod.ordinal();
-				portletNames = headerMethod.portletNames();
-			}
+			ordinal = headerMethod.ordinal();
+			portletNames = headerMethod.portletNames();
 		}
 		else if (methodType == MethodType.INIT) {
 			InitMethod initMethod = method.getAnnotation(InitMethod.class);
 
-			if (initMethod != null) {
-				portletNames = new String[] {initMethod.value()};
-			}
+			portletNames = new String[] {initMethod.value()};
 		}
 		else if (methodType == MethodType.RENDER) {
 			RenderMethod renderMethod = method.getAnnotation(
 				RenderMethod.class);
 
-			if (renderMethod != null) {
-				ordinal = renderMethod.ordinal();
-				portletNames = renderMethod.portletNames();
-			}
+			ordinal = renderMethod.ordinal();
+			portletNames = renderMethod.portletNames();
 		}
 		else if (methodType == MethodType.SERVE_RESOURCE) {
 			ServeResourceMethod serveResourceMethod = method.getAnnotation(
 				ServeResourceMethod.class);
 
-			if (serveResourceMethod != null) {
-				ordinal = serveResourceMethod.ordinal();
-				portletNames = serveResourceMethod.portletNames();
-			}
-		}
-
-		if ((portletNames == null) && (configuredPortletName != null)) {
-			portletNames = new String[] {configuredPortletName};
+			ordinal = serveResourceMethod.ordinal();
+			portletNames = serveResourceMethod.portletNames();
 		}
 
 		_ordinal = ordinal;
@@ -123,6 +93,10 @@ public class ScannedMethod {
 		return _method;
 	}
 
+	public MethodType getMethodType() {
+		return _methodType;
+	}
+
 	public int getOrdinal() {
 		return _ordinal;
 	}
@@ -133,6 +107,7 @@ public class ScannedMethod {
 
 	private final Class<?> _clazz;
 	private final Method _method;
+	private final MethodType _methodType;
 	private final int _ordinal;
 	private final String[] _portletNames;
 
