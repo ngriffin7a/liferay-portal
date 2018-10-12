@@ -705,7 +705,7 @@ session.timeout=240
 		<var name="test.browser.arguments.htmlunit" value="${test.browser.arguments.htmlunit} -Dtest.browser.binary=${test.browser.binary.htmlunit}" />
 		<var name="test.browser.arguments.htmlunit" value="${test.browser.arguments.htmlunit} -Dtest.ignore.list.file=${test.ignore.list.file.htmlunit}" />
 
-		<echo>mvn -Pliferay,run-tck -Djava.awt.headless=true ${test.browser.arguments.htmlunit} ${test.arguments} ${test.module.option} test</echo>
+<!--		<echo>mvn -Pliferay,run-tck -Djava.awt.headless=true ${test.browser.arguments.htmlunit} ${test.arguments} ${test.module.option} test</echo>
 		<maven
 			basedir="${tck.home}"
 			goal="test"
@@ -732,7 +732,7 @@ session.timeout=240
 					tofile="${project.dir}/tck/test-results/TEST-javax.portlet.tck.driver.TCKLiferayTestDriver-htmlunit-${test.context}.xml"
 				/>
 			</then>
-		</if>
+		</if>-->
 
 		<echo>mvn -Pliferay,run-tck -Djava.awt.headless=true ${test.browser.arguments.chrome} ${test.arguments} ${test.module.option} test</echo>
 		<maven
