@@ -5605,7 +5605,7 @@ public class ProjectTemplatesTest {
 		"webmvc-portlet"
 	};
 
-	private static final String _SPRING_MVC_PORTLET_VERSION = "4.1.9.RELEASE";
+	private static final String _SPRING_MVC_PORTLET_VERSION = "5.1.5.RELEASE";
 
 	private static final boolean _TEST_DEBUG_BUNDLE_DIFFS = Boolean.getBoolean(
 		"test.debug.bundle.diffs");
