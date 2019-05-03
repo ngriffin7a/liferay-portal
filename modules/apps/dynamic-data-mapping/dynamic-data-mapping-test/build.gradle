@@ -8,6 +8,7 @@ dependencies {
 	testCompile group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	testCompile group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	testCompile group: "com.liferay.portal", name: "com.liferay.util.java", version: "default"
+	testCompile group: "com.liferay.portletmvc4spring", name: "com.liferay.portletmvc4spring.test", version: "5.1.0"
 	testCompile group: "commons-collections", name: "commons-collections", version: "3.2.2"
 	testCompile group: "commons-lang", name: "commons-lang", version: "2.6"
 	testCompile group: "javax.portlet", name: "portlet-api", version: "3.0.0"
@@ -19,6 +20,7 @@ dependencies {
 	testCompile group: "org.json", name: "json", version: "20180813"
 	testCompile group: "org.skyscreamer", name: "jsonassert", version: "1.2.3"
 	testCompile group: "org.slf4j", name: "slf4j-api", version: "1.7.22"
+	testCompile group: "org.springframework", name: "spring-test", version: "5.1.5.RELEASE"
 	testCompile group: "xerces", name: "xercesImpl", version: "2.11.0"
 	testCompile project(":apps:document-library:document-library-api")
 	testCompile project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
