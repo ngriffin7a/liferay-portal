@@ -26,4 +26,6 @@ dependencies {
 	jsCompile project(":apps:frontend-taglib:frontend-taglib-soy")
 
 	testCompile group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	testCompile group: "com.liferay.portletmvc4spring", name: "com.liferay.portletmvc4spring.test", version: "5.1.0"
+	testCompile group: "org.springframework", name: "spring-test", version: "5.1.5.RELEASE"
 }
