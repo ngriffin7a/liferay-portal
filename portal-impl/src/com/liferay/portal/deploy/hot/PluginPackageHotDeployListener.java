@@ -228,6 +228,13 @@ public class PluginPackageHotDeployListener extends BaseHotDeployListener {
 
 		String buildNamespace = GetterUtil.getString(
 			serviceBuilderProperties.getProperty("build.namespace"));
+
+		if ((buildNamespace != null) && buildNamespace.equals("SBTest")) {
+
+			// Invalid -- WAB does not have access to this test service.
+			return;
+		}
+
 		long buildNumber = GetterUtil.getLong(
 			serviceBuilderProperties.getProperty("build.number"));
 		long buildDate = GetterUtil.getLong(

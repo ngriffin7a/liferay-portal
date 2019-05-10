@@ -27,6 +27,8 @@ import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistration;
+import com.liferay.spring.mock.web.MockHttpServletRequest;
+import com.liferay.spring.mock.web.portlet.MockPortletRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +38,6 @@ import javax.portlet.PortletResponse;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.portlet.MockPortletRequest;
 
 /**
  * @author Leon Chi
