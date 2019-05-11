@@ -21,6 +21,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadServletRequestImpl;
 import com.liferay.portal.util.test.PortletContainerTestUtil;
+import com.liferay.spring.mock.web.portlet.MockPortletRequest;
 
 import java.io.InputStream;
 
@@ -30,8 +31,6 @@ import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import org.springframework.mock.web.portlet.MockPortletRequest;
 
 /**
  * @author Peter Fellwock

@@ -18,6 +18,8 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
@@ -112,6 +114,9 @@ public class ModuleApplicationContextRegistrator {
 					_extendeeBundle.getBundleContext());
 		}
 		catch (Exception e) {
+
+			_log.error(e, e);
+
 			throw new Exception(
 				"Unable to start " + _extendeeBundle.getSymbolicName(), e);
 		}
@@ -137,6 +142,9 @@ public class ModuleApplicationContextRegistrator {
 
 		_configurableApplicationContext = null;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ModuleApplicationContextRegistrator.class);
 
 	private ConfigurableApplicationContext _configurableApplicationContext;
 	private final ConfigurableApplicationContextConfigurator
