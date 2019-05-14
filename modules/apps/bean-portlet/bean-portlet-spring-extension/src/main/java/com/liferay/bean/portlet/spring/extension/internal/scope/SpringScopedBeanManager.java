@@ -160,10 +160,7 @@ public class SpringScopedBeanManager {
 	public SpringScopedBean getPortletRequestScopedBean(String name) {
 		name = _ATTRIBUTE_NAME_PREFIX.concat(name);
 
-		SpringScopedBean springScopedBean =
-			(SpringScopedBean)_portletRequest.getAttribute(name);
-
-		return springScopedBean;
+		return (SpringScopedBean)_portletRequest.getAttribute(name);
 	}
 
 	public PortletResponse getPortletResponse() {
