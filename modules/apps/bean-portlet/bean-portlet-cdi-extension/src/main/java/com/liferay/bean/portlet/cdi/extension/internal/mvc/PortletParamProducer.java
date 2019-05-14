@@ -484,7 +484,7 @@ public class PortletParamProducer {
 	private Annotation[] _getFieldAnnotations(Annotated field) {
 		Set<Annotation> annotations = field.getAnnotations();
 
-		return annotations.toArray(new Annotation[annotations.size()]);
+		return annotations.toArray(new Annotation[0]);
 	}
 
 	private <T> ParamConverter _getParamConverter(
