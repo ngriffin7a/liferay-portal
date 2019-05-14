@@ -14,9 +14,9 @@
 
 package com.liferay.bean.portlet.extension;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.lang.reflect.Method;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Neil Griffin
