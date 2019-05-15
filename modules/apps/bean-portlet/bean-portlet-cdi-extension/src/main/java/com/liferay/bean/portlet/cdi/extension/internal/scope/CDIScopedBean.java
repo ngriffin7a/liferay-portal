@@ -27,7 +27,7 @@ import javax.enterprise.context.spi.CreationalContext;
 /**
  * @author Neil Griffin
  */
-public class CDIScopedBean<T> implements ScopedBean, Serializable {
+public class CDIScopedBean<T> implements ScopedBean<T>, Serializable {
 
 	public CDIScopedBean(
 		String name, Contextual<T> bean, CreationalContext<T> creationalContext,
