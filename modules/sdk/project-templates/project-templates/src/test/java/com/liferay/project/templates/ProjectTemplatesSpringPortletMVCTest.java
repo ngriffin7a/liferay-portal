@@ -65,38 +65,12 @@ public class ProjectTemplatesSpringPortletMVCTest {
 	public static Iterable<Object[]> data() {
 		return Arrays.asList(
 			new Object[][] {
-				{"springportletmvc", "embedded", "jsp", "7.0"},
 				{"springportletmvc", "embedded", "jsp", "7.1"},
 				{"springportletmvc", "embedded", "jsp", "7.2"},
-				{"springportletmvc", "embedded", "jsp", "7.3"},
-				{"springportletmvc", "provided", "jsp", "7.0"},
-				{"springportletmvc", "provided", "jsp", "7.1"},
-				{"springportletmvc", "provided", "jsp", "7.2"},
-				{"springportletmvc", "provided", "jsp", "7.3"},
-				{"springportletmvc", "embedded", "thymeleaf", "7.0"},
-				{"springportletmvc", "embedded", "thymeleaf", "7.1"},
-				{"springportletmvc", "embedded", "thymeleaf", "7.2"},
-				{"springportletmvc", "embedded", "thymeleaf", "7.3"},
-				{"springportletmvc", "provided", "thymeleaf", "7.0"},
-				{"springportletmvc", "provided", "thymeleaf", "7.1"},
-				{"springportletmvc", "provided", "thymeleaf", "7.2"},
-				{"springportletmvc", "provided", "thymeleaf", "7.3"},
-				{"portletmvc4spring", "embedded", "jsp", "7.0"},
 				{"portletmvc4spring", "embedded", "jsp", "7.1"},
 				{"portletmvc4spring", "embedded", "jsp", "7.2"},
-				{"portletmvc4spring", "embedded", "jsp", "7.3"},
-				{"portletmvc4spring", "provided", "jsp", "7.0"},
-				{"portletmvc4spring", "provided", "jsp", "7.1"},
-				{"portletmvc4spring", "provided", "jsp", "7.2"},
-				{"portletmvc4spring", "provided", "jsp", "7.3"},
-				{"portletmvc4spring", "embedded", "thymeleaf", "7.0"},
 				{"portletmvc4spring", "embedded", "thymeleaf", "7.1"},
-				{"portletmvc4spring", "embedded", "thymeleaf", "7.2"},
-				{"portletmvc4spring", "embedded", "thymeleaf", "7.3"},
-				{"portletmvc4spring", "provided", "thymeleaf", "7.0"},
-				{"portletmvc4spring", "provided", "thymeleaf", "7.1"},
-				{"portletmvc4spring", "provided", "thymeleaf", "7.2"},
-				{"portletmvc4spring", "provided", "thymeleaf", "7.3"}
+				{"portletmvc4spring", "embedded", "thymeleaf", "7.2"}
 			});
 	}
 
