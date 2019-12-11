@@ -51,6 +51,8 @@ import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
+import com.liferay.spring.mock.web.portlet.MockActionRequest;
+import com.liferay.spring.mock.web.portlet.MockPortletConfig;
 
 import java.io.IOException;
 import java.io.Writer;

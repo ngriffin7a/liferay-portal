@@ -5075,6 +5075,18 @@
 				</licenses>
 			</library>
 			<library>
+				<file-name>lib/development/portletmvc4spring-test.jar</file-name>
+				<version>5.1.0</version>
+				<project-name>PortletMVC4Spring</project-name>
+				<project-url>https://github.com/liferay/portletmvc4spring</project-url>
+				<licenses>
+					<license>
+						<license-name>Apache License 2.0</license-name>
+						<license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
 				<file-name>lib/development/postgresql.jar</file-name>
 				<version>42.0.0</version>
 				<project-name>PostgreSQL JDBC Driver</project-name>
@@ -5233,7 +5245,7 @@
 			</library>
 			<library>
 				<file-name>lib/development/spring-instrument-tomcat.jar</file-name>
-				<version>4.1.9</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -5246,7 +5258,7 @@
 			</library>
 			<library>
 				<file-name>lib/development/spring-instrument.jar</file-name>
-				<version>4.1.9</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -5259,7 +5271,7 @@
 			</library>
 			<library>
 				<file-name>lib/development/spring-test.jar</file-name>
-				<version>4.1.9</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -6234,6 +6246,18 @@
 				</licenses>
 			</library>
 			<library>
+				<file-name>lib/portal/jackson-databind.jar</file-name>
+				<version>2.9.8</version>
+				<project-name>Jackson Databind</project-name>
+				<project-url>https://github.com/FasterXML/jackson-databind</project-url>
+				<licenses>
+					<license>
+						<license-name>Apache License 2.0</license-name>
+						<license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
 				<file-name>lib/portal/jai_codec.jar</file-name>
 				<version>1.1.3</version>
 				<project-name>Java Advanced Imaging</project-name>
@@ -7029,6 +7053,18 @@
 				</licenses>
 			</library>
 			<library>
+				<file-name>lib/portal/portletmvc4spring-framework.jar</file-name>
+				<version>5.1.0</version>
+				<project-name>PortletMVC4Spring</project-name>
+				<project-url>https://github.com/liferay/portletmvc4spring</project-url>
+				<licenses>
+					<license>
+						<license-name>Apache License 2.0</license-name>
+						<license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
 				<file-name>lib/portal/rdffilter.jar</file-name>
 				<version>1.0</version>
 				<project-name>RDF Filter</project-name>
@@ -7213,7 +7249,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-aop.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7226,7 +7262,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-aspects.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7239,7 +7275,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-beans.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7252,7 +7288,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-context-support.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7265,7 +7301,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-context.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7278,7 +7314,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-core.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7291,7 +7327,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-expression.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7304,7 +7340,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-jdbc.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7317,7 +7353,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-jms.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7343,7 +7379,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-oxm.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7356,7 +7392,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-tx.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7369,20 +7405,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-web.jar</file-name>
-				<version>4.3.22</version>
-				<project-name>Spring</project-name>
-				<project-url>http://www.springframework.org</project-url>
-				<licenses>
-					<license>
-						<license-name>Apache License 2.0</license-name>
-						<license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
-					</license>
-				</licenses>
-				<comments>This does not include missing OSGi headers. See LPS-49575.</comments>
-			</library>
-			<library>
-				<file-name>lib/portal/spring-webmvc-portlet.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
@@ -7395,7 +7418,7 @@
 			</library>
 			<library>
 				<file-name>lib/portal/spring-webmvc.jar</file-name>
-				<version>4.3.22</version>
+				<version>5.1.5</version>
 				<project-name>Spring</project-name>
 				<project-url>http://www.springframework.org</project-url>
 				<licenses>
