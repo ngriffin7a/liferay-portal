@@ -328,8 +328,11 @@ public class CDIBeanPortletExtension implements Extension {
 					catch (IllegalAccessException iae) {
 						throw new PortletException(iae);
 					}
-					catch (ReflectiveOperationException roe) {
-						Throwable cause = roe.getCause();
+					catch (ReflectiveOperationException
+								reflectiveOperationException) {
+
+						Throwable cause =
+							reflectiveOperationException.getCause();
 
 						if (cause instanceof PortletException) {
 							throw (PortletException)cause;
@@ -634,8 +637,8 @@ public class CDIBeanPortletExtension implements Extension {
 		catch (PortletException pe) {
 			throw pe;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 

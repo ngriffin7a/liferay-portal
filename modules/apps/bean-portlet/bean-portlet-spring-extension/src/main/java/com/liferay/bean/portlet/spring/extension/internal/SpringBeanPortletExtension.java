@@ -173,11 +173,11 @@ public class SpringBeanPortletExtension {
 						try {
 							return clazz.cast(bean);
 						}
-						catch (Exception e) {
+						catch (Exception exception) {
 							throw new PortletException(
 								"Unable to create an instance of " +
 									clazz.getName(),
-								e);
+								exception);
 						}
 					}
 
@@ -216,8 +216,11 @@ public class SpringBeanPortletExtension {
 					catch (IllegalAccessException iae) {
 						throw new PortletException(iae);
 					}
-					catch (ReflectiveOperationException roe) {
-						Throwable cause = roe.getCause();
+					catch (ReflectiveOperationException
+								reflectiveOperationException) {
+
+						Throwable cause =
+							reflectiveOperationException.getCause();
 
 						if (cause instanceof PortletException) {
 							throw (PortletException)cause;
@@ -475,8 +478,8 @@ public class SpringBeanPortletExtension {
 		catch (PortletException pe) {
 			throw pe;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -499,7 +502,7 @@ public class SpringBeanPortletExtension {
 		try {
 			methods = clazz.getMethods();
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			String className = clazz.getName();
 
 			if (!className.startsWith("org.springframework")) {

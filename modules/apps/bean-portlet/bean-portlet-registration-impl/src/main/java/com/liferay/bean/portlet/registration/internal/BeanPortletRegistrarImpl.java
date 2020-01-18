@@ -131,8 +131,8 @@ public class BeanPortletRegistrarImpl implements BeanPortletRegistrar {
 				descriptorDisplayCategories = DisplayDescriptorParser.parse(
 					displayDescriptorURL);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -147,8 +147,8 @@ public class BeanPortletRegistrarImpl implements BeanPortletRegistrar {
 				descriptorLiferayConfigurations = LiferayDescriptorParser.parse(
 					liferayDescriptorURL);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -190,8 +190,8 @@ public class BeanPortletRegistrarImpl implements BeanPortletRegistrar {
 					descriptorLiferayConfigurations, portletDescriptorURL,
 					portletBeanMethodsFunction, preferencesValidatorFunction);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
