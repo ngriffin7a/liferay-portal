@@ -22,9 +22,12 @@ import {updateFragmentEntryLinkContent} from '../../actions/index';
 import {EDITABLE_FLOATING_TOOLBAR_BUTTONS} from '../../config/constants/editableFloatingToolbarButtons';
 import selectCanUpdateLayoutContent from '../../selectors/selectCanUpdateLayoutContent';
 import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
-import FragmentService from '../../services/FragmentService';
 import {useDispatch, useSelector} from '../../store/index';
-import {useGetFieldValue} from '../CollectionItemContext';
+import {
+	useGetContent,
+	useGetFieldValue,
+	useRenderFragmentContent,
+} from '../CollectionItemContext';
 import {useFrameContext} from '../Frame';
 import Layout from '../Layout';
 import UnsafeHTML from '../UnsafeHTML';
@@ -51,6 +54,8 @@ const FragmentContent = React.forwardRef(
 		);
 
 		const getFieldValue = useGetFieldValue();
+		const getContent = useGetContent();
+		const renderFragmentContent = useRenderFragmentContent();
 
 		const [editables, setEditables] = useState([]);
 
@@ -78,11 +83,11 @@ const FragmentContent = React.forwardRef(
 
 		const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 
-		const defaultContent = useSelector((state) =>
-			state.fragmentEntryLinks[fragmentEntryLinkId]
-				? state.fragmentEntryLinks[fragmentEntryLinkId].content
-				: ''
+		const fragmentEntryLink = useSelector(
+			(state) => state.fragmentEntryLinks[fragmentEntryLinkId]
 		);
+
+		const defaultContent = getContent(fragmentEntryLink);
 
 		const editableValues = useSelector((state) =>
 			state.fragmentEntryLinks[fragmentEntryLinkId]
@@ -93,23 +98,24 @@ const FragmentContent = React.forwardRef(
 		const [content, setContent] = useState(defaultContent);
 
 		useEffect(() => {
-			FragmentService.renderFragmentEntryLinkContent({
+			renderFragmentContent({
 				fragmentEntryLinkId,
 				onNetworkStatus: dispatch,
 				segmentsExperienceId,
-			}).then(({content}) =>
+			}).then((action) => {
 				dispatch(
 					updateFragmentEntryLinkContent({
-						content,
+						...action,
 						editableValues,
 						fragmentEntryLinkId,
 					})
-				)
-			);
+				);
+			});
 		}, [
 			dispatch,
 			editableValues,
 			fragmentEntryLinkId,
+			renderFragmentContent,
 			segmentsExperienceId,
 		]);
 

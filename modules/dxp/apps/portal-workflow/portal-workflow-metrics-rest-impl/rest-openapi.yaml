@@ -78,7 +78,7 @@ components:
                         format: int64
                         type: integer
                     type: array
-                taskKeys:
+                taskNames:
                     items:
                         type: string
                     type: array
@@ -213,10 +213,6 @@ components:
                     type: array
                 slaStatus:
                     enum: [OnTime, Overdue, Untracked]
-                    readOnly: true
-                    type: string
-                status:
-                    enum: [Completed, Pending]
                     readOnly: true
                     type: string
                 taskNames:
@@ -446,9 +442,22 @@ components:
             description:
                 https://www.schema.org/Task
             properties:
-                assigneeId:
-                    format: int64
-                    type: integer
+                assetTitle:
+                    readOnly: true
+                    type: string
+                assetTitle_i18n:
+                    additionalProperties:
+                        type: string
+                    type: object
+                assetType:
+                    readOnly: true
+                    type: string
+                assetType_i18n:
+                    additionalProperties:
+                        type: string
+                    type: object
+                assignee:
+                    $ref: "#/components/schemas/Assignee"
                 className:
                     type: string
                 classPK:
@@ -865,6 +874,10 @@ paths:
                           type: integer
                       type: array
                 - in: query
+                  name: completed
+                  schema:
+                      type: boolean
+                - in: query
                   name: dateEnd
                   schema:
                       format: date-time
@@ -882,14 +895,7 @@ paths:
                           type: string
                       type: array
                 - in: query
-                  name: statuses
-                  schema:
-                      items:
-                          enum: [Completed, Pending]
-                          type: string
-                      type: array
-                - in: query
-                  name: taskKeys
+                  name: taskNames
                   schema:
                       items:
                           type: string

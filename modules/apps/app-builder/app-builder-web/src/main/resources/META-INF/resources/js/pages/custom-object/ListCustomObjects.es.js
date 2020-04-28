@@ -15,6 +15,7 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 
+import {AppNavigationBar} from '../../App.es';
 import {AppContext} from '../../AppContext.es';
 import Button from '../../components/button/Button.es';
 import ControlMenu from '../../components/control-menu/ControlMenu.es';
@@ -158,9 +159,11 @@ export default ({history}) => {
 		<>
 			<ControlMenu
 				title={Liferay.Language.get(
-					'javax.portlet.title.com_liferay_app_builder_web_internal_portlet_CustomObjectsPortlet'
+					'javax.portlet.title.com_liferay_app_builder_web_internal_portlet_ObjectsPortlet'
 				)}
 			/>
+
+			<AppNavigationBar />
 
 			<ListView
 				actions={[

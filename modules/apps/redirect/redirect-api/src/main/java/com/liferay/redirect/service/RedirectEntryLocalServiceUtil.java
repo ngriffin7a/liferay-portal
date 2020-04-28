@@ -78,6 +78,12 @@ public class RedirectEntryLocalServiceUtil {
 		return getService().addRedirectEntry(redirectEntry);
 	}
 
+	public static boolean checkRedirectionChain(
+		long groupId, String destinationURL) {
+
+		return getService().checkRedirectionChain(groupId, destinationURL);
+	}
+
 	/**
 	 * @throws PortalException
 	 */
@@ -318,6 +324,14 @@ public class RedirectEntryLocalServiceUtil {
 				<com.liferay.redirect.model.RedirectEntry> obc) {
 
 		return getService().getRedirectEntries(groupId, start, end, obc);
+	}
+
+	public static java.util.List<com.liferay.redirect.model.RedirectEntry>
+		getRedirectEntriesByGroupIdAndDestinationURL(
+			long groupId, String destinationURL) {
+
+		return getService().getRedirectEntriesByGroupIdAndDestinationURL(
+			groupId, destinationURL);
 	}
 
 	/**

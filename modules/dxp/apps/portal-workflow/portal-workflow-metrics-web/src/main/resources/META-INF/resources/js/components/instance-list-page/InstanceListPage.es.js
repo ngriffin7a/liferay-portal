@@ -44,7 +44,7 @@ const InstanceListPage = ({routeParams}) => {
 			dateStart,
 			slaStatuses,
 			statuses = [],
-			taskKeys,
+			taskNames,
 		},
 		prefixedKeys,
 		selectedFilters,
@@ -54,6 +54,11 @@ const InstanceListPage = ({routeParams}) => {
 		(status) => status === processStatusConstants.completed
 	);
 
+	const completed =
+		statuses && statuses.length == 1
+			? statuses[0] === processStatusConstants.completed
+			: undefined;
+
 	const timeRange = useMemo(
 		() => (completedStatus ? getTimeRangeParams(dateStart, dateEnd) : {}),
 		[completedStatus, dateEnd, dateStart]
@@ -62,11 +67,11 @@ const InstanceListPage = ({routeParams}) => {
 	const {data, fetchData} = useFetch({
 		params: {
 			assigneeIds,
+			completed,
 			page,
 			pageSize,
 			slaStatuses,
-			statuses,
-			taskKeys,
+			taskNames,
 			...timeRange,
 		},
 		url: `/processes/${processId}/instances`,
