@@ -12,31 +12,17 @@
  * details.
  */
 
-package com.liferay.bean.portlet.cdi.extension.internal;
-
-import java.util.Dictionary;
-import java.util.Map;
-import java.util.Set;
-
-import javax.portlet.filter.PortletFilter;
+import getDOM from './get_dom';
 
 /**
- * @author Neil Griffin
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
-public interface BeanFilter {
+export default function getElement(element) {
+	const currentElement = getDOM(element);
 
-	public Class<? extends PortletFilter> getFilterClass();
-
-	public String getFilterName();
-
-	public Map<String, String> getInitParams();
-
-	public Set<String> getLifecycles();
-
-	public int getOrdinal();
-
-	public Set<String> getPortletNames();
-
-	public Dictionary<String, Object> toDictionary();
-
+	return typeof currentElement === 'string'
+		? document.querySelector(currentElement)
+		: currentElement.jquery
+		? currentElement[0]
+		: currentElement;
 }

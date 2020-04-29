@@ -12,29 +12,13 @@
  * details.
  */
 
-package com.liferay.bean.portlet.cdi.extension.internal;
-
-import java.util.List;
-
 /**
- * @author Neil Griffin
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
-public class Preference {
-
-	public Preference(List<String> values, boolean readOnly) {
-		_values = values;
-		_readOnly = readOnly;
+export default function getDOM(element) {
+	if (element._node || element._nodes) {
+		return element.nodeType ? element : element._node || null;
 	}
 
-	public List<String> getValues() {
-		return _values;
-	}
-
-	public boolean isReadOnly() {
-		return _readOnly;
-	}
-
-	private final boolean _readOnly;
-	private final List<String> _values;
-
+	return element;
 }

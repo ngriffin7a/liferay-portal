@@ -14,27 +14,27 @@
 
 package com.liferay.bean.portlet.cdi.extension.internal;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.liferay.bean.portlet.extension.BeanFilterMethod;
+import com.liferay.bean.portlet.extension.BeanFilterMethodFactory;
+
+import java.lang.reflect.Method;
+
+import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * @author Neil Griffin
  */
-public interface BeanApp {
+public class CDIBeanFilterMethodFactory implements BeanFilterMethodFactory {
 
-	public Map<String, List<String>> getContainerRuntimeOptions();
+	public CDIBeanFilterMethodFactory(BeanManager beanManager) {
+		_beanManager = beanManager;
+	}
 
-	public Set<String> getCustomPortletModes();
+	@Override
+	public BeanFilterMethod create(Class<?> beanClass, Method method) {
+		return new CDIBeanFilterMethod(beanClass, _beanManager, method);
+	}
 
-	public String getDefaultNamespace();
-
-	public List<Event> getEvents();
-
-	public List<Map.Entry<Integer, String>> getPortletListeners();
-
-	public Map<String, PublicRenderParameter> getPublicRenderParameters();
-
-	public String getSpecVersion();
+	private final BeanManager _beanManager;
 
 }
