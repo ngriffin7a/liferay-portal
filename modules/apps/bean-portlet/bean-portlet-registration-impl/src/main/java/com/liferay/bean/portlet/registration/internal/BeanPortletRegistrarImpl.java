@@ -1082,8 +1082,8 @@ public class BeanPortletRegistrarImpl implements BeanPortletRegistrar {
 
 			BeanPortletMethod beanPortletMethod =
 				beanPortletMethodFactory.create(
-					discoveredBeanMethod.getBeanType(),
-					discoveredBeanMethod.getMethodType(),
+					discoveredBeanMethod.getBeanClass(),
+					discoveredBeanMethod.getBeanPortletMethodType(),
 					discoveredBeanMethod.getMethod());
 
 			if ((portletNames.length > 0) &&
