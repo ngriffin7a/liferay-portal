@@ -54,14 +54,16 @@ public class ResourceURLBuilder {
 	}
 
 	public static class ResourceURLStep
-		implements AfterBackURLStep, AfterCMDStep, AfterKeywordsStep,
-				   AfterMVCPathStep, AfterMVCResourceCommandNameStep,
-				   AfterNavigationStep, AfterRedirectStep,
+		implements AfterBackURLStep, AfterCacheabilityStep, AfterCMDStep,
+				   AfterKeywordsStep, AfterMVCPathStep,
+				   AfterMVCResourceCommandNameStep, AfterNavigationStep,
+				   AfterRedirectStep, AfterResourceIDStep,
 				   AfterResourceParameterStep, AfterSecureStep, AfterTabs1Step,
-				   AfterTabs2Step, BackURLStep, BuildStep, CMDStep,
-				   KeywordsStep, MVCPathStep, MVCResourceCommandNameStep,
-				   NavigationStep, RedirectStep, ResourceParameterStep,
-				   SecureStep, Tabs1Step, Tabs2Step {
+				   AfterTabs2Step, BackURLStep, BuildStep, CacheabilityStep,
+				   CMDStep, KeywordsStep, MVCPathStep,
+				   MVCResourceCommandNameStep, NavigationStep, RedirectStep,
+				   ResourceIDStep, ResourceParameterStep, SecureStep, Tabs1Step,
+				   Tabs2Step {
 
 		public ResourceURLStep(ResourceURL resourceURL) {
 			_resourceURL = resourceURL;
@@ -99,6 +101,13 @@ public class ResourceURLBuilder {
 			UnsafeSupplier<Object, Exception> valueUnsafeSupplier) {
 
 			_setResourceParameter("backURL", valueUnsafeSupplier, false);
+
+			return this;
+		}
+
+		@Override
+		public AfterCacheabilityStep setCacheability(String cacheLevel) {
+			_resourceURL.setCacheability(cacheLevel);
 
 			return this;
 		}
@@ -209,6 +218,13 @@ public class ResourceURLBuilder {
 			UnsafeSupplier<Object, Exception> valueUnsafeSupplier) {
 
 			_setResourceParameter("redirect", valueUnsafeSupplier, false);
+
+			return this;
+		}
+
+		@Override
+		public AfterResourceIDStep setResourceID(String resourceID) {
+			_resourceURL.setResourceID(resourceID);
 
 			return this;
 		}
@@ -402,56 +418,70 @@ public class ResourceURLBuilder {
 	}
 
 	public interface AfterBackURLStep
-		extends BuildStep, KeywordsStep, NavigationStep, ResourceParameterStep,
-				SecureStep, Tabs1Step, Tabs2Step {
-	}
-
-	public interface AfterCMDStep
-		extends BackURLStep, BuildStep, KeywordsStep, NavigationStep,
-				RedirectStep, ResourceParameterStep, SecureStep, Tabs1Step,
-				Tabs2Step {
-	}
-
-	public interface AfterKeywordsStep
-		extends BuildStep, NavigationStep, ResourceParameterStep, SecureStep,
+		extends AfterCacheabilityStep, AfterResourceIDStep, BuildStep,
+				KeywordsStep, NavigationStep, ResourceParameterStep, SecureStep,
 				Tabs1Step, Tabs2Step {
 	}
 
-	public interface AfterMVCPathStep
-		extends BackURLStep, BuildStep, CMDStep, KeywordsStep,
-				MVCResourceCommandNameStep, NavigationStep, RedirectStep,
+	public interface AfterCacheabilityStep
+		extends AfterResourceIDStep, AfterSecureStep, BuildStep {
+	}
+
+	public interface AfterCMDStep
+		extends AfterCacheabilityStep, AfterResourceIDStep, BackURLStep,
+				BuildStep, KeywordsStep, NavigationStep, RedirectStep,
 				ResourceParameterStep, SecureStep, Tabs1Step, Tabs2Step {
+	}
+
+	public interface AfterKeywordsStep
+		extends AfterCacheabilityStep, AfterResourceIDStep, BuildStep,
+				NavigationStep, ResourceParameterStep, SecureStep, Tabs1Step,
+				Tabs2Step {
+	}
+
+	public interface AfterMVCPathStep
+		extends AfterCacheabilityStep, AfterResourceIDStep, BackURLStep,
+				BuildStep, CMDStep, KeywordsStep, MVCResourceCommandNameStep,
+				NavigationStep, RedirectStep, ResourceParameterStep, SecureStep,
+				Tabs1Step, Tabs2Step {
 	}
 
 	public interface AfterMVCResourceCommandNameStep
-		extends BackURLStep, BuildStep, CMDStep, KeywordsStep, NavigationStep,
-				RedirectStep, ResourceParameterStep, SecureStep, Tabs1Step,
-				Tabs2Step {
-	}
-
-	public interface AfterNavigationStep
-		extends BuildStep, ResourceParameterStep, SecureStep, Tabs1Step,
-				Tabs2Step {
-	}
-
-	public interface AfterRedirectStep
-		extends BackURLStep, BuildStep, KeywordsStep, NavigationStep,
+		extends AfterCacheabilityStep, AfterResourceIDStep, BackURLStep,
+				BuildStep, CMDStep, KeywordsStep, NavigationStep, RedirectStep,
 				ResourceParameterStep, SecureStep, Tabs1Step, Tabs2Step {
 	}
 
+	public interface AfterNavigationStep
+		extends AfterCacheabilityStep, AfterResourceIDStep, BuildStep,
+				ResourceParameterStep, SecureStep, Tabs1Step, Tabs2Step {
+	}
+
+	public interface AfterRedirectStep
+		extends AfterCacheabilityStep, AfterResourceIDStep, BackURLStep,
+				BuildStep, KeywordsStep, NavigationStep, ResourceParameterStep,
+				SecureStep, Tabs1Step, Tabs2Step {
+	}
+
+	public interface AfterResourceIDStep extends AfterSecureStep, BuildStep {
+	}
+
 	public interface AfterResourceParameterStep
-		extends BuildStep, ResourceParameterStep, SecureStep {
+		extends AfterCacheabilityStep, AfterResourceIDStep, BuildStep,
+				ResourceParameterStep, SecureStep {
 	}
 
 	public interface AfterSecureStep extends BuildStep {
 	}
 
 	public interface AfterTabs1Step
-		extends BuildStep, ResourceParameterStep, SecureStep, Tabs2Step {
+		extends AfterCacheabilityStep, AfterResourceIDStep, BuildStep,
+				ResourceParameterStep, SecureStep, Tabs2Step {
 	}
 
 	public interface AfterTabs2Step
-		extends BuildStep, ResourceParameterStep, SecureStep {
+		extends AfterCacheabilityStep, AfterResourceIDStep, BuildStep,
+				ResourceParameterStep, SecureStep {
 	}
 
 	public interface BackURLStep {
@@ -468,6 +498,12 @@ public class ResourceURLBuilder {
 		public ResourceURL build();
 
 		public String buildString();
+
+	}
+
+	public interface CacheabilityStep {
+
+		public AfterCacheabilityStep setCacheability(String cacheLevel);
 
 	}
 
@@ -526,6 +562,12 @@ public class ResourceURLBuilder {
 
 		public AfterRedirectStep setRedirect(
 			UnsafeSupplier<Object, Exception> valueUnsafeSupplier);
+
+	}
+
+	public interface ResourceIDStep {
+
+		public AfterResourceIDStep setResourceID(String resourceID);
 
 	}
 
